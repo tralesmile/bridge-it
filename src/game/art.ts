@@ -37,18 +37,23 @@ function seeded(seed: number): () => number {
 
 function hills(ctx: Ctx, w: number, h: number, color: string, seed: number, amp: number): void {
   const rnd = seeded(seed);
-  const bumps = Array.from({ length: 6 }, () => ({ f: 1 + rnd() * 3, p: rnd() * Math.PI * 2, a: 0.3 + rnd() * 0.7 }));
+  const bumps = Array.from({ length: 6 }, () => ({ f: 1 + Math.floor(rnd() * 3), p: rnd() * Math.PI * 2, a: 0.3 + rnd() * 0.7 }));
   ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(0, h);
+  const top: number[] = [];
   for (let x = 0; x <= w; x += 8) {
     let y = 0;
     for (const b of bumps) y += Math.sin((x / w) * Math.PI * 2 * b.f + b.p) * b.a;
-    ctx.lineTo(x, h * 0.45 - y * amp);
+    top.push(h * 0.45 - y * amp);
   }
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  top.forEach((y, i) => ctx.lineTo(i * 8, y));
   ctx.lineTo(w, h);
   ctx.closePath();
   ctx.fill();
+  // Rim: top edge only, so tiled copies show no seam.
+  ctx.beginPath();
+  top.forEach((y, i) => (i === 0 ? ctx.moveTo(0, y) : ctx.lineTo(i * 8, y)));
   // Soft light rim along the top.
   ctx.strokeStyle = 'rgba(255,255,255,0.25)';
   ctx.lineWidth = 4;

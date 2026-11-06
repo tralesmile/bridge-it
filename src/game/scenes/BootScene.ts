@@ -14,6 +14,11 @@ export class BootScene extends Phaser.Scene {
     this.game.events.on(Phaser.Core.Events.HIDDEN, () => sfx.setPaused(true));
     this.game.events.on(Phaser.Core.Events.VISIBLE, () => sfx.setPaused(false));
     this.input.once('pointerdown', () => sfx.unlock());
-    void platform.init().finally(() => this.scene.start('menu'));
+    // Wait (at most 2 s) for the bundled font, so the first screen never flashes a fallback font.
+    const fontReady = Promise.race([
+      Promise.all([document.fonts.load('700 24px Fredoka'), document.fonts.load('400 24px Fredoka')]),
+      new Promise((resolve) => setTimeout(resolve, 2000)),
+    ]).catch(() => undefined);
+    void Promise.all([platform.init(), fontReady]).finally(() => this.scene.start('menu'));
   }
 }

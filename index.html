@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#7cc6ff" />
     <meta name="description" content="Bridge It! Build bridges, watch them hold or hilariously collapse. A physics puzzle game." />
+    <link rel="preload" href="./fonts/fredoka-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <title>Bridge It!</title>
     <style>
+      @font-face { font-family: 'Fredoka'; font-weight: 400; font-display: swap; src: url('./fonts/fredoka-latin-400-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Fredoka'; font-weight: 700; font-display: swap; src: url('./fonts/fredoka-latin-700-normal.woff2') format('woff2'); }
       html, body { margin: 0; height: 100%; background: #7cc6ff; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
       #game { width: 100%; height: 100%; }
       canvas { display: block; }

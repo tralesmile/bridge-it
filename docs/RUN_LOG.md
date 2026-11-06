@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-06 — Run 2
+**Done**
+- Fredoka (400 and 700, latin) bundled in `public/fonts` with its OFL licence; `@font-face` in `index.html`; BootScene waits up to 2 s for the font before the menu.
+- Found a seam in the hills at x=1024 on the menu (added to roadmap).
+
+**Verified**
+- `npm run check` green (51 tests); `npm run e2e` all PASS; menu screenshot shows Fredoka.
+
+**Lessons**
+- Fonts via `@fontsource/*` npm packages work through the proxy; copy the woff2 files to `public/`.
+- The session branch is `claude/practical-meitner-klj5rs`; push there (not main) when the run instructions name a branch.
+
 ## 2026-11-06 — Run 1 (initial build)
 **Done**
 - Project set up: Vite 8, TypeScript, Phaser 4.2.1, Planck.js 1.5.1, Vitest, Playwright.

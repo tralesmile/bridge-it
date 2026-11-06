@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-06 — Run 2
+**Done**
+- Fredoka font (400 and 600, latin woff2, from @fontsource/fredoka) bundled in `public/fonts` with OFL licence; loaded via @font-face and awaited before the game starts (3 s cap).
+
+**Verified**
+- `npm run check` green, `npm run e2e` all PASS, menu screenshot shows Fredoka.
+
+**Lessons**
+- Canvas text needs `document.fonts.load` before Phaser creates text, or it falls back silently.
+- Avoid top-level await in main.ts (Vite build warning); use a promise chain.
+- Scheduled runs here are on branch `claude/practical-meitner-bfkknd`; push there, not main.
+- Menu screenshot shows a hill seam at x=1024 (added to roadmap).
+
 ## 2026-11-06 — Run 1 (initial build)
 **Done**
 - Project set up: Vite 8, TypeScript, Phaser 4.2.1, Planck.js 1.5.1, Vitest, Playwright.

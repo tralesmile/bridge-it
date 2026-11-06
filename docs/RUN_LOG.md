@@ -5,7 +5,7 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 ## 2026-11-06 — Run 2
 **Done**
 - Fredoka (400 and 700, latin) bundled in `public/fonts` with its OFL licence; `@font-face` in `index.html`; BootScene waits up to 2 s for the font before the menu.
-- Found a seam in the hills at x=1024 on the menu (added to roadmap).
+- Fixed the hill tile seam (non-integer wave frequency and side-edge stroke); hills now tile cleanly.
 
 **Verified**
 - `npm run check` green (51 tests); `npm run e2e` all PASS; menu screenshot shows Fredoka.

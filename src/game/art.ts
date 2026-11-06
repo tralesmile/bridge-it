@@ -37,7 +37,7 @@ function seeded(seed: number): () => number {
 
 function hills(ctx: Ctx, w: number, h: number, color: string, seed: number, amp: number): void {
   const rnd = seeded(seed);
-  const bumps = Array.from({ length: 6 }, () => ({ f: 1 + rnd() * 3, p: rnd() * Math.PI * 2, a: 0.3 + rnd() * 0.7 }));
+  const bumps = Array.from({ length: 6 }, () => ({ f: 1 + Math.floor(rnd() * 3), p: rnd() * Math.PI * 2, a: 0.3 + rnd() * 0.7 }));
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.moveTo(0, h);
@@ -49,9 +49,16 @@ function hills(ctx: Ctx, w: number, h: number, color: string, seed: number, amp:
   ctx.lineTo(w, h);
   ctx.closePath();
   ctx.fill();
-  // Soft light rim along the top.
+  // Soft light rim along the top only (no side edges, so tiles join without a seam).
   ctx.strokeStyle = 'rgba(255,255,255,0.25)';
   ctx.lineWidth = 4;
+  ctx.beginPath();
+  for (let x = 0; x <= w; x += 8) {
+    let y = 0;
+    for (const b of bumps) y += Math.sin((x / w) * Math.PI * 2 * b.f + b.p) * b.a;
+    if (x === 0) ctx.moveTo(x, h * 0.45 - y * amp);
+    else ctx.lineTo(x, h * 0.45 - y * amp);
+  }
   ctx.stroke();
 }
 

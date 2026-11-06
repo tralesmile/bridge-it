@@ -13,7 +13,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Unit tests, level solvability tests, browser end-to-end test at desktop and phone sizes
 
 ## M2 Game feel and polish
-- [ ] Bundle Fredoka font locally (OFL licence file included) and use it everywhere
+- [x] Bundle Fredoka font locally (OFL licence file included) and use it everywhere
 - [ ] Ghost of the last attempt while editing
 - [ ] Stress shown by thickness and pulsing as well as colour (colour-blind safe)
 - [ ] Vehicle bullet bodies, NaN watchdog that ends an attempt as a collapse

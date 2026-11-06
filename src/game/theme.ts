@@ -1,5 +1,5 @@
 /** Design tokens: one place for every colour, size and font. */
-export const FONT = '"Fredoka", "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif';
+export const FONT = '"Fredoka Variable", "Fredoka", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif';
 
 export const C = {
   skyTop: '#7cc6ff',

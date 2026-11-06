@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-06 — Run 2
+**Done**
+- Fredoka variable font bundled via `@fontsource-variable/fredoka` (latin, latin-ext, hebrew woff2 in the build, OFL licence in `docs/`). Game waits for the font (max 2 s) before starting Phaser, so text never renders in the fallback font.
+- Found a hill seam at x≈1024 on the menu; added to roadmap.
+
+**Verified**
+- `npm run check` green (51 tests), `npm run e2e` all PASS, menu screenshot shows Fredoka.
+
+**Lessons**
+- Top-level await is not allowed by the build target; use `.then`.
+- The cloud session is on branch `claude/practical-meitner-n7h2rn`, so pushes go there, not `main`.
+
 ## 2026-11-06 — Run 1 (initial build)
 **Done**
 - Project set up: Vite 8, TypeScript, Phaser 4.2.1, Planck.js 1.5.1, Vitest, Playwright.

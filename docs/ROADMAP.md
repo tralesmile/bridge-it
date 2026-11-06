@@ -14,7 +14,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 
 ## M2 Game feel and polish
 - [x] Bundle Fredoka font locally (OFL licence file included) and use it everywhere
-- [ ] Fix visible seam in menu hills at x≈1024 (background tiling edge)
+- [x] Fix visible seam in menu hills (whole-number frequencies, rim on top edge only)
 - [ ] Ghost of the last attempt while editing
 - [ ] Stress shown by thickness and pulsing as well as colour (colour-blind safe)
 - [ ] Vehicle bullet bodies, NaN watchdog that ends an attempt as a collapse

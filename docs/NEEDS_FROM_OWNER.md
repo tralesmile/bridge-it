@@ -3,7 +3,7 @@
 Things only you can do. Each scheduled run adds to this list; nothing here blocks the build work. Ask Claude "what do you need from me?" to get this list.
 
 ## Now
-- [ ] **Create an empty private GitHub repository named `bridge-it`** under your account (tralesmile) and tell Claude, so the code can be pushed and the scheduled runs can continue it. Until then the code lives only in this chat's workspace.
+- [x] Create the private GitHub repository `tralesmile/bridge-it` (done 2026-11-06).
 - [ ] Play the web build when you get a chance and say what feels fun or annoying.
 
 ## Before web launch (around milestone M6)

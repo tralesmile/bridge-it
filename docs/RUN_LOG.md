@@ -7,6 +7,7 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 - Synced: other `claude/*` branches only hold the font and seam work already in `main`.
 - Settings panel (menu): Sound, Screen shake, Less motion (stops cloud/sun/title/car animation, confetti, stress pulse, shake). Saved in `settings`; e2e toggles it.
 - Menu car got the cow head too (it lost it when the head became its own sprite).
+- Portrait phone (width up to 700px) shows a "Turn your phone sideways" card (pure CSS, e2e checks it).
 - Win panel: confetti behind the panel, coins fly to the top right, each earned star plays a rising pop.
 - Cow driver is now a separate sprite (`cow-calm`, `cow-worried`, `cow-scream`). Face follows worst beam stress (over 50% worried, over 80% or falling: screaming).
 

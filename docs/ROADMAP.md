@@ -21,7 +21,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Driver face reacts (calm, worried, screaming) based on bridge stress
 - [x] Confetti and coin fly-in on win; star pop sounds
 - [x] Settings panel: sound, reduced motion, screen shake
-- [ ] Portrait phone: rotate-device card
+- [x] Portrait phone: rotate-device card (CSS overlay in index.html)
 - [ ] Camera pan and zoom for levels wider than the screen
 - [ ] Pause and resume an attempt when the app is hidden
 - [ ] GitHub Actions CI running npm run check and the browser test

@@ -86,6 +86,15 @@ async function run(viewport, name) {
 try {
   await run({ width: 1280, height: 720 }, 'desktop');
   await run({ width: 844, height: 390 }, 'phone');
+  // Upright phone shows the rotate card; wide screens do not.
+  for (const [vp, want, nm] of [[{ width: 390, height: 844 }, 'flex', 'portrait phone'], [{ width: 844, height: 390 }, 'none', 'landscape phone']]) {
+    const p = await browser.newPage({ viewport: vp });
+    await p.goto(`http://localhost:${PORT}/`);
+    const shown = await p.evaluate(() => getComputedStyle(document.getElementById('rotate')).display);
+    check(shown === want, `${nm}: rotate card display is ${want} (got ${shown})`);
+    if (want === 'flex') await p.screenshot({ path: `${OUT}/portrait-rotate.png` });
+    await p.close();
+  }
 } finally {
   await browser.close();
   server.kill();

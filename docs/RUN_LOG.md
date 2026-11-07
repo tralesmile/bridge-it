@@ -2,6 +2,21 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-07 — Run 9
+**Done**
+- Synced: other `claude/*` branches still only hold font/seam work already in `main`.
+- World 1 now has 15 levels (10 Long Haul, 11 Little Brook, 12 Two Rocks, 13 Heavy Load, 14 Deep Gorge, 15 Farm Finale), each with a winning stored solution.
+- Level select is a 5x3 grid (4x3 overflowed the panel at 12 levels already).
+
+**Verified**
+- `npm run check` green (105 tests), `npm run e2e` all PASS; looked at level select on desktop and phone.
+
+**Lessons**
+- Wood truss (h=1) often beats steel for trucks: steel is heavier and broke more. Test materials with a scratch test before assuming.
+- Scratch tests: vitest hides console output here; append to a file in the scratchpad instead.
+- Open physics issues (in roadmap): car flips after dropping onto a lower cliff; truck breaks the ramp beam when starting on a raised cliff. I dropped those level ideas instead of tuning around them.
+- Next: pan task is still not needed; start M3 Rope material and World 2.
+
 ## 2026-11-07 — Run 8
 **Done**
 - Synced: other `claude/*` branches still only hold font/seam work already in `main`.

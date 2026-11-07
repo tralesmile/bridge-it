@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-07 — Run 6
+**Done**
+- Synced: unmerged `claude/*` branches only hold the font and seam work already in `main`.
+- Play scene scale is now per level (`ppm`): wide levels zoom out to fit (min 28 px/m). Pan is a separate task, needed only past ~40 m.
+
+**Verified**
+- `npm run check` green (52 tests), `npm run e2e` all PASS. No wide level exists yet, so the zoom-out path was checked by reading the math only, not by screenshot.
+
+**Lessons**
+- The run branch can be behind `main`: do `git checkout -B <branch> origin/main` first.
+- Next run: add a wide test level (or a 24 m gap) with a screenshot when M3 level format work starts.
+
 ## 2026-11-07 — Run 5
 **Done**
 - Synced: other `claude/*` branches only hold the font and seam work already in `main`.

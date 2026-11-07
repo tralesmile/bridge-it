@@ -17,6 +17,7 @@ type Tool = MaterialId | 'erase';
 type Mode = 'build' | 'sim' | 'result';
 
 const WATER_Y = -4.5;
+const MIN_PX_PER_M = 28;
 const HINT_AFTER_FAILS = 2;
 
 const REASONS: Record<string, string> = {
@@ -36,6 +37,8 @@ export class PlayScene extends Phaser.Scene {
   private mode: Mode = 'build';
   private tool: Tool = 'road';
   private ox = 0;
+  /** Pixels per metre for this level (smaller for wide levels). */
+  private ppm = PX_PER_M;
   private oy = 0;
 
   private world!: Phaser.GameObjects.Graphics;
@@ -99,7 +102,10 @@ export class PlayScene extends Phaser.Scene {
     this.buildUi = [];
     this.wheelSprites = [];
     const mid = (level.gapStart + level.gapEnd) / 2;
-    this.ox = GAME_W / 2 - mid * PX_PER_M;
+    // Zoom out so wide levels fit on the screen (never zoom in past the normal size).
+    const widthM = level.gapEnd - level.gapStart + 10;
+    this.ppm = Math.max(MIN_PX_PER_M, Math.min(PX_PER_M, GAME_W / widthM));
+    this.ox = GAME_W / 2 - mid * this.ppm;
     this.oy = 390;
   }
 
@@ -134,11 +140,11 @@ export class PlayScene extends Phaser.Scene {
   // ---------- coordinates ----------
 
   private toScreen(p: Point): Point {
-    return { x: this.ox + p.x * PX_PER_M, y: this.oy - p.y * PX_PER_M };
+    return { x: this.ox + p.x * this.ppm, y: this.oy - p.y * this.ppm };
   }
 
   private toWorld(x: number, y: number): Point {
-    return { x: (x - this.ox) / PX_PER_M, y: (this.oy - y) / PX_PER_M };
+    return { x: (x - this.ox) / this.ppm, y: (this.oy - y) / this.ppm };
   }
 
   // ---------- static world ----------
@@ -222,7 +228,7 @@ export class PlayScene extends Phaser.Scene {
     const v = preview.vehicle;
     const isTruck = v.def.id === 'truck';
     this.chassisSprite = this.add.image(0, 0, isTruck ? 'truck' : 'car').setOrigin(0.5, isTruck ? 0.68 : 0.62);
-    this.chassisSprite.setDisplaySize((v.def.halfWidth * 2 + 0.3) * PX_PER_M, (v.def.halfWidth * 2 + 0.3) * PX_PER_M * (isTruck ? 120 / 260 : 96 / 172));
+    this.chassisSprite.setDisplaySize((v.def.halfWidth * 2 + 0.3) * this.ppm, (v.def.halfWidth * 2 + 0.3) * this.ppm * (isTruck ? 120 / 260 : 96 / 172));
     this.vehicle.add(this.chassisSprite);
     // Cow head sits in the cabin; offsets are texture pixels from the sprite origin.
     const texW = isTruck ? 260 : 172;
@@ -232,7 +238,7 @@ export class PlayScene extends Phaser.Scene {
     this.cow = this.add.image(0, 0, 'cow-calm').setScale(k * head.s);
     this.vehicle.add(this.cow);
     for (const w of v.wheels) {
-      const sprite = this.add.image(0, 0, 'wheel').setDisplaySize(w.radius * 2 * PX_PER_M, w.radius * 2 * PX_PER_M);
+      const sprite = this.add.image(0, 0, 'wheel').setDisplaySize(w.radius * 2 * this.ppm, w.radius * 2 * this.ppm);
       this.wheelSprites.push(sprite);
       this.vehicle.add(sprite);
     }

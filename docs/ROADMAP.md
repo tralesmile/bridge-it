@@ -22,7 +22,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Confetti and coin fly-in on win; star pop sounds
 - [x] Settings panel: sound, reduced motion, screen shake
 - [x] Portrait phone: rotate-device card (CSS overlay in index.html)
-- [ ] Camera pan and zoom for levels wider than the screen
+- [x] Zoom-out to fit levels wider than the screen (play scene `ppm`, min 28 px/m)
+- [ ] Pan for levels wider than ~40 m (only needed past the zoom limit; no such level yet)
 - [x] Pause and resume an attempt when the app is hidden
 - [x] GitHub Actions CI running npm run check and the browser test (`.github/workflows/ci.yml`; first real run not yet seen)
 

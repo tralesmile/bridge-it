@@ -710,12 +710,25 @@ export class PlayScene extends Phaser.Scene {
     for (let i = 0; i < 3; i++) {
       const star = this.add.image(GAME_W / 2 - 110 + i * 110, GAME_H / 2 - 50, i < stars ? 'star' : 'star-empty').setScale(0);
       layer.add(star);
-      this.tweens.add({ targets: star, scale: i === 1 ? 1.6 : 1.3, delay: 200 + i * 220, duration: 380, ease: 'Back.easeOut' });
+      this.tweens.add({
+        targets: star,
+        scale: i === 1 ? 1.6 : 1.3,
+        delay: 200 + i * 220,
+        duration: 380,
+        ease: 'Back.easeOut',
+        onStart: () => {
+          if (i < stars) sfx.starPop(i);
+        },
+      });
     }
+    this.confettiBurst(stars);
     const next = this.level.starBudgets[stars === 1 ? 0 : 1];
     const sub = stars < 3 ? `Cost $${cost} · next star at $${next}` : `Cost $${cost} · perfect!`;
     layer.add(label(this, GAME_W / 2, GAME_H / 2 + 40, sub, 24, C.greyDark));
-    if (coins > 0) layer.add(label(this, GAME_W / 2, GAME_H / 2 + 76, `+${coins} coins`, 24, C.primaryDark));
+    if (coins > 0) {
+      layer.add(label(this, GAME_W / 2, GAME_H / 2 + 76, `+${coins} coins`, 24, C.primaryDark));
+      this.coinFlyIn(Math.min(coins, 8), 900 + stars * 220);
+    }
     const nxt = nextLevel(this.level.id);
     layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 145, 'Improve', () => this.stopSim(), { width: 220, height: 70, color: C.blue, shade: C.blueDark }));
     layer.add(
@@ -725,6 +738,47 @@ export class PlayScene extends Phaser.Scene {
         else this.scene.start('levels');
       }, { width: 220, height: 70, color: C.good, shade: C.goodDark }),
     );
+  }
+
+  /** Confetti falls from the top; more stars, more confetti. */
+  private confettiBurst(stars: number): void {
+    const colors = [0xff6b5c, 0xffd23f, 0x4cc764, 0x3c8dff, 0xb36bff];
+    const fx = this.add.particles(0, 0, 'confetti', {
+      x: { min: 0, max: GAME_W },
+      y: -20,
+      speedY: { min: 120, max: 320 },
+      speedX: { min: -80, max: 80 },
+      lifespan: 2600,
+      rotate: { min: 0, max: 360 },
+      scale: { min: 0.8, max: 1.6 },
+      tint: colors,
+      emitting: false,
+    });
+    fx.setDepth(9);
+    fx.explode(20 + stars * 20);
+    this.time.delayedCall(3200, () => fx.destroy());
+  }
+
+  /** Coins fly from the result text up to the top-right corner. */
+  private coinFlyIn(count: number, delay: number): void {
+    for (let i = 0; i < count; i++) {
+      const coin = this.add.image(GAME_W / 2, GAME_H / 2 + 76, 'coin').setDepth(12).setScale(0).setAlpha(0);
+      this.tweens.add({
+        targets: coin,
+        x: GAME_W - 60,
+        y: 90,
+        scale: { from: 0.4, to: 1 },
+        alpha: { from: 1, to: 1 },
+        delay: delay + i * 90,
+        duration: 650,
+        ease: 'Cubic.easeIn',
+        onStart: () => coin.setAlpha(1),
+        onComplete: () => {
+          sfx.coin();
+          coin.destroy();
+        },
+      });
+    }
   }
 
   private showLoss(reason: string): void {

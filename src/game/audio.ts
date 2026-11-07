@@ -83,9 +83,20 @@ class Sfx {
   go(): void {
     this.tone(300, 0.12, 'triangle', 0.15, 600);
   }
-  win(stars: number): void {
-    const notes = [523, 659, 784, 1047];
-    for (let i = 0; i <= stars; i++) this.tone(notes[i], 0.25, 'triangle', 0.18, undefined, i * 0.18);
+  win(_stars: number): void {
+    // Short fanfare; each star adds its own pop (see starPop) when it appears.
+    this.tone(392, 0.3, 'triangle', 0.14);
+    this.tone(523, 0.3, 'triangle', 0.1, undefined, 0.1);
+  }
+  /** Pop for the earned star number `i` (0, 1, 2): rises in pitch. */
+  starPop(i: number): void {
+    const notes = [659, 784, 1047];
+    this.tone(notes[i] ?? 1047, 0.22, 'triangle', 0.18);
+    this.tone((notes[i] ?? 1047) * 2, 0.1, 'sine', 0.06);
+  }
+  coin(): void {
+    this.tone(1319, 0.08, 'square', 0.05);
+    this.tone(1760, 0.14, 'square', 0.05, undefined, 0.06);
   }
   lose(): void {
     this.tone(400, 0.5, 'sawtooth', 0.08, 90);

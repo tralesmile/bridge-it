@@ -291,6 +291,27 @@ export function makeTextures(scene: Phaser.Scene): void {
   canvas(scene, 'star', 64, 68, (ctx) => star(ctx, C.gold, '#e0a21c'));
   canvas(scene, 'star-empty', 64, 68, (ctx) => star(ctx, 'rgba(255,255,255,0.35)', 'rgba(43,33,64,0.35)'));
 
+  canvas(scene, 'coin', 40, 40, (ctx) => {
+    ctx.fillStyle = '#e0a21c';
+    ctx.beginPath();
+    ctx.arc(20, 20, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = C.gold;
+    ctx.beginPath();
+    ctx.arc(20, 19, 15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#e0a21c';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(20, 19, 9, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+
+  canvas(scene, 'confetti', 14, 8, (ctx) => {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 14, 8);
+  });
+
   canvas(scene, 'spark', 12, 12, (ctx) => {
     const g = ctx.createRadialGradient(6, 6, 0, 6, 6, 6);
     g.addColorStop(0, 'rgba(255,255,255,1)');

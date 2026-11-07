@@ -19,7 +19,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Stress shown by thickness and pulsing as well as colour (colour-blind safe)
 - [x] Vehicle bullet bodies, NaN watchdog that ends an attempt as a collapse
 - [x] Driver face reacts (calm, worried, screaming) based on bridge stress
-- [ ] Confetti and coin fly-in on win; star pop sounds
+- [x] Confetti and coin fly-in on win; star pop sounds
 - [ ] Settings panel: sound, reduced motion, screen shake
 - [ ] Portrait phone: rotate-device card
 - [ ] Camera pan and zoom for levels wider than the screen

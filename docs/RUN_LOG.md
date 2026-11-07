@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-07 — Run 5
+**Done**
+- Synced: other `claude/*` branches only hold the font and seam work already in `main`.
+- Cow driver is now a separate sprite (`cow-calm`, `cow-worried`, `cow-scream`). Face follows worst beam stress (over 50% worried, over 80% or falling: screaming).
+
+**Verified**
+- `npm run check` green (52 tests), `npm run e2e` all PASS; driving and fail screenshots show the cow in the cabin, screaming in the water.
+
+**Lessons**
+- Draw parts that change (faces) as their own textures, so the vehicle body stays one cached image.
+- The cow face is tiny on screen; a zoomed screenshot test of the mood would be nice later.
+
 ## 2026-11-07 — Run 4
 **Done**
 - Synced: other `claude/*` branches (font, hill seam) were already in `main` under different commits; nothing to merge.

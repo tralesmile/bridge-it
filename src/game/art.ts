@@ -60,7 +60,89 @@ function hills(ctx: Ctx, w: number, h: number, color: string, seed: number, amp:
   ctx.stroke();
 }
 
+export type Mood = 'calm' | 'worried' | 'scream';
+export const MOODS: Mood[] = ['calm', 'worried', 'scream'];
+
+/** Cow driver head, centred on (cx, cy). Drawn separately so the face can change with bridge stress. */
+function drawCow(ctx: CanvasRenderingContext2D, cx: number, cy: number, mood: Mood): void {
+  const dark = '#2b2140';
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, 17, 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = dark;
+  ctx.beginPath();
+  ctx.ellipse(cx - 8, cy - 6, 6, 5, 0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#ffb8c6';
+  ctx.beginPath();
+  ctx.ellipse(cx + 10, cy + 6, 8, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const ex = [cx + 4, cx + 12];
+  const ey = cy - 4;
+  ctx.fillStyle = dark;
+  ctx.strokeStyle = dark;
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 2;
+  if (mood === 'calm') {
+    for (const x of ex) {
+      ctx.beginPath();
+      ctx.arc(x, ey, 2.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else {
+    // Big white eyes with small pupils.
+    const r = mood === 'scream' ? 5.2 : 4.4;
+    for (const x of ex) {
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x, ey, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+      ctx.fillStyle = dark;
+      ctx.beginPath();
+      ctx.arc(x, ey, mood === 'scream' ? 1.5 : 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // Brows slanted up in the middle.
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(ex[0] - 5, ey - 6);
+    ctx.lineTo(ex[0] + 3, ey - 9);
+    ctx.moveTo(ex[1] - 3, ey - 9);
+    ctx.lineTo(ex[1] + 5, ey - 6);
+    ctx.stroke();
+  }
+  // Mouth.
+  ctx.lineWidth = 2;
+  if (mood === 'calm') {
+    ctx.beginPath();
+    ctx.arc(cx + 10, cy + 7, 4, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+  } else if (mood === 'worried') {
+    ctx.beginPath();
+    ctx.moveTo(cx + 5, cy + 9);
+    ctx.quadraticCurveTo(cx + 8, cy + 5, cx + 11, cy + 9);
+    ctx.quadraticCurveTo(cx + 14, cy + 12, cx + 16, cy + 8);
+    ctx.stroke();
+    // Sweat drop.
+    ctx.fillStyle = '#7fd4ff';
+    ctx.beginPath();
+    ctx.moveTo(cx - 14, cy - 12);
+    ctx.quadraticCurveTo(cx - 9, cy - 6, cx - 14, cy - 3);
+    ctx.quadraticCurveTo(cx - 19, cy - 6, cx - 14, cy - 12);
+    ctx.fill();
+  } else {
+    ctx.fillStyle = '#7a1f2e';
+    ctx.beginPath();
+    ctx.ellipse(cx + 10, cy + 8, 4.5, 5.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
 export function makeTextures(scene: Phaser.Scene): void {
+  for (const mood of MOODS) canvas(scene, `cow-${mood}`, 44, 40, (ctx) => drawCow(ctx, 22, 20, mood));
   canvas(scene, 'sky', 4, 512, (ctx) => {
     const g = ctx.createLinearGradient(0, 0, 0, 512);
     g.addColorStop(0, C.skyTop);
@@ -109,24 +191,6 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.fillStyle = '#bfe8ff';
     roundRect(ctx, 56, 16, 58, 28, 10);
     ctx.fill();
-    // Cow driver: white head, black spot, eyes.
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.ellipse(88, 34, 17, 14, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#2b2140';
-    ctx.beginPath();
-    ctx.ellipse(80, 28, 6, 5, 0.4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#ffb8c6';
-    ctx.beginPath();
-    ctx.ellipse(98, 40, 8, 6, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#2b2140';
-    ctx.beginPath();
-    ctx.arc(92, 30, 2.6, 0, Math.PI * 2);
-    ctx.arc(100, 30, 2.6, 0, Math.PI * 2);
-    ctx.fill();
     // Headlight and rim highlight.
     ctx.fillStyle = '#fff4b0';
     roundRect(ctx, 150, 48, 12, 10, 4);
@@ -163,15 +227,6 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.fill();
     ctx.fillStyle = '#bfe8ff';
     roundRect(ctx, 182, 28, 54, 30, 10);
-    ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.ellipse(208, 48, 15, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#2b2140';
-    ctx.beginPath();
-    ctx.arc(212, 44, 2.4, 0, Math.PI * 2);
-    ctx.arc(220, 44, 2.4, 0, Math.PI * 2);
     ctx.fill();
   });
 

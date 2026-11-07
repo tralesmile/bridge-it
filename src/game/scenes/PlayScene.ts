@@ -5,6 +5,7 @@ import { MATERIALS, type MaterialId } from '../../core/materials';
 import { starsFor } from '../../core/scoring';
 import { MAX_TIME, STEP, Simulation } from '../../core/simulation';
 import type { Point } from '../../core/types';
+import type { Mood } from '../art';
 import { sfx } from '../audio';
 import { addBackground } from '../background';
 import { platform } from '../platform';
@@ -43,6 +44,9 @@ export class PlayScene extends Phaser.Scene {
   private hintG!: Phaser.GameObjects.Graphics;
   private nodes!: Phaser.GameObjects.Container;
   private vehicle!: Phaser.GameObjects.Container;
+  private cow!: Phaser.GameObjects.Image;
+  private cowOffset = { x: 0, y: 0 };
+  private moodNow: Mood = 'calm';
   private chassisSprite!: Phaser.GameObjects.Image;
   private wheelSprites: Phaser.GameObjects.Image[] = [];
   private sparks!: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -210,6 +214,13 @@ export class PlayScene extends Phaser.Scene {
     this.chassisSprite = this.add.image(0, 0, isTruck ? 'truck' : 'car').setOrigin(0.5, isTruck ? 0.68 : 0.62);
     this.chassisSprite.setDisplaySize((v.def.halfWidth * 2 + 0.3) * PX_PER_M, (v.def.halfWidth * 2 + 0.3) * PX_PER_M * (isTruck ? 120 / 260 : 96 / 172));
     this.vehicle.add(this.chassisSprite);
+    // Cow head sits in the cabin; offsets are texture pixels from the sprite origin.
+    const texW = isTruck ? 260 : 172;
+    const k = this.chassisSprite.displayWidth / texW;
+    const head = isTruck ? { x: 208 - 130, y: 48 - 120 * 0.68, s: 15 / 17 } : { x: 88 - 86, y: 34 - 96 * 0.62, s: 1 };
+    this.cowOffset = { x: head.x * k, y: head.y * k };
+    this.cow = this.add.image(0, 0, 'cow-calm').setScale(k * head.s);
+    this.vehicle.add(this.cow);
     for (const w of v.wheels) {
       const sprite = this.add.image(0, 0, 'wheel').setDisplaySize(w.radius * 2 * PX_PER_M, w.radius * 2 * PX_PER_M);
       this.wheelSprites.push(sprite);
@@ -218,10 +229,25 @@ export class PlayScene extends Phaser.Scene {
     this.placeVehicle(preview);
   }
 
+  private setMood(sim: Simulation): void {
+    let worst = 0;
+    for (const s of sim.beamStates) if (!s.broken && s.stress > worst) worst = s.stress;
+    const falling = sim.status === 'lost' || sim.vehicle.y < -1.2;
+    const mood: Mood = falling || worst > 0.8 ? 'scream' : worst > 0.5 ? 'worried' : 'calm';
+    if (mood !== this.moodNow) {
+      this.moodNow = mood;
+      this.cow.setTexture(`cow-${mood}`);
+    }
+  }
+
   private placeVehicle(sim: Simulation): void {
     const v = sim.vehicle;
     const c = this.toScreen(v);
     this.chassisSprite.setPosition(c.x, c.y).setRotation(-v.angle);
+    const cos = Math.cos(-v.angle);
+    const sin = Math.sin(-v.angle);
+    this.cow.setPosition(c.x + this.cowOffset.x * cos - this.cowOffset.y * sin, c.y + this.cowOffset.x * sin + this.cowOffset.y * cos).setRotation(-v.angle);
+    this.setMood(sim);
     v.wheels.forEach((w, i) => {
       const p = this.toScreen(w);
       this.wheelSprites[i]?.setPosition(p.x, p.y).setRotation(-w.angle);

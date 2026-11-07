@@ -50,6 +50,7 @@ const FARM: LevelSpec[] = [
   { name: 'Rock Pillar', gap: 8, materials: ['road', 'wood'], extraAnchors: [{ x: 4, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, 4), ...warrenTruss(4, g), { a: '4,0', b: '4,-2', material: 'wood' }], tip: 'Use the rock to split one long bridge into two short ones.' },
   { name: 'Hay Truck', gap: 4, vehicle: 'truck', materials: ['road', 'wood', 'steel'], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g, 'steel')], tip: 'Heavy truck! Steel is strong but expensive.' },
   { name: 'Big Valley', gap: 10, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 6, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '6,0', b: '6,-2', material: 'wood' }], slack: 1.25 },
+  { name: 'High Cliff', gap: 16, leftHeight: 1, goalDistance: 5, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 12, y: -2 }], solution: (g) => [{ a: '0,1', b: '2,0', material: 'road' }, ...roadDeck(2, g), ...warrenTruss(2, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }, { a: '12,0', b: '12,-2', material: 'wood' }], slack: 1.25, tip: 'You start on a high cliff. Use the rocks below for support.' },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;
@@ -103,4 +104,41 @@ export function levelById(id: string): LevelEntry | undefined {
 export function nextLevel(id: string): LevelEntry | undefined {
   const i = ALL_LEVELS.findIndex((l) => l.id === id);
   return i >= 0 ? ALL_LEVELS[i + 1] : undefined;
+}
+
+/** Plain JSON text of a level (id, rules and solution). Used by the level editor and share codes. */
+export function levelToJson(level: LevelEntry): string {
+  return JSON.stringify(level, null, 2);
+}
+
+const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+const isPoint = (v: unknown): v is Point => !!v && isNum((v as Point).x) && isNum((v as Point).y);
+
+/**
+ * Reads level JSON. Returns the level, or an error text. Checks shape only;
+ * whether the solution wins is checked by the simulation (tests do this for built-in levels).
+ */
+export function levelFromJson(text: string): { ok: true; level: LevelEntry } | { ok: false; error: string } {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    return { ok: false, error: 'This is not valid JSON.' };
+  }
+  const l = raw as Partial<LevelEntry> | null;
+  if (!l || typeof l !== 'object') return { ok: false, error: 'A level must be an object.' };
+  if (typeof l.id !== 'string' || typeof l.name !== 'string') return { ok: false, error: 'Missing id or name.' };
+  for (const key of ['world', 'index', 'gapStart', 'gapEnd', 'leftHeight', 'rightHeight', 'budget'] as const) {
+    if (!isNum(l[key])) return { ok: false, error: `"${key}" must be a number.` };
+  }
+  if (l.gapEnd! <= l.gapStart!) return { ok: false, error: 'The gap must be wider than 0.' };
+  if (l.goalDistance !== undefined && !isNum(l.goalDistance)) return { ok: false, error: '"goalDistance" must be a number.' };
+  if (!Array.isArray(l.anchors) || !l.anchors.every(isPoint)) return { ok: false, error: '"anchors" must be a list of points.' };
+  if (!Array.isArray(l.starBudgets) || l.starBudgets.length !== 2 || !l.starBudgets.every(isNum)) return { ok: false, error: '"starBudgets" must have 2 numbers.' };
+  if (l.vehicle !== 'car' && l.vehicle !== 'truck') return { ok: false, error: 'Unknown vehicle.' };
+  if (!Array.isArray(l.materials) || !l.materials.every((m) => m in MATERIALS)) return { ok: false, error: 'Unknown material.' };
+  if (!Array.isArray(l.solution) || !l.solution.every((b) => b && typeof b.a === 'string' && typeof b.b === 'string' && b.material in MATERIALS)) {
+    return { ok: false, error: '"solution" must be a list of beams.' };
+  }
+  return { ok: true, level: l as LevelEntry };
 }

@@ -89,6 +89,12 @@ async function run(viewport, name) {
   await click(640, 440);
   const back = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').mode);
   check(back === 'build', `${name}: Fix it returns to building (mode ${back})`);
+  // Level 9 has an uneven cliff and a wide gap: look at it with the hint on.
+  await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w1-9' }));
+  await sleep(600);
+  await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
+  await sleep(300);
+  await page.screenshot({ path: `${OUT}/${name}-7-wide-level.png` });
   await page.close();
 }
 

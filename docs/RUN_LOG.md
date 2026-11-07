@@ -2,6 +2,20 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-07 — Run 8
+**Done**
+- Synced: other `claude/*` branches still only hold font/seam work already in `main`.
+- `levelToJson` / `levelFromJson` (shape checks, short errors) in `src/core/levels.ts`; every level round-trips and still wins.
+- Level 9 "High Cliff": 16 m gap, left cliff 1 m higher, goal 5 m away. e2e now saves `*-7-wide-level.png` (hint shown).
+
+**Verified**
+- `npm run check` green (69 tests), `npm run e2e` all PASS; looked at desktop and phone screenshots of level 9.
+
+**Lessons**
+- Climbing a 1:2 ramp up (kink in the deck) always got the car "stuck"; a ramp down at the start works. Sweep the kink position with a scratch test instead of guessing; delete the scratch file after.
+- A 16 m level still fits at full scale, so zoom-out is not yet seen by screenshot; needs a gap of ~30 m or a small viewport.
+- Next: more World 1 levels (10-15), including a long truck level.
+
 ## 2026-11-07 — Run 7
 **Done**
 - Synced: branches 1vjdjd, bfkknd, klj5rs only hold font/seam work already in `main`.

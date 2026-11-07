@@ -29,9 +29,9 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 
 ## M3 Content
 - [x] Level format supports different cliff heights and goal distance (rocks are anchors; no separate rock type needed)
-- [ ] Editor-friendly JSON export of levels (needed for the level editor)
-- [ ] First level with uneven cliffs and a wide gap (also checks zoom-out by screenshot)
-- [ ] World 1 expanded to 15 levels with a saw-tooth difficulty curve
+- [x] Editor-friendly JSON export/import of levels (`levelToJson`, `levelFromJson` with checks; round-trip tested)
+- [x] First level with uneven cliffs and a wide gap (w1-9 High Cliff, 16 m; fits the screen without zoom-out, so zoom-out is still unseen)
+- [ ] World 1 expanded to 15 levels (9 done) with a saw-tooth difficulty curve
 - [ ] Rope material (tension only) and World 2 Canyon Rails with a train (15 levels)
 - [ ] Hydraulic piston and World 3 Pirate Bay (15 levels)
 - [ ] Springs and World 4 Candy Mountain (15 levels)

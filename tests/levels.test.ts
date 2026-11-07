@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { BridgeDesign } from '../src/core/bridge';
-import { ALL_LEVELS, build } from '../src/core/levels';
+import { ALL_LEVELS, build, levelFromJson, levelToJson } from '../src/core/levels';
 import { MATERIALS } from '../src/core/materials';
 import { Simulation } from '../src/core/simulation';
 
@@ -54,5 +54,22 @@ describe('level format: uneven cliffs and goal distance', () => {
   });
   test('an empty bridge still loses', () => {
     expect(new Simulation(level, []).runToEnd()).toBe('lost');
+  });
+});
+
+describe('level JSON', () => {
+  test.each(ALL_LEVELS.map((l) => [l.id, l] as const))('level %s survives export and import', (_id, level) => {
+    const result = levelFromJson(levelToJson(level));
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.level).toEqual(JSON.parse(JSON.stringify(level)));
+      expect(new Simulation(result.level, result.level.solution).runToEnd()).toBe('won');
+    }
+  });
+  test('bad input gives a short error', () => {
+    expect(levelFromJson('{nope')).toEqual({ ok: false, error: 'This is not valid JSON.' });
+    expect(levelFromJson('{}').ok).toBe(false);
+    const bad = { ...JSON.parse(levelToJson(ALL_LEVELS[0])), materials: ['gold'] };
+    expect(levelFromJson(JSON.stringify(bad))).toEqual({ ok: false, error: 'Unknown material.' });
   });
 });

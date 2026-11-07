@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { BridgeDesign } from '../src/core/bridge';
-import { ALL_LEVELS, build, levelFromJson, levelToJson } from '../src/core/levels';
+import type { Beam } from '../src/core/types';
+import { ALL_LEVELS, build, levelFromJson, levelToJson, roadDeck } from '../src/core/levels';
 import { MATERIALS } from '../src/core/materials';
 import { Simulation } from '../src/core/simulation';
 
@@ -71,5 +72,35 @@ describe('level JSON', () => {
     expect(levelFromJson('{}').ok).toBe(false);
     const bad = { ...JSON.parse(levelToJson(ALL_LEVELS[0])), materials: ['gold'] };
     expect(levelFromJson(JSON.stringify(bad))).toEqual({ ok: false, error: 'Unknown material.' });
+  });
+});
+
+describe('rope material', () => {
+  const k = (x: number, y: number): string => `${x},${y}`;
+  /** Wood posts and top chord with rope X braces: ropes only work because they pull. */
+  const ropeTruss = (g: number): Beam[] => {
+    const beams: Beam[] = [];
+    for (let x = 0; x <= g; x += 2) beams.push({ a: k(x, 0), b: k(x, 2), material: 'wood' });
+    for (let x = 0; x < g; x += 2) {
+      beams.push({ a: k(x, 2), b: k(x + 2, 2), material: 'wood' });
+      beams.push({ a: k(x, 2), b: k(x + 2, 0), material: 'rope' }, { a: k(x, 0), b: k(x + 2, 2), material: 'rope' });
+    }
+    return beams;
+  };
+  const level = build(9, [{ name: 'Rope test', gap: 8, materials: ['road', 'wood', 'rope'], solution: (g) => [...roadDeck(0, g), ...ropeTruss(g)] }])[0];
+
+  test('a truss braced with rope X crosses', () => {
+    expect(new Simulation(level, level.solution).runToEnd()).toBe('won');
+  });
+
+  test('ropes cannot hold up a bridge by pushing: the same braces without posts lose', () => {
+    const noPosts = level.solution.filter((b) => !(b.material === 'wood' && b.a.split(',')[0] === b.b.split(',')[0]));
+    expect(new Simulation(level, noPosts).runToEnd()).toBe('lost');
+  });
+
+  test('a rope can be built up to 4.5 m and not longer', () => {
+    const design = new BridgeDesign(level);
+    expect(design.add({ x: 0, y: 0 }, { x: 4, y: 0 }, 'rope')).toEqual({ ok: true });
+    expect(design.canAdd({ x: 0, y: 0 }, { x: 6, y: 0 }, 'rope')).toEqual({ ok: false, reason: 'too-long' });
   });
 });

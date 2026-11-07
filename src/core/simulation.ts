@@ -1,4 +1,4 @@
-import { Box, Circle, DistanceJoint, RevoluteJoint, Vec2, WheelJoint, World, type Body, type Joint } from 'planck';
+import { Box, Circle, DistanceJoint, RevoluteJoint, RopeJoint, Vec2, WheelJoint, World, type Body, type Joint } from 'planck';
 import { distance, pointOf } from './bridge';
 import { MATERIALS } from './materials';
 import type { Beam, LevelDef, LossReason, Point, SimStatus } from './types';
@@ -186,8 +186,11 @@ export class Simulation {
       for (const node of [na, nb]) {
         if (node.isDynamic()) node.createFixture(new Circle(NODE_RADIUS), { density: mass / 2 / (Math.PI * NODE_RADIUS ** 2), filterCategoryBits: 0, filterMaskBits: 0 });
       }
+      // Ropes only pull (RopeJoint); other beams also push (DistanceJoint).
       const joint = this.world.createJoint(
-        new DistanceJoint({ frequencyHz: 0, dampingRatio: 0, length }, na, nb, Vec2(pa.x, pa.y), Vec2(pb.x, pb.y)),
+        material.tensionOnly
+          ? new RopeJoint({ bodyA: na, bodyB: nb, localAnchorA: Vec2(0, 0), localAnchorB: Vec2(0, 0), maxLength: length })
+          : new DistanceJoint({ frequencyHz: 0, dampingRatio: 0, length }, na, nb, Vec2(pa.x, pa.y), Vec2(pb.x, pb.y)),
       );
       this.beams.push({ state, joints: joint ? [joint] : [], body: null, strength: material.strength, load: 0 });
     }

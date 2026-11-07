@@ -31,6 +31,8 @@ export const C = {
   woodLight: '#e6ad6f',
   steel: '#8ea3c0',
   steelLight: '#c6d4e8',
+  rope: '#b99a6b',
+  ropeLight: '#e0c89a',
   stress: '#ff3b30',
 } as const;
 

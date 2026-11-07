@@ -2,6 +2,20 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-07 — Run 10
+**Done**
+- Synced: other `claude/*` branches (1vjdjd, bfkknd, klj5rs) still only hold old font/seam work already in `main`.
+- Rope material: tension only (`RopeJoint`), 4.5 m max, $60/m, strength 7000. Toolbar button, colour, save check; used only when a level lists `'rope'`.
+- Tests: rope-braced truss wins, braces without posts lose, rope length limit.
+
+**Verified**
+- `npm run check` green (108 tests), `npm run e2e` all PASS. No game level uses rope yet, so no screenshot of it.
+
+**Lessons**
+- planck `new RopeJoint({maxLength}, a, b, anchor)` uses ONE anchor for both bodies, so the rope had length 0 and acted like a weld. Use the def form with `localAnchorA/B`.
+- Single diagonals made of rope fail under a moving load (the load flips tension to compression); X braces are needed.
+- Next: world select screen, then World 2 with a train and real rope levels.
+
 ## 2026-11-07 — Run 9
 **Done**
 - Synced: other `claude/*` branches still only hold font/seam work already in `main`.

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { BridgeDesign } from '../src/core/bridge';
-import { ALL_LEVELS } from '../src/core/levels';
+import { ALL_LEVELS, build } from '../src/core/levels';
 import { MATERIALS } from '../src/core/materials';
 import { Simulation } from '../src/core/simulation';
 
@@ -41,4 +41,18 @@ describe.each(ALL_LEVELS.map((l) => [l.id, l] as const))('level %s', (_id, level
 test('level ids are unique', () => {
   const ids = ALL_LEVELS.map((l) => l.id);
   expect(new Set(ids).size).toBe(ids.length);
+});
+
+describe('level format: uneven cliffs and goal distance', () => {
+  const [level] = build(9, [
+    { name: 'Uphill', gap: 4, rightHeight: 1, goalDistance: 6, materials: ['road', 'wood'], solution: () => [] },
+  ]);
+  test('fields reach the level definition', () => {
+    expect(level.rightHeight).toBe(1);
+    expect(level.goalDistance).toBe(6);
+    expect(level.anchors).toContainEqual({ x: 4, y: 1 });
+  });
+  test('an empty bridge still loses', () => {
+    expect(new Simulation(level, []).runToEnd()).toBe('lost');
+  });
 });

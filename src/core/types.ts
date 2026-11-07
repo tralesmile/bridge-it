@@ -19,6 +19,8 @@ export interface LevelDef {
   /** Ground height of each cliff top. */
   leftHeight: number;
   rightHeight: number;
+  /** Metres from the right cliff edge to the finish flag. Default 4. */
+  goalDistance?: number;
   /** Fixed anchor points the bridge can attach to. */
   anchors: Point[];
   /** Total money available to build. */

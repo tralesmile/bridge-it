@@ -190,7 +190,7 @@ export class PlayScene extends Phaser.Scene {
     }
 
     // Finish flag.
-    const flag = this.toScreen({ x: gapEnd + 4, y: rightHeight });
+    const flag = this.toScreen({ x: gapEnd + (this.level.goalDistance ?? 4), y: rightHeight });
     g.fillStyle(hex(C.ink), 1);
     g.fillRect(flag.x - 2, flag.y - 90, 5, 90);
     g.fillStyle(hex(C.gold), 1);

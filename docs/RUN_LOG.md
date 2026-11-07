@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-07 — Run 7
+**Done**
+- Synced: branches 1vjdjd, bfkknd, klj5rs only hold font/seam work already in `main`.
+- Level specs accept `leftHeight`, `rightHeight`, `goalDistance`; default anchors follow cliff heights; sim and flag use `goalDistance`. `build` exported for tests.
+
+**Verified**
+- `npm run check` green (54 tests), `npm run e2e` all PASS. No screenshot of an uneven level yet (no such level in the game).
+
+**Lessons**
+- Sim and bridge rules already handled cliff heights; check the code before assuming work is needed.
+- Next: add a real uneven/wide level with a solution and look at it in a screenshot.
+
 ## 2026-11-07 — Run 6
 **Done**
 - Synced: unmerged `claude/*` branches only hold the font and seam work already in `main`.

@@ -25,11 +25,15 @@ export interface LevelEntry extends LevelDef {
   solution: Beam[];
 }
 
-interface LevelSpec {
+export interface LevelSpec {
   name: string;
   gap: number;
   extraAnchors?: Point[];
   vehicle?: VehicleId;
+  /** Cliff top heights (default 0) and flag distance (default 4). */
+  leftHeight?: number;
+  rightHeight?: number;
+  goalDistance?: number;
   materials?: MaterialId[];
   solution: (gap: number) => Beam[];
   /** Budget as a multiple of the solution cost. */
@@ -60,10 +64,12 @@ function costOf(beams: Beam[]): number {
   return total;
 }
 
-function build(world: number, specs: LevelSpec[]): LevelEntry[] {
+export function build(world: number, specs: LevelSpec[]): LevelEntry[] {
   return specs.map((spec, i) => {
     const solution = spec.solution(spec.gap);
     const solutionCost = costOf(solution);
+    const lh = spec.leftHeight ?? 0;
+    const rh = spec.rightHeight ?? 0;
     const three = roundUp(solutionCost, 50);
     return {
       id: `w${world}-${i + 1}`,
@@ -72,9 +78,10 @@ function build(world: number, specs: LevelSpec[]): LevelEntry[] {
       name: spec.name,
       gapStart: 0,
       gapEnd: spec.gap,
-      leftHeight: 0,
-      rightHeight: 0,
-      anchors: [{ x: 0, y: 0 }, { x: spec.gap, y: 0 }, { x: 0, y: -2 }, { x: spec.gap, y: -2 }, ...(spec.extraAnchors ?? [])],
+      leftHeight: spec.leftHeight ?? 0,
+      rightHeight: spec.rightHeight ?? 0,
+      goalDistance: spec.goalDistance,
+      anchors: [{ x: 0, y: lh }, { x: spec.gap, y: rh }, { x: 0, y: lh - 2 }, { x: spec.gap, y: rh - 2 }, ...(spec.extraAnchors ?? [])],
       budget: roundUp(solutionCost * (spec.slack ?? 1.6), 100),
       starBudgets: [roundUp(three * 1.2, 50), three],
       vehicle: spec.vehicle ?? 'car',

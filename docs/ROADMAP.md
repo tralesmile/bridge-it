@@ -28,7 +28,9 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] GitHub Actions CI running npm run check and the browser test (`.github/workflows/ci.yml`; first real run not yet seen)
 
 ## M3 Content
-- [ ] Level format supports different cliff heights, extra rocks and goal position; editor-friendly JSON
+- [x] Level format supports different cliff heights and goal distance (rocks are anchors; no separate rock type needed)
+- [ ] Editor-friendly JSON export of levels (needed for the level editor)
+- [ ] First level with uneven cliffs and a wide gap (also checks zoom-out by screenshot)
 - [ ] World 1 expanded to 15 levels with a saw-tooth difficulty curve
 - [ ] Rope material (tension only) and World 2 Canyon Rails with a train (15 levels)
 - [ ] Hydraulic piston and World 3 Pirate Bay (15 levels)

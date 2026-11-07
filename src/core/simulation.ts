@@ -78,7 +78,7 @@ export class Simulation {
   constructor(private readonly level: LevelDef, design: Beam[]) {
     this.world = new World({ gravity: Vec2(0, GRAVITY) });
     this.vehicleDef = VEHICLES[level.vehicle];
-    this.goalX = level.gapEnd + 4;
+    this.goalX = level.gapEnd + (level.goalDistance ?? 4);
     this.buildTerrain();
     for (const anchor of level.anchors) this.nodeBody(`${anchor.x},${anchor.y}`, true);
     for (const beam of design) this.addBeam(beam);

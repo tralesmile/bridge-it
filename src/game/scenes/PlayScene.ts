@@ -45,6 +45,7 @@ export class PlayScene extends Phaser.Scene {
   private nodes!: Phaser.GameObjects.Container;
   private vehicle!: Phaser.GameObjects.Container;
   private cow!: Phaser.GameObjects.Image;
+  private pauseLayer?: Phaser.GameObjects.Container;
   private cowOffset = { x: 0, y: 0 };
   private moodNow: Mood = 'calm';
   private chassisSprite!: Phaser.GameObjects.Image;
@@ -117,7 +118,16 @@ export class PlayScene extends Phaser.Scene {
     this.redraw();
     this.bindInput();
     this.showToast(this.level.tip ?? `Level ${this.level.index}: ${this.level.name}`, 3500);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => platform.gameplayStop());
+    // If the app is hidden during a drive, wait for a tap so the player does not miss the collapse.
+    const onHidden = (): void => {
+      if (this.mode === 'sim' && !this.pauseLayer) this.showPause();
+    };
+    this.game.events.on(Phaser.Core.Events.HIDDEN, onHidden);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.events.off(Phaser.Core.Events.HIDDEN, onHidden);
+      this.pauseLayer = undefined;
+      platform.gameplayStop();
+    });
     platform.gameplayStart();
   }
 
@@ -227,6 +237,19 @@ export class PlayScene extends Phaser.Scene {
       this.vehicle.add(sprite);
     }
     this.placeVehicle(preview);
+  }
+
+  private showPause(): void {
+    const layer = this.add.container(0, 0).setDepth(40);
+    const shade = this.add.rectangle(0, 0, GAME_W, GAME_H, hex(C.ink), 0.45).setOrigin(0).setInteractive();
+    layer.add([shade, panel(this, GAME_W / 2, GAME_H / 2, 520, 260), label(this, GAME_W / 2, GAME_H / 2 - 50, 'Paused', 56, C.ink)]);
+    layer.add(
+      button(this, GAME_W / 2, GAME_H / 2 + 50, 'Continue', () => {
+        layer.destroy();
+        this.pauseLayer = undefined;
+      }, { width: 260, height: 76, color: C.good, shade: C.goodDark }),
+    );
+    this.pauseLayer = layer;
   }
 
   private setMood(sim: Simulation): void {
@@ -635,7 +658,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   override update(time: number, delta: number): void {
-    if (this.mode !== 'sim' || !this.sim) return;
+    if (this.mode !== 'sim' || !this.sim || this.pauseLayer) return;
     const sim = this.sim;
     if (time > this.slowMoUntil) this.timeScale = Math.min(1, this.timeScale + delta / 400);
     // Clamp long frames (tab switch, slow phone) so physics never explodes.

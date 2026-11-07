@@ -8,6 +8,8 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 - Settings panel (menu): Sound, Screen shake, Less motion (stops cloud/sun/title/car animation, confetti, stress pulse, shake). Saved in `settings`; e2e toggles it.
 - Menu car got the cow head too (it lost it when the head became its own sprite).
 - Portrait phone (width up to 700px) shows a "Turn your phone sideways" card (pure CSS, e2e checks it).
+- Hiding the app during a drive shows a Paused card with Continue (e2e covers it).
+- `.github/workflows/ci.yml`: check + e2e on push to main and pull requests. Not run yet; verify on GitHub next run.
 - Win panel: confetti behind the panel, coins fly to the top right, each earned star plays a rising pop.
 - Cow driver is now a separate sprite (`cow-calm`, `cow-worried`, `cow-scream`). Face follows worst beam stress (over 50% worried, over 80% or falling: screaming).
 

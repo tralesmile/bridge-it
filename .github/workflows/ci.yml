@@ -1,0 +1,23 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
+      - run: npm run check
+      # The browser test uses the Google Chrome that comes with the runner.
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-shots
+          path: e2e-shots

@@ -23,8 +23,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Settings panel: sound, reduced motion, screen shake
 - [x] Portrait phone: rotate-device card (CSS overlay in index.html)
 - [ ] Camera pan and zoom for levels wider than the screen
-- [ ] Pause and resume an attempt when the app is hidden
-- [ ] GitHub Actions CI running npm run check and the browser test
+- [x] Pause and resume an attempt when the app is hidden
+- [x] GitHub Actions CI running npm run check and the browser test (`.github/workflows/ci.yml`; first real run not yet seen)
 
 ## M3 Content
 - [ ] Level format supports different cliff heights, extra rocks and goal position; editor-friendly JSON

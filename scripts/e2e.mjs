@@ -60,6 +60,15 @@ async function run(viewport, name) {
   await click(1160, 664);
   await sleep(1200);
   await page.screenshot({ path: `${OUT}/${name}-4-driving.png` });
+  // Hiding the app during a drive pauses with a Continue card.
+  await page.evaluate(() => globalThis.__bridgeit.events.emit('hidden'));
+  await sleep(200);
+  const paused = await page.evaluate(() => !!globalThis.__bridgeit.scene.getScene('play').pauseLayer);
+  check(paused, `${name}: hiding the app pauses the drive`);
+  await page.screenshot({ path: `${OUT}/${name}-4b-paused.png` });
+  await click(640, 410);
+  const resumed = await page.evaluate(() => !globalThis.__bridgeit.scene.getScene('play').pauseLayer);
+  check(resumed, `${name}: Continue resumes the drive`);
   await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').mode === 'result', null, { timeout: 20000 }).catch(() => {});
   await sleep(1200);
   const stars = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').stars?.['w1-1'] ?? 0);

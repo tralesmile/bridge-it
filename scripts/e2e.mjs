@@ -35,6 +35,15 @@ async function run(viewport, name) {
   const active = (key) => page.evaluate((k) => globalThis.__bridgeit.scene.isActive(k), key);
   await page.screenshot({ path: `${OUT}/${name}-1-menu.png` });
 
+  // Settings: open, turn "Less motion" on, close, check it is saved.
+  await click(1180, 60);
+  await page.screenshot({ path: `${OUT}/${name}-1b-settings.png` });
+  await click(810, 425); // Less motion is the third row (y = 360 - 95 + 160)
+  const still = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.reducedMotion);
+  await click(810, 425); // switch back
+  await click(640, 550);
+  check(still === true, `${name}: settings switch saves (reducedMotion ${still})`);
+
   await click(640, 430);
   check(await active('levels'), `${name}: PLAY opens level select`);
   await page.screenshot({ path: `${OUT}/${name}-2-levels.png` });

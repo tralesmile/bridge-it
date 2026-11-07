@@ -521,7 +521,7 @@ export class PlayScene extends Phaser.Scene {
     g.lineBetween(sa.x, sa.y, sb.x, sb.y);
     if (stress > 0.55 && alpha > 0) {
       const speed = 0.008 + 0.012 * stress;
-      const pulse = 0.5 + 0.5 * Math.sin(this.time.now * speed);
+      const pulse = save.data.settings.reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(this.time.now * speed);
       g.lineStyle(width + 6 + 6 * pulse, 0xffffff, (0.15 + 0.35 * pulse) * alpha);
       g.lineBetween(sa.x, sa.y, sb.x, sb.y);
     }
@@ -665,7 +665,7 @@ export class PlayScene extends Phaser.Scene {
       if (e.material === 'wood') this.chips.explode(14, s.x, s.y);
       else this.sparks.explode(18, s.x, s.y);
       sfx.snap(e.material);
-      this.cameras.main.shake(180, 0.006);
+      if (save.data.settings.shake && !save.data.settings.reducedMotion) this.cameras.main.shake(180, 0.006);
       if (this.eventsSeen === 1) {
         // Slow motion on the first break: the funny moment people share.
         this.timeScale = 0.25;
@@ -742,6 +742,7 @@ export class PlayScene extends Phaser.Scene {
 
   /** Confetti falls from the top; more stars, more confetti. */
   private confettiBurst(stars: number): void {
+    if (save.data.settings.reducedMotion) return;
     const colors = [0xff6b5c, 0xffd23f, 0x4cc764, 0x3c8dff, 0xb36bff];
     const fx = this.add.particles(0, 0, 'confetti', {
       x: { min: 0, max: GAME_W },

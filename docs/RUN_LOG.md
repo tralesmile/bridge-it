@@ -5,6 +5,8 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 ## 2026-11-07 — Run 5
 **Done**
 - Synced: other `claude/*` branches only hold the font and seam work already in `main`.
+- Settings panel (menu): Sound, Screen shake, Less motion (stops cloud/sun/title/car animation, confetti, stress pulse, shake). Saved in `settings`; e2e toggles it.
+- Menu car got the cow head too (it lost it when the head became its own sprite).
 - Win panel: confetti behind the panel, coins fly to the top right, each earned star plays a rising pop.
 - Cow driver is now a separate sprite (`cow-calm`, `cow-worried`, `cow-scream`). Face follows worst beam stress (over 50% worried, over 80% or falling: screaming).
 
@@ -13,6 +15,7 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 
 **Lessons**
 - Draw parts that change (faces) as their own textures, so the vehicle body stays one cached image.
+- When a texture is split into parts, grep every place that uses it (the menu car lost its driver).
 - Particle depth matters: confetti above the result panel hid the title; put it behind.
 - The cow face is tiny on screen; a zoomed screenshot test of the mood would be nice later.
 

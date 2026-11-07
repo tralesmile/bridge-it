@@ -10,10 +10,10 @@ export interface SaveData {
   designs: Record<string, Beam[]>;
   coins: number;
   fails: Record<string, number>;
-  settings: { sound: boolean };
+  settings: { sound: boolean; reducedMotion: boolean; shake: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, settings: { sound: true } });
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, settings: { sound: true, reducedMotion: false, shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {
@@ -60,7 +60,11 @@ export function sanitize(raw: unknown): SaveData {
       }
     }
   }
-  if (r.settings && typeof r.settings === 'object') base.settings.sound = r.settings.sound !== false;
+  if (r.settings && typeof r.settings === 'object') {
+    base.settings.sound = r.settings.sound !== false;
+    base.settings.reducedMotion = r.settings.reducedMotion === true;
+    base.settings.shake = r.settings.shake !== false;
+  }
   return base;
 }
 

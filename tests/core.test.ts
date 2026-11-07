@@ -91,11 +91,13 @@ describe('save data', () => {
   test('survives corrupted or hostile saves', () => {
     expect(sanitize(null).coins).toBe(0);
     expect(sanitize('junk').stars).toEqual({});
-    const s = sanitize({ stars: { a: 99, b: 'x', c: -2 }, coins: -5, designs: { a: [{ a: '0,0', b: '2,0', material: 'road' }, { a: 1, b: 2, material: 'lava' }] }, settings: { sound: false } });
+    const s = sanitize({ stars: { a: 99, b: 'x', c: -2 }, coins: -5, designs: { a: [{ a: '0,0', b: '2,0', material: 'road' }, { a: 1, b: 2, material: 'lava' }] }, settings: { sound: false, reducedMotion: true, shake: false } });
     expect(s.stars).toEqual({ a: 3, c: 0 });
     expect(s.coins).toBe(0);
     expect(s.designs.a).toHaveLength(1);
     expect(s.settings.sound).toBe(false);
+    expect(s.settings.reducedMotion).toBe(true);
+    expect(s.settings.shake).toBe(false);
   });
 });
 

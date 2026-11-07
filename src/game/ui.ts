@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { sfx } from './audio';
+import { save } from './save';
 import { C, FONT, hex } from './theme';
 
 export interface ButtonOptions {
@@ -15,14 +16,15 @@ export interface Button extends Phaser.GameObjects.Container {
   setEnabled(enabled: boolean): Button;
   setLabel(text: string): Button;
   setSelected(selected: boolean): Button;
+  setColors(color: string, shade: string): Button;
 }
 
 /** A chunky rounded button with a pressed-in animation. Works with mouse and touch. */
 export function button(scene: Phaser.Scene, x: number, y: number, label: string, onClick: () => void, opts: ButtonOptions = {}): Button {
   const w = opts.width ?? 200;
   const h = opts.height ?? 64;
-  const color = opts.color ?? C.primary;
-  const shade = opts.shade ?? C.primaryDark;
+  let color = opts.color ?? C.primary;
+  let shade = opts.shade ?? C.primaryDark;
   const container = scene.add.container(x, y) as Button;
   const base = scene.add.graphics();
   const ring = scene.add.graphics();
@@ -76,6 +78,12 @@ export function button(scene: Phaser.Scene, x: number, y: number, label: string,
     text.setText(value);
     return container;
   };
+  container.setColors = (c: string, sh: string) => {
+    color = c;
+    shade = sh;
+    draw(false);
+    return container;
+  };
   container.setSelected = (selected: boolean) => {
     ring.clear();
     if (selected) {
@@ -99,4 +107,35 @@ export function panel(scene: Phaser.Scene, x: number, y: number, w: number, h: n
   g.fillStyle(hex(C.cream), 1);
   g.fillRoundedRect(-w / 2, -h / 2, w, h, 28);
   return g;
+}
+
+/** Settings window with three on/off switches. Shows on top of any scene; `onClose` runs when it closes. */
+export function openSettings(scene: Phaser.Scene, onChange: () => void = () => undefined): void {
+  const W = 1280;
+  const H = 720;
+  const layer = scene.add.container(0, 0).setDepth(50);
+  const shade = scene.add.rectangle(0, 0, W, H, hex(C.ink), 0.45).setOrigin(0).setInteractive();
+  layer.add([shade, panel(scene, W / 2, H / 2, 620, 520)]);
+  layer.add(label(scene, W / 2, H / 2 - 200, 'Settings', 48, C.ink));
+  const rows: Array<{ key: 'sound' | 'reducedMotion' | 'shake'; text: string }> = [
+    { key: 'sound', text: 'Sound' },
+    { key: 'shake', text: 'Screen shake' },
+    { key: 'reducedMotion', text: 'Less motion' },
+  ];
+  rows.forEach((row, i) => {
+    const y = H / 2 - 95 + i * 80;
+    layer.add(label(scene, W / 2 - 130, y, row.text, 30, C.ink).setOrigin(0, 0.5));
+    const text = (): string => (save.data.settings[row.key] ? 'On' : 'Off');
+    const colors = (): ButtonOptions => (save.data.settings[row.key] ? { color: C.good, shade: C.goodDark } : { color: C.greyDark, shade: C.ink });
+    const b = button(scene, W / 2 + 170, y, text(), () => {
+      save.data.settings[row.key] = !save.data.settings[row.key];
+      save.persist();
+      b.setLabel(text());
+      b.setColors(colors().color ?? C.good, colors().shade ?? C.goodDark);
+      sfx.unlock();
+      onChange();
+    }, { width: 130, height: 58, fontSize: 26, ...colors() });
+    layer.add(b);
+  });
+  layer.add(button(scene, W / 2, H / 2 + 190, 'Close', () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
 }

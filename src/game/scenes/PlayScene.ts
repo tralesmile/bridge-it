@@ -69,6 +69,8 @@ export class PlayScene extends Phaser.Scene {
   private eventsSeen = 0;
   private splashed = false;
   private showHint = false;
+  /** Beams that broke or were near breaking in the last failed attempt (shown while editing). */
+  private weakBeams: Array<{ a: Point; b: Point }> = [];
 
   constructor() {
     super('play');
@@ -86,6 +88,7 @@ export class PlayScene extends Phaser.Scene {
     this.dragTo = null;
     this.dragPointerId = null;
     this.showHint = false;
+    this.weakBeams = [];
     this.resultLayer = null;
     this.toolButtons.clear();
     this.buildUi = [];
@@ -529,7 +532,15 @@ export class PlayScene extends Phaser.Scene {
   private drawHint(): void {
     const g = this.hintG;
     g.clear();
-    if (!this.showHint || this.mode !== 'build') return;
+    if (this.mode !== 'build') return;
+    // Ghost of the last failed attempt: red glow under the beams that gave way.
+    for (const w of this.weakBeams) {
+      const a = this.toScreen(w.a);
+      const b = this.toScreen(w.b);
+      g.lineStyle(26, hex(C.stress), 0.28);
+      g.lineBetween(a.x, a.y, b.x, b.y);
+    }
+    if (!this.showHint) return;
     for (const beam of this.level.solution) {
       const a = this.toScreen(pointOf(beam.a));
       const b = this.toScreen(pointOf(beam.b));
@@ -640,6 +651,9 @@ export class PlayScene extends Phaser.Scene {
       this.time.delayedCall(350, () => this.showWin(stars, cost, coins));
     } else {
       save.recordFail(this.level.id);
+      this.weakBeams = sim.beamStates
+        .filter((s) => s.broken || s.stress > 0.8)
+        .map((s) => ({ a: pointOf(s.beam.a), b: pointOf(s.beam.b) }));
       sfx.lose();
       this.time.delayedCall(700, () => this.showLoss(sim.lossReason ?? 'fell'));
     }

@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-07 — Run 3
+**Done**
+- Synced: all other `claude/*` branches only held the font and hill-seam work already in `main`.
+- Ghost of the last failed attempt: beams that broke or were over 80% stress glow red while editing.
+
+**Verified**
+- `npm run check` green (51 tests), `npm run e2e` all PASS.
+
+**Lessons**
+- Branch `claude/practical-meitner-*` is checked out at start; use `git checkout -B <branch> origin/main` to start from latest main.
+- The e2e does not screenshot the edit screen after a fail; add one when touching edit visuals.
+
 ## 2026-11-06 — Run 2
 **Done**
 - Fredoka variable font bundled via `@fontsource-variable/fredoka` (latin, latin-ext, hebrew woff2 in the build, OFL licence in `docs/`). Game waits for the font (max 2 s) before starting Phaser, so text never renders in the fallback font.

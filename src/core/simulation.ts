@@ -91,6 +91,11 @@ export class Simulation {
     if (this.status !== 'running') return;
     this.world.step(STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.time += STEP;
+    if (!this.isFinite()) {
+      // Watchdog: a broken solver must end the attempt, never freeze the game.
+      this.lose('collapse');
+      return;
+    }
     this.checkBreaks();
     this.checkOutcome();
   }
@@ -193,12 +198,12 @@ export class Simulation {
     const startX = this.level.gapStart - 4;
     const groundY = this.level.leftHeight;
     const chassisY = groundY + def.wheelRadius * 2 + def.halfHeight;
-    const chassis = this.world.createBody({ type: 'dynamic', position: Vec2(startX, chassisY) });
+    const chassis = this.world.createBody({ type: 'dynamic', bullet: true, position: Vec2(startX, chassisY) });
     const chassisArea = def.halfWidth * 2 * def.halfHeight * 2;
     const vehicleFilter = { filterCategoryBits: CAT_VEHICLE, filterMaskBits: CAT_TERRAIN | CAT_ROAD };
     chassis.createFixture(new Box(def.halfWidth, def.halfHeight), { density: def.chassisMass / chassisArea, friction: 0.5, ...vehicleFilter });
     for (const offset of def.wheelOffsets) {
-      const wheel = this.world.createBody({ type: 'dynamic', position: Vec2(startX + offset, groundY + def.wheelRadius) });
+      const wheel = this.world.createBody({ type: 'dynamic', bullet: true, position: Vec2(startX + offset, groundY + def.wheelRadius) });
       wheel.createFixture(new Circle(def.wheelRadius), {
         density: def.wheelMass / (Math.PI * def.wheelRadius ** 2),
         friction: 1.2,
@@ -289,6 +294,17 @@ export class Simulation {
     else this.stuckTimer = 0;
     this.lastX = p.x;
     if (this.stuckTimer > 3) this.lose('stuck');
+  }
+
+  /** False when the vehicle or any bridge body has a NaN or infinite position. */
+  private isFinite(): boolean {
+    const ok = (b: Body): boolean => {
+      const p = b.getPosition();
+      return Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(b.getAngle());
+    };
+    if (!ok(this.chassis) || !this.wheels.every(ok)) return false;
+    for (const n of this.nodes.values()) if (!ok(n)) return false;
+    return this.beams.every((b) => !b.body || ok(b.body));
   }
 
   private lose(reason: LossReason): void {

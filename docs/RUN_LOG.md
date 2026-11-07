@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-07 — Run 4
+**Done**
+- Synced: other `claude/*` branches (font, hill seam) were already in `main` under different commits; nothing to merge.
+- Stress now also shows as thicker beams and a white pulse (faster when closer to breaking).
+- Vehicle chassis and wheels are bullet bodies; a NaN/infinite body ends the attempt as `collapse` (shown as "Splash!").
+
+**Verified**
+- `npm run check` green (52 tests), `npm run e2e` all PASS, fail screenshot looks right.
+
+**Lessons**
+- Duplicate work lands on several run branches; compare by file content (`grep`), not commit hash.
+- Stress pulse is not covered by a screenshot; add one after the settings panel (reduced motion) lands.
+
 ## 2026-11-07 — Run 3
 **Done**
 - Synced: all other `claude/*` branches only held the font and hill-seam work already in `main`.

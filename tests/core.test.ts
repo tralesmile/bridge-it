@@ -98,3 +98,14 @@ describe('save data', () => {
     expect(s.settings.sound).toBe(false);
   });
 });
+
+describe('Simulation watchdog', () => {
+  test('a NaN body ends the attempt as a collapse', () => {
+    const sim = new Simulation(level, []);
+    sim.step();
+    (sim as any).chassis.setPosition({ x: NaN, y: 0 });
+    sim.step();
+    expect(sim.status).toBe('lost');
+    expect(sim.lossReason).toBe('collapse');
+  });
+});

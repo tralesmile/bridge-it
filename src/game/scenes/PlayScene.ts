@@ -487,10 +487,18 @@ export class PlayScene extends Phaser.Scene {
     const sb = this.toScreen(b);
     const style = this.beamStyle(material);
     const main = stress > 0.05 ? mix(style.color, C.stress, Math.min(1, stress * 1.15)) : hex(style.color);
-    g.lineStyle(style.width + 4, hex(C.ink), 0.9 * alpha);
+    // Stress also shows as a thicker beam and a pulse, so colour is not the only signal.
+    const width = style.width * (1 + 0.3 * stress);
+    g.lineStyle(width + 4, hex(C.ink), 0.9 * alpha);
     g.lineBetween(sa.x, sa.y, sb.x, sb.y);
-    g.lineStyle(style.width, main, alpha);
+    g.lineStyle(width, main, alpha);
     g.lineBetween(sa.x, sa.y, sb.x, sb.y);
+    if (stress > 0.55 && alpha > 0) {
+      const speed = 0.008 + 0.012 * stress;
+      const pulse = 0.5 + 0.5 * Math.sin(this.time.now * speed);
+      g.lineStyle(width + 6 + 6 * pulse, 0xffffff, (0.15 + 0.35 * pulse) * alpha);
+      g.lineBetween(sa.x, sa.y, sb.x, sb.y);
+    }
     if (material === 'road') {
       // Dashed centre line.
       const len = Math.hypot(sb.x - sa.x, sb.y - sa.y);
@@ -695,9 +703,9 @@ export class PlayScene extends Phaser.Scene {
 
   private showLoss(reason: string): void {
     const layer = this.resultPanel(360);
-    const title = reason === 'fell' ? 'Splash!' : reason === 'stuck' ? 'Stuck!' : 'Too slow!';
+    const title = reason === 'fell' || reason === 'collapse' ? 'Splash!' : reason === 'stuck' ? 'Stuck!' : 'Too slow!';
     const tip =
-      reason === 'fell'
+      reason === 'fell' || reason === 'collapse'
         ? 'Look for red beams: they broke first.'
         : reason === 'stuck'
           ? 'Is the road smooth and connected?'

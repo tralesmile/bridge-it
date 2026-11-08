@@ -183,6 +183,14 @@ export class PlayScene extends Phaser.Scene {
     for (const anchor of this.level.anchors) {
       if (anchor.x <= gapStart || anchor.x >= gapEnd) continue;
       const top = this.toScreen(anchor);
+      if (anchor.y > Math.max(leftHeight, rightHeight)) {
+        // High anchor (rope hanger): a slim pole from the top of the screen.
+        g.fillStyle(hex('#6f6760'), 1);
+        g.fillRect(top.x - 5, 0, 10, top.y);
+        g.fillStyle(0xffffff, 0.15);
+        g.fillRect(top.x - 3, 0, 3, top.y);
+        continue;
+      }
       g.fillStyle(hex('#9b8f86'), 1);
       g.fillRoundedRect(top.x - 22, top.y, 44, water.y - top.y + 10, 14);
       g.fillStyle(0xffffff, 0.15);

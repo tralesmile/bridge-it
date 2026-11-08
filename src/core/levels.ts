@@ -59,6 +59,23 @@ const FARM: LevelSpec[] = [
   { name: 'Farm Finale', gap: 16, vehicle: 'truck', goalDistance: 5, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 12, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }, { a: '12,0', b: '12,-2', material: 'wood' }], slack: 1.3, tip: 'The big one. A heavy truck on a wide gap.' },
 ];
 
+/** Rope hangers from high anchors (pylons) holding up a plain road deck. Cars only: a truck snaps them. */
+const hangers = (gap: number, step: number, y: number): Point[] => {
+  const pts: Point[] = [];
+  for (let x = step; x < gap; x += step) pts.push({ x, y });
+  return pts;
+};
+const hangerRopes = (gap: number, step: number, y: number): Beam[] =>
+  hangers(gap, step, y).map((p) => ({ a: `${p.x},0`, b: `${p.x},${p.y}`, material: 'rope' as const }));
+
+const CANYON: LevelSpec[] = [
+  { name: 'Hanging Bridge', gap: 8, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(8, 2, 3), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 3)], tip: 'Ropes pull but never push. Hang the road from the high posts.' },
+  { name: 'Rope Hangers', gap: 12, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(12, 2, 3), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 3)], slack: 1.3 },
+  { name: 'Tall Posts', gap: 16, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(16, 2, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 4)], slack: 1.3, tip: 'Ropes are cheap. Roads are not.' },
+  { name: 'Canyon Mouth', gap: 14, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(14, 2, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 4)], slack: 1.2 },
+  { name: 'Rail Gorge', gap: 20, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(20, 2, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 4)], slack: 1.25, tip: 'A very wide canyon. Hang it all.' },
+];
+
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;
 
 function costOf(beams: Beam[]): number {
@@ -99,7 +116,10 @@ export function build(world: number, specs: LevelSpec[]): LevelEntry[] {
   });
 }
 
-export const WORLDS = [{ id: 1, name: 'Farm Valley', levels: build(1, FARM) }];
+export const WORLDS = [
+  { id: 1, name: 'Farm Valley', levels: build(1, FARM) },
+  { id: 2, name: 'Canyon Rails', levels: build(2, CANYON) },
+];
 
 export const ALL_LEVELS: LevelEntry[] = WORLDS.flatMap((w) => w.levels);
 

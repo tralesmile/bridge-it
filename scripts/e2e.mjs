@@ -98,6 +98,12 @@ async function run(viewport, name) {
   await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
   await sleep(300);
   await page.screenshot({ path: `${OUT}/${name}-7-wide-level.png` });
+  // World 2 uses rope hangers from high anchors.
+  await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w2-3' }));
+  await sleep(600);
+  await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
+  await sleep(300);
+  await page.screenshot({ path: `${OUT}/${name}-8-rope-level.png` });
   await page.close();
 }
 

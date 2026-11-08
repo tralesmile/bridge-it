@@ -29,7 +29,7 @@ export class MenuScene extends Phaser.Scene {
     if (save.data.settings.reducedMotion) car.setX(GAME_W / 2 + 300);
     else this.tweens.add({ targets: car, x: GAME_W + 120, duration: 7000, repeat: -1, delay: 500 });
 
-    button(this, GAME_W / 2, 430, 'PLAY', () => this.scene.start('levels'), { width: 280, height: 86, fontSize: 44, color: C.good, shade: C.goodDark });
+    button(this, GAME_W / 2, 430, 'PLAY', () => this.scene.start('worlds'), { width: 280, height: 86, fontSize: 44, color: C.good, shade: C.goodDark });
 
     const stars = save.totalStars;
     label(this, GAME_W / 2, 520, `★ ${stars} / ${ALL_LEVELS.length * 3}`, 28, C.ink);

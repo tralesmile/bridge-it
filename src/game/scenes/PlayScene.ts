@@ -286,7 +286,7 @@ export class PlayScene extends Phaser.Scene {
   // ---------- HUD ----------
 
   private createHud(): void {
-    button(this, 90, 50, '◀', () => this.scene.start('levels'), { width: 76, height: 56, fontSize: 30, color: C.blue, shade: C.blueDark });
+    button(this, 90, 50, '◀', () => this.scene.start('levels', { world: this.level.world }), { width: 76, height: 56, fontSize: 30, color: C.blue, shade: C.blueDark });
     const title = label(this, GAME_W / 2, 40, `${this.level.index}. ${this.level.name}`, 34, C.white);
     title.setStroke(C.ink, 8);
 
@@ -766,7 +766,7 @@ export class PlayScene extends Phaser.Scene {
       button(this, GAME_W / 2 + 140, GAME_H / 2 + 145, nxt ? 'Next ▶' : 'Levels', async () => {
         await platform.commercialBreak();
         if (nxt) this.scene.start('play', { levelId: nxt.id });
-        else this.scene.start('levels');
+        else this.scene.start('levels', { world: this.level.world });
       }, { width: 220, height: 70, color: C.good, shade: C.goodDark }),
     );
   }

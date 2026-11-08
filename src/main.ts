@@ -2,6 +2,7 @@ import '@fontsource-variable/fredoka/wght.css';
 import Phaser from 'phaser';
 import { BootScene } from './game/scenes/BootScene';
 import { LevelSelectScene } from './game/scenes/LevelSelectScene';
+import { WorldSelectScene } from './game/scenes/WorldSelectScene';
 import { MenuScene } from './game/scenes/MenuScene';
 import { PlayScene } from './game/scenes/PlayScene';
 import { C, GAME_H, GAME_W } from './game/theme';
@@ -27,7 +28,7 @@ const game = new Phaser.Game({
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   input: { activePointers: 3 },
   render: { antialias: true, roundPixels: false },
-  scene: [BootScene, MenuScene, LevelSelectScene, PlayScene],
+  scene: [BootScene, MenuScene, WorldSelectScene, LevelSelectScene, PlayScene],
 });
 
 // Exposed for automated browser tests only.

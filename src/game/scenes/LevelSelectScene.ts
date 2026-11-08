@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { WORLDS } from '../../core/levels';
+import { ALL_LEVELS, WORLDS } from '../../core/levels';
 import { isUnlocked } from '../../core/scoring';
 import { addBackground } from '../background';
 import { save } from '../save';
@@ -11,14 +11,14 @@ export class LevelSelectScene extends Phaser.Scene {
     super('levels');
   }
 
-  create(): void {
+  create(data: { world?: number }): void {
     addBackground(this);
-    const world = WORLDS[0];
+    const world = WORLDS.find((w) => w.id === data.world) ?? WORLDS[0];
     panel(this, GAME_W / 2, 395, 1000, 580);
     label(this, GAME_W / 2, 160, world.name, 48, C.ink);
-    button(this, 110, 60, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    button(this, 110, 60, '◀ Back', () => this.scene.start('worlds'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
 
-    const ids = world.levels.map((l) => l.id);
+    const ids = ALL_LEVELS.map((l) => l.id);
     const cols = 5;
     world.levels.forEach((level, i) => {
       const x = GAME_W / 2 - 380 + (i % cols) * 190;

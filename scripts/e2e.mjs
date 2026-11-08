@@ -45,7 +45,10 @@ async function run(viewport, name) {
   check(still === true, `${name}: settings switch saves (reducedMotion ${still})`);
 
   await click(640, 430);
-  check(await active('levels'), `${name}: PLAY opens level select`);
+  check(await active('worlds'), `${name}: PLAY opens world select`);
+  await page.screenshot({ path: `${OUT}/${name}-1c-worlds.png` });
+  await click(280, 350);
+  check(await active('levels'), `${name}: world 1 opens level select`);
   await page.screenshot({ path: `${OUT}/${name}-2-levels.png` });
 
   await click(310, 280);

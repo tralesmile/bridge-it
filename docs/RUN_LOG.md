@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-08 — Run 11
+**Done**
+- Synced: other `claude/*` branches (1vjdjd, bfkknd, klj5rs) still only hold old font/seam work already in `main`.
+- World select screen (`WorldSelectScene`): Farm Valley card with stars, three locked "Coming soon" cards. PLAY now goes menu -> worlds -> levels; level select takes `{world}`; back buttons return correctly. Unlock reuses `isUnlocked` over all levels.
+- e2e follows the new path and saves `*-1c-worlds.png`.
+
+**Verified**
+- `npm run check` green (108 tests), `npm run e2e` all PASS; looked at the world select screenshot.
+
+**Lessons**
+- Cloud run starts already cloned; `add_repo` just reports it is present.
+- Next: World 2 Canyon Rails needs a train (multi-car vehicle) in `src/core`; start with 5 rope levels using existing vehicles if the train is too big.
+
 ## 2026-11-07 — Run 10
 **Done**
 - Synced: other `claude/*` branches (1vjdjd, bfkknd, klj5rs) still only hold old font/seam work already in `main`.

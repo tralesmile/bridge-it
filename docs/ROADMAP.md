@@ -42,7 +42,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [ ] Hydraulic piston and World 3 Pirate Bay (15 levels)
 - [ ] Springs and World 4 Candy Mountain (15 levels)
 - [ ] Per-world themes (sky, hills, music) on the world select cards and in play
-- [ ] An automated "difficulty report": solution cost, min-cost search, and fail rate of simple designs per level
+- [x] Difficulty report (`npm run report`, `src/core/difficulty.ts`): solution cost vs budget, and which simple designs (bare road, wood/steel truss) win within budget. Min-cost search not done.
+- [ ] Difficulty report: min-cost search per level (to check 3-star budgets are not too loose)
 
 ## M4 Meta and retention
 - [ ] Coins, vehicle collection and bridge skins shop (cosmetic only)

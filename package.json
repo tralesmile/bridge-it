@@ -9,7 +9,8 @@
     "test": "vitest run",
     "typecheck": "tsc",
     "check": "tsc && vitest run && vite build && node scripts/size-check.mjs",
-    "e2e": "node scripts/e2e.mjs"
+    "e2e": "node scripts/e2e.mjs",
+    "report": "node scripts/difficulty-report.mjs"
   },
   "license": "ISC",
   "dependencies": {

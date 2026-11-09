@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-09 — Run 14
+**Done**
+- Synced: no new work on other branches (only old font/seam ones).
+- Difficulty report: `npm run report` prints cost, budget, tightness and which simple designs win per level. Tests added (170 total).
+
+**Verified**
+- `npm run check` green, `npm run e2e` all PASS.
+
+**Lessons**
+- Report shows only w1-1 is won by a bare road; truss-only wins on w1-2..6, 11 (fine, they teach trusses) and steel truss wins w1-7, w1-13 (rocks not needed; consider tighter budgets).
+- `vite createServer().ssrLoadModule` runs TS scripts without extra dependencies.
+- Next: per-world themes, truck-friendly World 2 levels, tighten w1-7 / w1-13 budgets.
+
 ## 2026-11-09 — Run 13
 **Done**
 - Synced: only old font/seam branches (1vjdjd, bfkknd, klj5rs) are unmerged; they conflict with newer `main` and hold nothing new, so skipped.

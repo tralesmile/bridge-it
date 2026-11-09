@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { ALL_LEVELS, WORLDS } from '../../core/levels';
-import { isUnlocked } from '../../core/scoring';
+import { LEVELS_PER_PAGE, isUnlocked, pageCount, pageOfIndex } from '../../core/scoring';
 import { addBackground } from '../background';
 import { save } from '../save';
 import { C, GAME_W } from '../theme';
@@ -11,7 +11,7 @@ export class LevelSelectScene extends Phaser.Scene {
     super('levels');
   }
 
-  create(data: { world?: number }): void {
+  create(data: { world?: number; page?: number }): void {
     addBackground(this, data.world ?? 1);
     const world = WORLDS.find((w) => w.id === data.world) ?? WORLDS[0];
     panel(this, GAME_W / 2, 395, 1000, 580);
@@ -20,7 +20,24 @@ export class LevelSelectScene extends Phaser.Scene {
 
     const ids = ALL_LEVELS.map((l) => l.id);
     const cols = 5;
-    world.levels.forEach((level, i) => {
+    const pages = pageCount(world.levels.length);
+    let page = data.page;
+    if (page === undefined) {
+      // Open on the page of the first level without a star.
+      const next = world.levels.findIndex((l) => !(save.data.stars[l.id] ?? 0));
+      page = pageOfIndex(next < 0 ? world.levels.length - 1 : next);
+    }
+    page = Math.min(Math.max(0, page), pages - 1);
+    if (pages > 1) {
+      const go = (p: number) => () => this.scene.restart({ world: world.id, page: p });
+      label(this, GAME_W - 200, 60, `Page ${page + 1} / ${pages}`, 24, C.ink);
+      const opt = { width: 80, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark };
+      if (page > 0) button(this, GAME_W - 340, 60, '◀', go(page - 1), opt);
+      if (page < pages - 1) button(this, GAME_W - 60, 60, '▶', go(page + 1), opt);
+    }
+    const first = page * LEVELS_PER_PAGE;
+    world.levels.slice(first, first + LEVELS_PER_PAGE).forEach((level, k) => {
+      const i = k;
       const x = GAME_W / 2 - 380 + (i % cols) * 190;
       const y = 265 + Math.floor(i / cols) * 155;
       const open = isUnlocked(ids, save.data.stars, level.id);

@@ -33,7 +33,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Editor-friendly JSON export/import of levels (`levelToJson`, `levelFromJson` with checks; round-trip tested)
 - [x] First level with uneven cliffs and a wide gap (w1-9 High Cliff, 16 m; fits the screen without zoom-out, so zoom-out is still unseen)
 - [x] World 1 expanded to 15 levels with a saw-tooth difficulty curve (10 Long Haul, 11 Little Brook, 12 Two Rocks, 13 Heavy Load, 14 Deep Gorge, 15 Farm Finale)
-- [ ] Level select scrolls or pages when a world has more than 15 levels (now 5x3 grid)
+- [x] Level select pages when a world has more than 15 levels (`LEVELS_PER_PAGE`, ◀ ▶ at top right; opens on the page of the first unstarred level; no world has >15 yet, so not seen in e2e)
 - [ ] Vehicle flips when it drops off a bridge onto a lower cliff, and a truck breaks the ramp beam on a raised start cliff; fix physics or add levels like this once understood
 - [x] Rope material (tension only, 4.5 m, cheap, weak; `RopeJoint`), tested with a rope-braced truss
 - [x] World select screen (`worlds` scene; later worlds show Coming soon; a world opens when the last level of the one before has a star)

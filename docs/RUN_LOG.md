@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-09 — Run 18
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Level select paging (15 per page) with helpers `pageCount`, `pageOfIndex` in `scoring.ts`; test added (171 total).
+
+**Verified**
+- `npm run check` green, `npm run e2e` no FAIL lines. Paging UI not visible in any current world (max 15 levels).
+
+**Lessons**
+- Tests use `test`, not `it` (vitest imports in `core.test.ts`).
+- Next: truck-friendly World 2 levels, tighten w1-7 / w1-13 budgets, vehicle-drop physics.
+
 ## 2026-11-09 — Run 17
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

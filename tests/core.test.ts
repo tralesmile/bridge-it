@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { BridgeDesign, distanceToSegment, keyOf, snap } from '../src/core/bridge';
 import { levelById } from '../src/core/levels';
-import { isUnlocked, starsFor } from '../src/core/scoring';
+import { LEVELS_PER_PAGE, isUnlocked, pageCount, pageOfIndex, starsFor } from '../src/core/scoring';
 import { Simulation } from '../src/core/simulation';
 import { sanitize } from '../src/game/save';
 
@@ -109,5 +109,16 @@ describe('Simulation watchdog', () => {
     sim.step();
     expect(sim.status).toBe('lost');
     expect(sim.lossReason).toBe('collapse');
+  });
+});
+
+describe('level select paging', () => {
+  test('counts pages and finds the page of a level', () => {
+    expect(pageCount(0)).toBe(1);
+    expect(pageCount(LEVELS_PER_PAGE)).toBe(1);
+    expect(pageCount(LEVELS_PER_PAGE + 1)).toBe(2);
+    expect(pageOfIndex(LEVELS_PER_PAGE - 1)).toBe(0);
+    expect(pageOfIndex(LEVELS_PER_PAGE)).toBe(1);
+    expect(pageOfIndex(-1)).toBe(0);
   });
 });

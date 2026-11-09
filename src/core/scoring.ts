@@ -13,3 +13,15 @@ export function isUnlocked(levelIds: string[], stars: Record<string, number>, id
   if (i <= 0) return i === 0;
   return (stars[levelIds[i - 1]] ?? 0) > 0;
 }
+
+/** Levels shown on one level-select page (5 columns x 3 rows). */
+export const LEVELS_PER_PAGE = 15;
+
+export function pageCount(levelCount: number): number {
+  return Math.max(1, Math.ceil(levelCount / LEVELS_PER_PAGE));
+}
+
+/** Page that holds the level at `index` (0-based). */
+export function pageOfIndex(index: number): number {
+  return Math.floor(Math.max(0, index) / LEVELS_PER_PAGE);
+}

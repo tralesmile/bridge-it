@@ -14,6 +14,13 @@ export class BootScene extends Phaser.Scene {
     this.game.events.on(Phaser.Core.Events.HIDDEN, () => sfx.setPaused(true));
     this.game.events.on(Phaser.Core.Events.VISIBLE, () => sfx.setPaused(false));
     this.input.once('pointerdown', () => sfx.unlock());
-    void platform.init().finally(() => this.scene.start('menu'));
+    void platform.init().finally(() => {
+      this.scene.start('menu');
+      const el = document.getElementById('loading');
+      if (el) {
+        el.classList.add('done');
+        setTimeout(() => el.remove(), 400);
+      }
+    });
   }
 }

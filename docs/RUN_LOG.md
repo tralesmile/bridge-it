@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-09 — Run 16
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Loading screen: `#loading` in `index.html` (title and moving bar), removed by `BootScene` once the menu starts. Shown while the script downloads.
+
+**Verified**
+- `npm run check` green (170 tests), `npm run e2e` all PASS, no FAIL lines.
+
+**Lessons**
+- The loading screen is HTML, so it shows before any JS runs; a true percentage is not possible for a module script, so the bar is a moving one.
+- Next: truck-friendly World 2 levels, tighten w1-7 / w1-13 budgets, level select paging.
+
 ## 2026-11-09 — Run 15
 **Done**
 - Synced: only the old font/seam branches are unmerged; skipped (already in `main`).

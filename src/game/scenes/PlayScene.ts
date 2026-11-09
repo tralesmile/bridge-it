@@ -110,7 +110,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   create(): void {
-    addBackground(this);
+    addBackground(this, this.level.world);
     this.world = this.add.graphics();
     this.hintG = this.add.graphics();
     this.beamsG = this.add.graphics();

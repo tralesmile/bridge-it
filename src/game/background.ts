@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
 import { save } from './save';
-import { GAME_H, GAME_W } from './theme';
+import { GAME_H, GAME_W, WORLD_BACKGROUNDS } from './theme';
 
 /** The shared animated backdrop: sky, sun, drifting clouds and two parallax hill layers. */
-export function addBackground(scene: Phaser.Scene): void {
-  scene.add.image(0, 0, 'sky').setOrigin(0).setDisplaySize(GAME_W, GAME_H).setScrollFactor(0);
+export function addBackground(scene: Phaser.Scene, world = 1): void {
+  const sfx = world > 1 && world <= WORLD_BACKGROUNDS.length ? `-w${world}` : '';
+  scene.add.image(0, 0, `sky${sfx}`).setOrigin(0).setDisplaySize(GAME_W, GAME_H).setScrollFactor(0);
   const sun = scene.add.image(1040, 130, 'sun').setScale(1.4).setScrollFactor(0);
   const still = save.data.settings.reducedMotion;
   if (!still) scene.tweens.add({ targets: sun, scale: 1.5, duration: 3000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
@@ -19,6 +20,6 @@ export function addBackground(scene: Phaser.Scene): void {
       onRepeat: () => (cloud.x = -200),
     });
   }
-  scene.add.tileSprite(0, GAME_H - 400, GAME_W, 320, 'hills-far').setOrigin(0).setScrollFactor(0).setAlpha(0.9);
-  scene.add.tileSprite(0, GAME_H - 330, GAME_W, 320, 'hills-near').setOrigin(0).setScrollFactor(0);
+  scene.add.tileSprite(0, GAME_H - 400, GAME_W, 320, `hills-far${sfx}`).setOrigin(0).setScrollFactor(0).setAlpha(0.9);
+  scene.add.tileSprite(0, GAME_H - 330, GAME_W, 320, `hills-near${sfx}`).setOrigin(0).setScrollFactor(0);
 }

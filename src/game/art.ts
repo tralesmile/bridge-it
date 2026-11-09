@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { C } from './theme';
+import { C, WORLD_BACKGROUNDS } from './theme';
 
 /**
  * Draws every texture in code ("chunky toy" style: rounded shapes, soft shadow, a light rim).
@@ -143,16 +143,18 @@ function drawCow(ctx: CanvasRenderingContext2D, cx: number, cy: number, mood: Mo
 
 export function makeTextures(scene: Phaser.Scene): void {
   for (const mood of MOODS) canvas(scene, `cow-${mood}`, 44, 40, (ctx) => drawCow(ctx, 22, 20, mood));
-  canvas(scene, 'sky', 4, 512, (ctx) => {
-    const g = ctx.createLinearGradient(0, 0, 0, 512);
-    g.addColorStop(0, C.skyTop);
-    g.addColorStop(1, C.skyBottom);
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 4, 512);
+  WORLD_BACKGROUNDS.forEach((b, i) => {
+    const sfx = i === 0 ? '' : `-w${i + 1}`;
+    canvas(scene, `sky${sfx}`, 4, 512, (ctx) => {
+      const g = ctx.createLinearGradient(0, 0, 0, 512);
+      g.addColorStop(0, b.skyTop);
+      g.addColorStop(1, b.skyBottom);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 4, 512);
+    });
+    canvas(scene, `hills-far${sfx}`, 1024, 320, (ctx) => hills(ctx, 1024, 320, b.hillFar, 7 + i * 5, 40));
+    canvas(scene, `hills-near${sfx}`, 1024, 320, (ctx) => hills(ctx, 1024, 320, b.hillNear, 23 + i * 5, 28));
   });
-
-  canvas(scene, 'hills-far', 1024, 320, (ctx) => hills(ctx, 1024, 320, C.hillFar, 7, 40));
-  canvas(scene, 'hills-near', 1024, 320, (ctx) => hills(ctx, 1024, 320, C.hillNear, 23, 28));
 
   canvas(scene, 'cloud', 220, 110, (ctx) => {
     ctx.fillStyle = 'rgba(255,255,255,0.95)';

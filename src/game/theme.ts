@@ -52,3 +52,9 @@ export function mix(a: string, b: string, t: number): number {
 export const PX_PER_M = 48;
 export const GAME_W = 1280;
 export const GAME_H = 720;
+
+/** Backdrop colours per world (index = world id - 1). World 1 uses the defaults above. */
+export const WORLD_BACKGROUNDS = [
+  { skyTop: C.skyTop, skyBottom: C.skyBottom, hillFar: C.hillFar, hillNear: C.hillNear },
+  { skyTop: '#f2a07a', skyBottom: '#ffe3a8', hillFar: '#d49a78', hillNear: '#b8704f' },
+];

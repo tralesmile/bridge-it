@@ -12,7 +12,7 @@ export class LevelSelectScene extends Phaser.Scene {
   }
 
   create(data: { world?: number }): void {
-    addBackground(this);
+    addBackground(this, data.world ?? 1);
     const world = WORLDS.find((w) => w.id === data.world) ?? WORLDS[0];
     panel(this, GAME_W / 2, 395, 1000, 580);
     label(this, GAME_W / 2, 160, world.name, 48, C.ink);

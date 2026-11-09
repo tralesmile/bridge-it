@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-09 — Run 15
+**Done**
+- Synced: only the old font/seam branches are unmerged; skipped (already in `main`).
+- Per-world backdrop: `WORLD_BACKGROUNDS` in `theme.ts`; `addBackground(scene, world)`. World 2 has an orange canyon sky and rust hills in play and level select.
+
+**Verified**
+- `npm run check` green (170 tests), `npm run e2e` all PASS; looked at the World 2 screenshot.
+
+**Lessons**
+- Texture keys get a `-wN` suffix for worlds above 1; add a theme entry when adding a world.
+- Next: truck-friendly World 2 levels, loading screen, tighten w1-7 / w1-13 budgets.
+
 ## 2026-11-09 — Run 14
 **Done**
 - Synced: no new work on other branches (only old font/seam ones).

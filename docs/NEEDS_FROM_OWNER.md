@@ -6,7 +6,7 @@ Things only you can do. Each scheduled run adds to this list; nothing here block
 - [x] Create the private GitHub repository `tralesmile/bridge-it` (done 2026-11-06).
 - [ ] Play the web build when you get a chance and say what feels fun or annoying.
 
-- [ ] Open the repo's Actions tab and tell Claude if the new CI workflow is red (Claude cannot see it from the cloud).
+- [x] CI on GitHub Actions checked: the last 5 runs are green (2026-11-09).
 
 ## Before web launch (around milestone M6)
 - [ ] Create a CrazyGames developer account (free).

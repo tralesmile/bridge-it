@@ -28,6 +28,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] GitHub Actions CI running npm run check and the browser test (`.github/workflows/ci.yml`; first real run not yet seen)
 
 ## M3 Content
+- [ ] Bug: world select lock text "Canyon Rails: finish the last level before" is cut off and squeezed; show the world name on the card and a short line such as "Finish Farm Valley"
 - [x] Level format supports different cliff heights and goal distance (rocks are anchors; no separate rock type needed)
 - [x] Editor-friendly JSON export/import of levels (`levelToJson`, `levelFromJson` with checks; round-trip tested)
 - [x] First level with uneven cliffs and a wide gap (w1-9 High Cliff, 16 m; fits the screen without zoom-out, so zoom-out is still unseen)

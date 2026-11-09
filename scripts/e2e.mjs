@@ -104,6 +104,12 @@ async function run(viewport, name) {
   await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
   await sleep(300);
   await page.screenshot({ path: `${OUT}/${name}-8-rope-level.png` });
+  // A 32 m gap: the play scene zooms out to fit it.
+  await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w2-10' }));
+  await sleep(600);
+  await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
+  await sleep(300);
+  await page.screenshot({ path: `${OUT}/${name}-9-zoomed-level.png` });
   await page.close();
 }
 

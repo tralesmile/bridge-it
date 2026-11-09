@@ -2,6 +2,21 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-09 — Run 12
+**Done**
+- Synced: `main` already had World 2 levels 1-5 (the earlier run did not log them). Other branches only hold old font/seam work.
+- World 2 now has 10 levels: added Sparse Posts, Long Cable (truss + rope), Grand Canyon (28 m), Skyline Span, Canyon Finale (32 m). All have winning stored solutions.
+- e2e saves `*-9-zoomed-level.png` for the 32 m level.
+
+**Verified**
+- `npm run check` green (168 tests), `npm run e2e` all PASS; looked at desktop and phone screenshots of level 10.
+
+**Lessons**
+- Trucks lose on rope-hung bridges and on wood trusses over 4 m; only steel trusses win to 8 m, none at 12 m. A truck level in World 2 needs a new idea (pylons from below, or a stronger material).
+- Cars: road + ropes every 2 m at height 4 wins up to 32 m; height 6 loses (rope too long/stretchy).
+- 32 m fits the phone screen at the current zoom, so zoom-out still has no gap that needs it.
+- Next: train vehicle or truck-friendly rope levels; per-world themes; difficulty report.
+
 ## 2026-11-08 — Run 11
 **Done**
 - Synced: other `claude/*` branches (1vjdjd, bfkknd, klj5rs) still only hold old font/seam work already in `main`.

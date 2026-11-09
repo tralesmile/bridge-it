@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-09 — Run 17
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Fixed world select locked card text: world name plus "Finish <previous world>".
+
+**Verified**
+- `npm run check` green, `npm run e2e` all PASS; looked at the worlds screenshot.
+
+**Lessons**
+- Small UI bugs: check the e2e screenshot (`e2e-shots/desktop-1c-worlds.png`) directly.
+- Next: level select paging, truck-friendly World 2 levels, tighten w1-7 / w1-13 budgets.
+
 ## 2026-11-09 — Run 16
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

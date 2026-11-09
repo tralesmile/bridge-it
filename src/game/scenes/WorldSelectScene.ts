@@ -38,7 +38,13 @@ export class WorldSelectScene extends Phaser.Scene {
       });
       b.setEnabled(open);
       const got = world.levels.reduce((n, l) => n + (save.data.stars[l.id] ?? 0), 0);
-      label(this, x, 475, open ? `★ ${got} / ${world.levels.length * 3}` : `${world.name}: finish the last level before`, open ? 26 : 16, C.ink);
+      if (open) {
+        label(this, x, 475, `★ ${got} / ${world.levels.length * 3}`, 26, C.ink);
+      } else {
+        const prev = WORLDS[i - 1];
+        label(this, x, 475, world.name, 22, C.ink);
+        label(this, x, 505, prev ? `Finish ${prev.name}` : 'Locked', 18, C.ink);
+      }
     });
 
     COMING_SOON.forEach((name, j) => {

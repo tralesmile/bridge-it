@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-09 — Run 13
+**Done**
+- Synced: only old font/seam branches (1vjdjd, bfkknd, klj5rs) are unmerged; they conflict with newer `main` and hold nothing new, so skipped.
+- Size check: `scripts/size-check.mjs` fails the build if `dist/` is over 8 MB; runs in `npm run check` (so also in CI). Now 1.6 MB.
+
+**Verified**
+- `npm run check` green, `npm run e2e` all PASS.
+
+**Lessons**
+- Merging the old font branches always conflicts; do not retry, just ignore them.
+- Next: train / truck-friendly World 2 levels, per-world themes, difficulty report, loading screen.
+
 ## 2026-11-09 — Run 12
 **Done**
 - Synced: `main` already had World 2 levels 1-5 (the earlier run did not log them). Other branches only hold old font/seam work.

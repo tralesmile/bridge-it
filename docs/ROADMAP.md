@@ -61,7 +61,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [ ] Build flavours: web, crazygames, poki (each picks its platform adapter)
 - [ ] CrazyGames SDK v3 adapter (ads, gameplay events, data)
 - [ ] Poki SDK adapter
-- [ ] Size check in CI (fail if first load over 8 MB)
+- [x] Size check in CI (`scripts/size-check.mjs`, part of `npm run check`; dist is 1.6 MB)
 - [ ] Loading screen with progress bar
 
 ## M7 Mobile apps

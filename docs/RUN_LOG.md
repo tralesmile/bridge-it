@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-10 — Run 22
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Share codes core (`src/core/share.ts`): bridge to a short text code and back, with checksum and level-rule check. 3 tests. UI not done yet (new roadmap task).
+
+**Verified**
+- `npm run check` green (206 tests), `npm run e2e` no FAIL.
+
+**Lessons**
+- base64url contains `-`, so never use `-` as a separator in codes; use `.`.
+- World 3 still needs a design idea; a pure-core task is a good fallback when a design task is blocked.
+- Next: share codes UI, tighten w1-7 / w1-13 budgets, vehicle-drop physics, World 3.
+
 ## 2026-11-10 — Run 21
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

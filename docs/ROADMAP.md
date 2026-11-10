@@ -60,7 +60,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 ## M5 Creativity
 - [ ] Sandbox mode
 - [ ] Level editor for players
-- [ ] Share codes (compact base64 level and bridge strings)
+- [x] Share codes core: `encodeBridge` / `decodeBridge` in `src/core/share.ts` (format `BI1.<levelId>.<data>.<check>`, checked against level rules; tested on all solutions)
+- [ ] Share codes UI: copy code button after a win, paste-code box on the play scene
 
 ## M6 Web portals
 - [ ] Build flavours: web, crazygames, poki (each picks its platform adapter)

@@ -2,6 +2,20 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-10 — Run 19
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 2: 4 truck levels (Freight Rails, Ore Train, Iron Bridge, Tall Rocks) before the finale; helpers `rockPosts`, `rockLegs`. Level ids after w2-9 shifted by 4 (finale is w2-14); fine before launch.
+
+**Verified**
+- `npm run check` green (195 tests), `npm run e2e` all PASS.
+
+**Lessons**
+- Rocks must sit on the 2 m deck grid (x even); rocks at odd x made every design lose.
+- Truck: wood truss + wood legs every 4 m wins; steel truss with wood legs loses (heavier); steel truss needs steel legs.
+- vitest hides console.log here; write probe results to a file in the scratchpad.
+- Next: train vehicle + 1 level, tighten w1-7 / w1-13 budgets, vehicle-drop physics.
+
 ## 2026-11-09 — Run 18
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

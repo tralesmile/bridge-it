@@ -38,7 +38,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Rope material (tension only, 4.5 m, cheap, weak; `RopeJoint`), tested with a rope-braced truss
 - [x] World select screen (`worlds` scene; later worlds show Coming soon; a world opens when the last level of the one before has a star)
 - [x] World 2 Canyon Rails: 10 rope levels (hanger bridges, up to a 32 m gap)
-- [ ] World 2: train vehicle (multi-car) and 5 more levels (15 total); trucks cannot yet cross rope-hung bridges, so the train needs a truss/steel idea
+- [x] World 2: 4 truck levels (12 to 24 m, wood truss on rocks every 4 m; levels 10-13, finale is now 14)
+- [ ] World 2: train vehicle (multi-car) and 1 more level (15 total)
 - [ ] (partly: Sparse Posts and Long Cable mix truss and one rope) Rope level design: ropes cost more than a wood Warren truss when used as X braces; find a level where rope is the clever choice (long span, tension ties)
 - [ ] Hydraulic piston and World 3 Pirate Bay (15 levels)
 - [ ] Springs and World 4 Candy Mountain (15 levels)

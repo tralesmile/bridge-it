@@ -68,6 +68,15 @@ const hangers = (gap: number, step: number, y: number): Point[] => {
 const hangerRopes = (gap: number, step: number, y: number): Beam[] =>
   hangers(gap, step, y).map((p) => ({ a: `${p.x},0`, b: `${p.x},${p.y}`, material: 'rope' as const }));
 
+/** Rocks below the deck every `step` metres, and wood or steel legs down to them (for trucks). */
+const rockPosts = (gap: number, step: number): Point[] => {
+  const pts: Point[] = [];
+  for (let x = step; x < gap; x += step) pts.push({ x, y: -2 });
+  return pts;
+};
+const rockLegs = (gap: number, step: number, material: MaterialId = 'wood'): Beam[] =>
+  rockPosts(gap, step).map((p) => ({ a: `${p.x},0`, b: `${p.x},-2`, material }));
+
 const CANYON: LevelSpec[] = [
   { name: 'Hanging Bridge', gap: 8, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(8, 2, 3), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 3)], tip: 'Ropes pull but never push. Hang the road from the high posts.' },
   { name: 'Rope Hangers', gap: 12, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(12, 2, 3), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 3)], slack: 1.3 },
@@ -78,6 +87,10 @@ const CANYON: LevelSpec[] = [
   { name: 'Long Cable', gap: 16, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(16, 6, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...hangerRopes(g, 6, 4)], slack: 1.3 },
   { name: 'Grand Canyon', gap: 28, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(28, 4, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 4, 4)], slack: 1.25, tip: 'Very wide. The screen zooms out to fit it.' },
   { name: 'Skyline Span', gap: 24, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(24, 2, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 4)], slack: 1.3 },
+  { name: 'Freight Rails', gap: 12, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: rockPosts(12, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...rockLegs(g, 4)], slack: 1.3, tip: 'Trucks snap ropes. Use a truss and rocks.' },
+  { name: 'Ore Train', gap: 16, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: rockPosts(16, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...rockLegs(g, 4)], slack: 1.25 },
+  { name: 'Iron Bridge', gap: 20, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: rockPosts(20, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...rockLegs(g, 4)], slack: 1.25 },
+  { name: 'Tall Rocks', gap: 24, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: rockPosts(24, 6), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...rockLegs(g, 6, 'steel')], slack: 1.25, tip: 'Rocks far apart need strong steel legs.' },
   { name: 'Canyon Finale', gap: 32, goalDistance: 5, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(32, 4, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 4, 4)], slack: 1.25, tip: 'The longest bridge yet. Ropes only pull, so hang the road.' },
 ];
 

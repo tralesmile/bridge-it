@@ -43,6 +43,20 @@ export class BridgeDesign {
     for (const beam of initial) this.beams.set(beamId(beam.a, beam.b), { ...beam });
   }
 
+  /**
+   * Loads a saved design, dropping beams that break the level rules (a level may change between versions).
+   * Starts with an empty undo history.
+   */
+  static restore(level: LevelDef, saved: Beam[]): BridgeDesign {
+    const d = new BridgeDesign(level);
+    for (const beam of saved) {
+      if (!beam || typeof beam.a !== 'string' || typeof beam.b !== 'string' || !(beam.material in MATERIALS)) continue;
+      d.add(pointOf(beam.a), pointOf(beam.b), beam.material);
+    }
+    d.history = [];
+    return d;
+  }
+
   get list(): Beam[] {
     return [...this.beams.values()];
   }

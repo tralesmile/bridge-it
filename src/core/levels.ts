@@ -20,6 +20,11 @@ export function warrenTruss(x0: number, x1: number, material: MaterialId = 'wood
   return beams;
 }
 
+/** Warren truss with wood diagonals and a steel top chord (cheap way to carry a truck). */
+export function steelTopTruss(x0: number, x1: number, y = 0, h = 1): Beam[] {
+  return warrenTruss(x0, x1, 'wood', y, h).map((b) => (b.a.endsWith(`,${y + h}`) && b.b.endsWith(`,${y + h}`) ? { ...b, material: 'steel' } : b));
+}
+
 export interface LevelEntry extends LevelDef {
   /** A known working design. Shown as the hint, and checked by tests. */
   solution: Beam[];
@@ -48,13 +53,13 @@ const FARM: LevelSpec[] = [
   { name: 'Three Hops', gap: 6, materials: ['road', 'wood'], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g)] },
   { name: 'Wide River', gap: 8, materials: ['road', 'wood'], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g)], slack: 1.3 },
   { name: 'Rock Pillar', gap: 8, materials: ['road', 'wood'], extraAnchors: [{ x: 4, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, 4), ...warrenTruss(4, g), { a: '4,0', b: '4,-2', material: 'wood' }], tip: 'Use the rock to split one long bridge into two short ones.' },
-  { name: 'Hay Truck', gap: 4, vehicle: 'truck', materials: ['road', 'wood', 'steel'], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g, 'steel')], tip: 'Heavy truck! Steel is strong but expensive.' },
+  { name: 'Hay Truck', gap: 6, vehicle: 'truck', materials: ['road', 'wood', 'steel'], solution: (g) => [...roadDeck(0, g), ...steelTopTruss(0, g)], tip: 'Heavy truck! Wood alone breaks. Steel is strong but expensive: use a little.', slack: 1.4 },
   { name: 'Big Valley', gap: 10, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 6, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '6,0', b: '6,-2', material: 'wood' }], slack: 1.25 },
   { name: 'High Cliff', gap: 16, leftHeight: 1, goalDistance: 5, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 12, y: -2 }], solution: (g) => [{ a: '0,1', b: '2,0', material: 'road' }, ...roadDeck(2, g), ...warrenTruss(2, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }, { a: '12,0', b: '12,-2', material: 'wood' }], slack: 1.25, tip: 'You start on a high cliff. Use the rocks below for support.' },
   { name: 'Long Haul', gap: 12, vehicle: 'truck', materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }], slack: 1.3, tip: 'A truck on a long bridge. Rocks help a lot.' },
   { name: 'Little Brook', gap: 6, materials: ['road', 'wood'], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g)], slack: 1.25, tip: 'A short gap, but money is tight. Build only what you need.' },
   { name: 'Two Rocks', gap: 12, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }], slack: 1.2, tip: 'Use both rocks. Less wood means more stars.' },
-  { name: 'Heavy Load', gap: 8, vehicle: 'truck', materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g, 'steel'), { a: '4,0', b: '4,-2', material: 'wood' }], slack: 1.3 },
+  { name: 'Heavy Load', gap: 8, vehicle: 'truck', materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, 4), ...warrenTruss(4, g), { a: '4,0', b: '4,-2', material: 'wood' }], slack: 1.3, tip: 'Too heavy for wood alone. Stand the bridge on the rock.' },
   { name: 'Deep Gorge', gap: 14, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 10, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }, { a: '10,0', b: '10,-2', material: 'wood' }], slack: 1.25 },
   { name: 'Farm Finale', gap: 16, vehicle: 'truck', goalDistance: 5, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 12, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }, { a: '12,0', b: '12,-2', material: 'wood' }], slack: 1.3, tip: 'The big one. A heavy truck on a wide gap.' },
 ];

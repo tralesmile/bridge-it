@@ -47,6 +47,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Per-world backdrop (sky, hills) in play and level select (`WORLD_BACKGROUNDS`; world 2 is canyon orange)
 - [ ] Per-world music and themed world select cards
 - [x] Difficulty report (`npm run report`, `src/core/difficulty.ts`): solution cost vs budget, and which simple designs (bare road, wood/steel truss) win within budget. Min-cost search not done.
+- [x] Retune w1-7 Hay Truck (gap 6, wood fails, steel top chord wins) and w1-13 Heavy Load (wood truss on the rock; steel truss now over budget). Saved designs that break new rules are dropped on load (`BridgeDesign.restore`)
 - [ ] Difficulty report: min-cost search per level (to check 3-star budgets are not too loose)
 
 ## M4 Meta and retention

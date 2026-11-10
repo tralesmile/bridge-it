@@ -27,6 +27,17 @@ describe('BridgeDesign', () => {
     expect(d.list[0].material).toBe('steel');
   });
 
+  test('restore drops saved beams that break the level rules', () => {
+    const d = BridgeDesign.restore({ ...level, budget: 500 }, [
+      { a: '0,0', b: '2,0', material: 'road' },
+      { a: '0,0', b: '-1,-1', material: 'wood' },
+      { a: '2,0', b: '4,0', material: 'road' },
+      { a: '0,0', b: '1,1', material: 'nope' as never },
+    ]);
+    expect(d.list).toEqual([{ a: '0,0', b: '2,0', material: 'road' }]);
+    expect(d.canUndo).toBe(false);
+  });
+
   test('respects the budget', () => {
     const tight = { ...level, budget: 500 };
     const d = new BridgeDesign(tight);

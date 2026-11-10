@@ -90,7 +90,7 @@ export class PlayScene extends Phaser.Scene {
     const level = levelById(data.levelId ?? '') ?? levelById('w1-1');
     if (!level) throw new Error('No levels defined');
     this.level = level;
-    this.design = new BridgeDesign(level, save.data.designs[level.id] ?? []);
+    this.design = BridgeDesign.restore(level, save.data.designs[level.id] ?? []);
     this.mode = 'build';
     this.tool = level.materials[0];
     this.sim = null;

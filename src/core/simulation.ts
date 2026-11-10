@@ -12,6 +12,8 @@ const POSITION_ITERATIONS = 8;
 const GRAVITY = -10;
 /** cos of the tilt angle past which the vehicle counts as upside down (about 100 degrees). */
 const FLIP_COS = -0.17;
+/** Share of motor torque used as a brake when a wheel spins faster than its target speed. */
+const COAST_TORQUE = 0.1;
 
 // Collision categories.
 const CAT_TERRAIN = 0x0001;
@@ -75,6 +77,7 @@ export class Simulation {
   private readonly beams: SimBeam[] = [];
   private readonly chassis: Body;
   private readonly wheels: Body[] = [];
+  private readonly wheelJoints: WheelJoint[] = [];
   private readonly vehicleDef: VehicleDef;
   private readonly goalX: number;
   private readonly pistons: { joint: DistanceJoint; length: number; grow: number }[] = [];
@@ -97,6 +100,7 @@ export class Simulation {
   step(): void {
     if (this.status !== 'running') return;
     this.growPistons();
+    this.coastDownhill();
     this.world.step(STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.time += STEP;
     if (!this.isFinite()) {
@@ -226,18 +230,30 @@ export class Simulation {
         friction: 1.2,
         ...vehicleFilter,
       });
-      this.world.createJoint(
-        new WheelJoint(
-          { enableMotor: true, motorSpeed: def.motorSpeed, maxMotorTorque: def.motorTorque, frequencyHz: 5, dampingRatio: 0.8 },
-          chassis,
-          wheel,
-          wheel.getPosition(),
-          Vec2(0, 1),
-        ),
+      const joint = new WheelJoint(
+        { enableMotor: true, motorSpeed: def.motorSpeed, maxMotorTorque: def.motorTorque, frequencyHz: 5, dampingRatio: 0.8 },
+        chassis,
+        wheel,
+        wheel.getPosition(),
+        Vec2(0, 1),
       );
+      this.world.createJoint(joint);
       this.wheels.push(wheel);
+      this.wheelJoints.push(joint);
     }
     return chassis;
+  }
+
+  /**
+   * Motors drive but barely brake: a wheel spinning faster than its target (downhill) only gets a weak motor.
+   * Full braking torque pitched cars nose-down and flipped them on 1 m slopes.
+   */
+  private coastDownhill(): void {
+    const def = this.vehicleDef;
+    for (const joint of this.wheelJoints) {
+      const tooFast = def.motorSpeed < 0 ? joint.getJointSpeed() < def.motorSpeed : joint.getJointSpeed() > def.motorSpeed;
+      joint.setMaxMotorTorque(tooFast ? def.motorTorque * COAST_TORQUE : def.motorTorque);
+    }
   }
 
   private checkBreaks(): void {

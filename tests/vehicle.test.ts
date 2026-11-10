@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { build, roadDeck } from '../src/core/levels';
+import { build, roadDeck, warrenTruss } from '../src/core/levels';
 import { Simulation } from '../src/core/simulation';
 import type { Beam } from '../src/core/types';
 
@@ -34,5 +34,16 @@ describe('vehicle drops', () => {
     }]);
     const sim = new Simulation(level, level.solution);
     expect([sim.runToEnd(), sim.lossReason, sim.brokenCount]).toEqual(['won', null, 0]);
+  });
+
+  test.each(['car', 'truck'] as const)('%s drives down a 1 m slope at the end of a flat bridge', (vehicle) => {
+    // Motors used to brake at full torque downhill, which pitched the vehicle onto its nose.
+    const [level] = build(9, [{
+      name: 'slope', gap: 8, vehicle, rightHeight: -1, extraAnchors: [{ x: 4, y: -2 }], materials: ['road', 'wood', 'steel'],
+      solution: () => [...roadDeck(0, 6), ...warrenTruss(0, 4, 'steel'), ...warrenTruss(4, 6, 'steel'), { a: '4,0', b: '4,-2', material: 'steel' }, { a: '6,0', b: '8,-1', material: 'road' }, { a: '6,0', b: '8,-3', material: 'steel' }],
+      slack: 5,
+    }]);
+    const sim = new Simulation(level, level.solution);
+    expect([sim.runToEnd(), sim.lossReason]).toEqual(['won', null]);
   });
 });

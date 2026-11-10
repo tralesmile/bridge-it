@@ -41,4 +41,16 @@ export const VEHICLES: Record<VehicleId, VehicleDef> = {
     motorSpeed: -6,
     motorTorque: 3500,
   },
+  train: {
+    id: 'train',
+    name: 'Little Train',
+    halfWidth: 2,
+    halfHeight: 0.45,
+    chassisMass: 1500,
+    wheelRadius: 0.38,
+    wheelMass: 40,
+    wheelOffsets: [-1.5, -0.5, 0.5, 1.5],
+    motorSpeed: -5,
+    motorTorque: 4000,
+  },
 };

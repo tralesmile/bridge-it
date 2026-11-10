@@ -6,7 +6,7 @@ export interface Point {
   y: number;
 }
 
-export type VehicleId = 'car' | 'truck';
+export type VehicleId = 'car' | 'truck' | 'train';
 
 export interface LevelDef {
   id: string;

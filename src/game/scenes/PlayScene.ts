@@ -234,14 +234,16 @@ export class PlayScene extends Phaser.Scene {
   private createVehicle(): void {
     const preview = new Simulation(this.level, []);
     const v = preview.vehicle;
-    const isTruck = v.def.id === 'truck';
-    this.chassisSprite = this.add.image(0, 0, isTruck ? 'truck' : 'car').setOrigin(0.5, isTruck ? 0.68 : 0.62);
-    this.chassisSprite.setDisplaySize((v.def.halfWidth * 2 + 0.3) * this.ppm, (v.def.halfWidth * 2 + 0.3) * this.ppm * (isTruck ? 120 / 260 : 96 / 172));
+    const kind = v.def.id;
+    const tex = { car: { key: 'car', w: 172, h: 96, oy: 0.62, head: { x: 88 - 86, y: 34 - 96 * 0.62, s: 1 } },
+      truck: { key: 'truck', w: 260, h: 120, oy: 0.68, head: { x: 208 - 130, y: 48 - 120 * 0.68, s: 15 / 17 } },
+      train: { key: 'train', w: 340, h: 120, oy: 0.68, head: { x: 266 - 170, y: 46 - 120 * 0.68, s: 15 / 17 } } }[kind];
+    this.chassisSprite = this.add.image(0, 0, tex.key).setOrigin(0.5, tex.oy);
+    this.chassisSprite.setDisplaySize((v.def.halfWidth * 2 + 0.3) * this.ppm, (v.def.halfWidth * 2 + 0.3) * this.ppm * (tex.h / tex.w));
     this.vehicle.add(this.chassisSprite);
     // Cow head sits in the cabin; offsets are texture pixels from the sprite origin.
-    const texW = isTruck ? 260 : 172;
-    const k = this.chassisSprite.displayWidth / texW;
-    const head = isTruck ? { x: 208 - 130, y: 48 - 120 * 0.68, s: 15 / 17 } : { x: 88 - 86, y: 34 - 96 * 0.62, s: 1 };
+    const k = this.chassisSprite.displayWidth / tex.w;
+    const head = tex.head;
     this.cowOffset = { x: head.x * k, y: head.y * k };
     this.cow = this.add.image(0, 0, 'cow-calm').setScale(k * head.s);
     this.vehicle.add(this.cow);

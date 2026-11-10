@@ -232,6 +232,34 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.fill();
   });
 
+  canvas(scene, 'train', 340, 120, (ctx) => {
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    roundRect(ctx, 10, 72, 320, 36, 16);
+    ctx.fill();
+    // Coal car.
+    ctx.fillStyle = '#4a4560';
+    roundRect(ctx, 8, 30, 150, 44, 10);
+    ctx.fill();
+    ctx.fillStyle = '#2b2140';
+    for (let x = 24; x < 140; x += 26) {
+      ctx.beginPath();
+      ctx.arc(x, 30, 12, Math.PI, 0);
+      ctx.fill();
+    }
+    // Body, cab and chimney.
+    ctx.fillStyle = '#e8503a';
+    roundRect(ctx, 6, 64, 328, 36, 16);
+    ctx.fill();
+    roundRect(ctx, 168, 22, 160, 50, 14);
+    ctx.fill();
+    ctx.fillStyle = '#2b2140';
+    roundRect(ctx, 290, 6, 24, 22, 6);
+    ctx.fill();
+    ctx.fillStyle = '#bfe8ff';
+    roundRect(ctx, 236, 28, 50, 30, 10);
+    ctx.fill();
+  });
+
   canvas(scene, 'wheel', 64, 64, (ctx) => {
     ctx.fillStyle = '#2b2140';
     ctx.beginPath();

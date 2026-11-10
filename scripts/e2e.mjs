@@ -110,6 +110,10 @@ async function run(viewport, name) {
   await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
   await sleep(300);
   await page.screenshot({ path: `${OUT}/${name}-9-zoomed-level.png` });
+  // The train level (long vehicle).
+  await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w2-14' }));
+  await sleep(600);
+  await page.screenshot({ path: `${OUT}/${name}-9b-train-level.png` });
   await page.close();
 }
 

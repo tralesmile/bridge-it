@@ -91,6 +91,7 @@ const CANYON: LevelSpec[] = [
   { name: 'Ore Train', gap: 16, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: rockPosts(16, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...rockLegs(g, 4)], slack: 1.25 },
   { name: 'Iron Bridge', gap: 20, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: rockPosts(20, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...rockLegs(g, 4)], slack: 1.25 },
   { name: 'Tall Rocks', gap: 24, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: rockPosts(24, 6), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...rockLegs(g, 6, 'steel')], slack: 1.25, tip: 'Rocks far apart need strong steel legs.' },
+  { name: 'Little Train', gap: 12, vehicle: 'train', materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: rockPosts(12, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...rockLegs(g, 4, 'steel')], slack: 1.3, tip: 'A long, heavy train. Steel legs on the rocks hold it.' },
   { name: 'Canyon Finale', gap: 32, goalDistance: 5, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(32, 4, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 4, 4)], slack: 1.25, tip: 'The longest bridge yet. Ropes only pull, so hang the road.' },
 ];
 
@@ -179,7 +180,7 @@ export function levelFromJson(text: string): { ok: true; level: LevelEntry } | {
   if (l.goalDistance !== undefined && !isNum(l.goalDistance)) return { ok: false, error: '"goalDistance" must be a number.' };
   if (!Array.isArray(l.anchors) || !l.anchors.every(isPoint)) return { ok: false, error: '"anchors" must be a list of points.' };
   if (!Array.isArray(l.starBudgets) || l.starBudgets.length !== 2 || !l.starBudgets.every(isNum)) return { ok: false, error: '"starBudgets" must have 2 numbers.' };
-  if (l.vehicle !== 'car' && l.vehicle !== 'truck') return { ok: false, error: 'Unknown vehicle.' };
+  if (l.vehicle !== 'car' && l.vehicle !== 'truck' && l.vehicle !== 'train') return { ok: false, error: 'Unknown vehicle.' };
   if (!Array.isArray(l.materials) || !l.materials.every((m) => m in MATERIALS)) return { ok: false, error: 'Unknown material.' };
   if (!Array.isArray(l.solution) || !l.solution.every((b) => b && typeof b.a === 'string' && typeof b.b === 'string' && b.material in MATERIALS)) {
     return { ok: false, error: '"solution" must be a list of beams.' };

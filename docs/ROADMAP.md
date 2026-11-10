@@ -39,7 +39,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] World select screen (`worlds` scene; later worlds show Coming soon; a world opens when the last level of the one before has a star)
 - [x] World 2 Canyon Rails: 10 rope levels (hanger bridges, up to a 32 m gap)
 - [x] World 2: 4 truck levels (12 to 24 m, wood truss on rocks every 4 m; levels 10-13, finale is now 14)
-- [ ] World 2: train vehicle (multi-car) and 1 more level (15 total)
+- [x] World 2: Little Train vehicle (long 4-wheel body, not multi-car) and level w2-14 Little Train (15 levels total; finale is w2-15)
 - [ ] (partly: Sparse Posts and Long Cable mix truss and one rope) Rope level design: ropes cost more than a wood Warren truss when used as X braces; find a level where rope is the clever choice (long span, tension ties)
 - [ ] Hydraulic piston and World 3 Pirate Bay (15 levels)
 - [ ] Springs and World 4 Candy Mountain (15 levels)

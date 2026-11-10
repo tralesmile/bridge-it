@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-10 — Run 20
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Found Little Train vehicle + level "Little Train" already on `main` (commit 5fb8094, run 19 ended before docs). Ticked roadmap.
+
+**Verified**
+- `npm run check` green (201 tests), `npm run e2e` all PASS.
+
+**Lessons**
+- Update docs in the same commit as the feature, so a cut-off run does not leave the roadmap stale.
+- Train is one long body with 4 wheels, not separate cars.
+- Next: tighten w1-7 / w1-13 budgets, vehicle-drop physics, hydraulic piston + World 3.
+
 ## 2026-11-10 — Run 19
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

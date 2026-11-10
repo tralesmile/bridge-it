@@ -8,13 +8,17 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 - Retuned the two levels the report flagged. w1-7 Hay Truck: gap 4 → 6 (a wood truss now breaks under the truck; solution is wood diagonals + steel top chord, $3,246; all-steel is over budget). w1-13 Heavy Load: solution is a wood truss on the rock ($3,328; was a $6,992 steel truss); steel truss alone is over the new $4,400 budget.
 - `BridgeDesign.restore` drops saved beams that break the current level rules, so old saves still load after a level changes. 1 test.
 
+- Vehicle drops: new loss reason `flipped` (upside down for 0.5 s; never wins upside down), "Flipped!" panel with a ramp tip. Probing showed the old "drop" losses were unsupported deck ends, and the truck ramp break is a wood leg at the ramp foot. 5 tests in `tests/vehicle.test.ts`.
+- Tried cutting motor torque on airborne wheels: no effect on the flips, so reverted.
+
 **Verified**
-- `npm run check` green (207 tests), `npm run e2e` no FAIL, screenshots of w1-7 and w1-13 checked.
+- `npm run check` green (212 tests), `npm run e2e` no FAIL, screenshots of w1-7, w1-13 and the Flipped panel (phone size) checked.
 
 **Lessons**
 - When moving a gap in a probe, build the level with `build()` so the right cliff anchors move too.
 - Trucks cross wood trusses only up to about 4 m spans; 6 m needs steel somewhere (or a 2 m tall wood truss).
-- Next: vehicle-drop physics, World 3 design, min-cost search.
+- A trace (x, y, angle every 0.25 s) finds the cause of a loss faster than guessing at physics.
+- Next: World 3 design, min-cost search, drop/ramp levels.
 
 ## 2026-11-10 — Run 23
 **Done**

@@ -40,4 +40,4 @@ export interface Beam {
 }
 
 export type SimStatus = 'running' | 'won' | 'lost';
-export type LossReason = 'fell' | 'timeout' | 'stuck' | 'collapse';
+export type LossReason = 'fell' | 'timeout' | 'stuck' | 'collapse' | 'flipped';

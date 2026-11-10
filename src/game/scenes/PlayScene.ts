@@ -863,13 +863,15 @@ export class PlayScene extends Phaser.Scene {
 
   private showLoss(reason: string): void {
     const layer = this.resultPanel(360);
-    const title = reason === 'fell' || reason === 'collapse' ? 'Splash!' : reason === 'stuck' ? 'Stuck!' : 'Too slow!';
+    const title = reason === 'fell' || reason === 'collapse' ? 'Splash!' : reason === 'stuck' ? 'Stuck!' : reason === 'flipped' ? 'Flipped!' : 'Too slow!';
     const tip =
       reason === 'fell' || reason === 'collapse'
         ? 'Look for red beams: they broke first.'
         : reason === 'stuck'
           ? 'Is the road smooth and connected?'
-          : 'The car ran out of time.';
+          : reason === 'flipped'
+            ? 'Big drops tip the car over. Build a ramp down.'
+            : 'The car ran out of time.';
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 110, title, 56, C.ink));
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 30, tip, 26, C.greyDark));
     layer.add(button(this, GAME_W / 2, GAME_H / 2 + 80, 'Fix it', () => this.stopSim(), { width: 260, height: 76, color: C.primary, shade: C.primaryDark }));

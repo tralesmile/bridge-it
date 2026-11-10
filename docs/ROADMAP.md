@@ -34,7 +34,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] First level with uneven cliffs and a wide gap (w1-9 High Cliff, 16 m; fits the screen without zoom-out, so zoom-out is still unseen)
 - [x] World 1 expanded to 15 levels with a saw-tooth difficulty curve (10 Long Haul, 11 Little Brook, 12 Two Rocks, 13 Heavy Load, 14 Deep Gorge, 15 Farm Finale)
 - [x] Level select pages when a world has more than 15 levels (`LEVELS_PER_PAGE`, ◀ ▶ at top right; opens on the page of the first unstarred level; no world has >15 yet, so not seen in e2e)
-- [ ] Vehicle flips when it drops off a bridge onto a lower cliff, and a truck breaks the ramp beam on a raised start cliff; fix physics or add levels like this once understood
+- [x] Vehicle drops understood (`tests/vehicle.test.ts`): a 1 m drop is fine; a 2 m drop tips the vehicle over (front wheels drop first), which now loses as "Flipped!" instead of winning on its roof. A truck on a raised-start ramp breaks a wood leg at the ramp foot (it carries the whole truck); steel legs win.
+- [ ] Level idea: a lower right cliff (1 m drop) and a truck ramp level that needs a steel leg at the ramp foot
 - [x] Rope material (tension only, 4.5 m, cheap, weak; `RopeJoint`), tested with a rope-braced truss
 - [x] World select screen (`worlds` scene; later worlds show Coming soon; a world opens when the last level of the one before has a star)
 - [x] World 2 Canyon Rails: 10 rope levels (hanger bridges, up to a 32 m gap)

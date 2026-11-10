@@ -10,6 +10,8 @@ export const MAX_TIME = 25;
 const VELOCITY_ITERATIONS = 12;
 const POSITION_ITERATIONS = 8;
 const GRAVITY = -10;
+/** cos of the tilt angle past which the vehicle counts as upside down (about 100 degrees). */
+const FLIP_COS = -0.17;
 
 // Collision categories.
 const CAT_TERRAIN = 0x0001;
@@ -77,6 +79,7 @@ export class Simulation {
   private readonly goalX: number;
   private readonly pistons: { joint: DistanceJoint; length: number; grow: number }[] = [];
   private stuckTimer = 0;
+  private flipTimer = 0;
   private lastX = 0;
 
   constructor(private readonly level: LevelDef, design: Beam[]) {
@@ -295,12 +298,19 @@ export class Simulation {
 
   private checkOutcome(): void {
     const p = this.chassis.getPosition();
-    if (p.x >= this.goalX) {
+    if (p.x >= this.goalX && Math.cos(this.chassis.getAngle()) >= FLIP_COS) {
       this.status = 'won';
       return;
     }
     if (p.y < Math.min(this.level.leftHeight, this.level.rightHeight) - 6) {
       this.lose('fell');
+      return;
+    }
+    // Flipped: upside down (more than ~100 degrees) for half a second. A vehicle on its roof never wins.
+    if (Math.cos(this.chassis.getAngle()) < FLIP_COS) this.flipTimer += STEP;
+    else this.flipTimer = 0;
+    if (this.flipTimer > 0.5) {
+      this.lose('flipped');
       return;
     }
     // Stuck: barely moved for 3 seconds.

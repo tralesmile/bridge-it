@@ -114,6 +114,14 @@ async function run(viewport, name) {
   await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w2-14' }));
   await sleep(600);
   await page.screenshot({ path: `${OUT}/${name}-9b-train-level.png` });
+  // Draft World 3 levels (opened by id): a lower right dock and a truck ramp.
+  for (const [id, shot] of [['w3-1', '9c-low-dock'], ['w3-2', '9d-ramp-foot']]) {
+    await page.evaluate((lid) => globalThis.__bridgeit.scene.start('play', { levelId: lid }), id);
+    await sleep(600);
+    await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
+    await sleep(300);
+    await page.screenshot({ path: `${OUT}/${name}-${shot}.png` });
+  }
   await page.close();
 }
 

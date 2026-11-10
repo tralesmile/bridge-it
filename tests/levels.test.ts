@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest';
 import { BridgeDesign } from '../src/core/bridge';
 import type { Beam } from '../src/core/types';
-import { ALL_LEVELS, build, levelFromJson, levelToJson, roadDeck } from '../src/core/levels';
+import { ALL_LEVELS, DRAFT_LEVELS, build, levelFromJson, levelToJson, roadDeck } from '../src/core/levels';
 import { MATERIALS } from '../src/core/materials';
 import { Simulation } from '../src/core/simulation';
 
-describe.each(ALL_LEVELS.map((l) => [l.id, l] as const))('level %s', (_id, level) => {
+describe.each([...ALL_LEVELS, ...DRAFT_LEVELS].map((l) => [l.id, l] as const))('level %s', (_id, level) => {
   test('the known solution crosses', () => {
     const sim = new Simulation(level, level.solution);
     expect(sim.runToEnd()).toBe('won');
@@ -128,5 +128,27 @@ describe('piston material', () => {
     const d = new BridgeDesign(level);
     expect(d.add({ x: 2, y: -2 }, { x: 2, y: 1 }, 'piston')).toEqual({ ok: true });
     expect(d.canAdd({ x: 2, y: -2 }, { x: 2, y: 2 }, 'piston')).toEqual({ ok: false, reason: 'too-long' });
+  });
+});
+
+describe('Pirate Bay drafts', () => {
+  const ramp = DRAFT_LEVELS.find((l) => l.name === 'Ramp Foot')!;
+  const legs = (materials: ('wood' | 'steel')[]): Beam[] => [
+    ...ramp.solution.filter((b) => b.material === 'road'),
+    ...[2, 4, 6].map((x, i): Beam => ({ a: `${x},0`, b: `${x},-2`, material: materials[i] })),
+  ];
+  test('Ramp Foot: wood legs break, steel at the ramp foot holds', () => {
+    expect(new Simulation(ramp, legs(['wood', 'wood', 'wood'])).runToEnd()).toBe('lost');
+    expect(new Simulation(ramp, legs(['wood', 'steel', 'wood'])).runToEnd()).toBe('lost');
+    expect(new Simulation(ramp, legs(['steel', 'wood', 'wood'])).runToEnd()).toBe('won');
+  });
+  test('Ramp Foot: all-steel legs cost more than three stars allow', () => {
+    const design = new BridgeDesign(ramp);
+    for (const b of legs(['steel', 'steel', 'steel'])) {
+      const [ax, ay] = b.a.split(',').map(Number);
+      const [bx, by] = b.b.split(',').map(Number);
+      design.add({ x: ax, y: ay }, { x: bx, y: by }, b.material);
+    }
+    expect(design.cost).toBeGreaterThan(ramp.starBudgets[1]);
   });
 });

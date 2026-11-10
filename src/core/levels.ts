@@ -100,6 +100,15 @@ const CANYON: LevelSpec[] = [
   { name: 'Canyon Finale', gap: 32, goalDistance: 5, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(32, 4, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 4, 4)], slack: 1.25, tip: 'The longest bridge yet. Ropes only pull, so hang the road.' },
 ];
 
+/**
+ * World 3 Pirate Bay, still being made: tested like other levels, opened by id, not shown in menus.
+ * Moves into WORLDS when it has 15 levels.
+ */
+const PIRATE: LevelSpec[] = [
+  { name: 'Low Dock', gap: 8, rightHeight: -1, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }], solution: (g) => [{ a: '0,0', b: '2,-1', material: 'road' }, ...roadDeck(2, g, -1), { a: '4,-1', b: '4,-2', material: 'wood' }, { a: '0,-2', b: '2,-1', material: 'wood' }, { a: '4,-2', b: '6,-1', material: 'wood' }], slack: 1.3, tip: 'The far dock is lower. A gentle slope down is fine.' },
+  { name: 'Ramp Foot', gap: 8, vehicle: 'truck', leftHeight: 1, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 2, y: -2 }, { x: 4, y: -2 }, { x: 6, y: -2 }], solution: (g) => [{ a: '0,1', b: '2,0', material: 'road' }, ...roadDeck(2, g), { a: '2,0', b: '2,-2', material: 'steel' }, { a: '4,0', b: '4,-2', material: 'wood' }, { a: '6,0', b: '6,-2', material: 'wood' }], slack: 1.3, tip: 'The bottom of the ramp carries the whole truck. Make it strong.' },
+];
+
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;
 
 function costOf(beams: Beam[]): number {
@@ -147,8 +156,12 @@ export const WORLDS = [
 
 export const ALL_LEVELS: LevelEntry[] = WORLDS.flatMap((w) => w.levels);
 
+/** Worlds still being made (see PIRATE). Not in menus or progress. */
+export const DRAFT_WORLDS = [{ id: 3, name: 'Pirate Bay', levels: build(3, PIRATE) }];
+export const DRAFT_LEVELS: LevelEntry[] = DRAFT_WORLDS.flatMap((w) => w.levels);
+
 export function levelById(id: string): LevelEntry | undefined {
-  return ALL_LEVELS.find((l) => l.id === id);
+  return ALL_LEVELS.find((l) => l.id === id) ?? DRAFT_LEVELS.find((l) => l.id === id);
 }
 
 export function nextLevel(id: string): LevelEntry | undefined {

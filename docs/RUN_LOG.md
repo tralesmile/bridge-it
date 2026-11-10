@@ -2,6 +2,22 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-10 — Run 25
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Physics bug: a car going down a 1 m slope at the end of a flat bridge flipped onto its roof. Cause: wheel motors braked at full torque downhill and pitched the car forward. Now a wheel faster than its target speed gets 10% torque. Level tests and difficulty report unchanged. New slope test (car and truck).
+- Started World 3 Pirate Bay as a draft (`PIRATE` / `DRAFT_WORLDS` in `src/core/levels.ts`): w3-1 Low Dock (car, right dock 1 m lower) and w3-2 Ramp Foot (truck from a high cliff; wood legs break, steel only at the ramp foot wins; all-steel is over 3 stars). Drafts get all level tests, open by id, and are not in menus. e2e screenshots them.
+
+**Verified**
+- `npm run check` green (226 tests), `npm run e2e` no FAIL, screenshots of both new levels (desktop and phone) checked.
+
+**Lessons**
+- vitest hides `console.log` here; use `process.stdout.write` in probe tests.
+- When a sensible design loses in a strange way, trace it before designing around it: the flip was a physics bug, not a level problem.
+- Keep unfinished worlds in `DRAFT_WORLDS` so levels are tested without showing a half-empty world.
+- e2e now takes over 2 minutes; run it with a longer timeout or in the background.
+- Next: more Pirate Bay levels (a piston idea is still needed), min-cost search.
+
 ## 2026-11-10 — Run 24
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

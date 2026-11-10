@@ -35,7 +35,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] World 1 expanded to 15 levels with a saw-tooth difficulty curve (10 Long Haul, 11 Little Brook, 12 Two Rocks, 13 Heavy Load, 14 Deep Gorge, 15 Farm Finale)
 - [x] Level select pages when a world has more than 15 levels (`LEVELS_PER_PAGE`, ◀ ▶ at top right; opens on the page of the first unstarred level; no world has >15 yet, so not seen in e2e)
 - [x] Vehicle drops understood (`tests/vehicle.test.ts`): a 1 m drop is fine; a 2 m drop tips the vehicle over (front wheels drop first), which now loses as "Flipped!" instead of winning on its roof. A truck on a raised-start ramp breaks a wood leg at the ramp foot (it carries the whole truck); steel legs win.
-- [ ] Level idea: a lower right cliff (1 m drop) and a truck ramp level that needs a steel leg at the ramp foot
+- [x] Level idea: lower right cliff (w3-1 Low Dock) and truck ramp that needs a steel leg at the ramp foot (w3-2 Ramp Foot). Both in `DRAFT_WORLDS` (tested, opened by id, not in menus yet)
+- [x] Bug: cars flipped going down a 1 m slope (wheel motors braked at full torque). Motors now coast downhill (10% brake torque)
 - [x] Rope material (tension only, 4.5 m, cheap, weak; `RopeJoint`), tested with a rope-braced truss
 - [x] World select screen (`worlds` scene; later worlds show Coming soon; a world opens when the last level of the one before has a star)
 - [x] World 2 Canyon Rails: 10 rope levels (hanger bridges, up to a 32 m gap)
@@ -43,7 +44,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] World 2: Little Train vehicle (long 4-wheel body, not multi-car) and level w2-14 Little Train (15 levels total; finale is w2-15)
 - [ ] (partly: Sparse Posts and Long Cable mix truss and one rope) Rope level design: ropes cost more than a wood Warren truss when used as X braces; find a level where rope is the clever choice (long span, tension ties)
 - [x] Hydraulic piston material (`piston`: 3.2 m max, 350/m, grows 50% between 0.5 s and 2 s of an attempt; tested)
-- [ ] World 3 Pirate Bay (15 levels) with piston levels. Probing found no level where the piston is *required*: a rigid leg or prop under a ramp made the car get stuck, while the bare ramp won. Needs a design where growth matters (e.g. a gap that opens, or a start cliff lower than the road). Add `WORLD_BACKGROUNDS` entry and remove Pirate Bay from `COMING_SOON` (e2e positions depend on card count).
+- [ ] World 3 Pirate Bay (15 levels; 2 drafts done in `PIRATE`, move into `WORLDS` at 15) with piston levels. Probing found no level where the piston is *required*: a rigid leg or prop under a ramp made the car get stuck, while the bare ramp won. Needs a design where growth matters (e.g. a gap that opens, or a start cliff lower than the road). Add `WORLD_BACKGROUNDS` entry and remove Pirate Bay from `COMING_SOON` (e2e positions depend on card count).
 - [ ] Springs and World 4 Candy Mountain (15 levels)
 - [x] Per-world backdrop (sky, hills) in play and level select (`WORLD_BACKGROUNDS`; world 2 is canyon orange)
 - [ ] Per-world music and themed world select cards

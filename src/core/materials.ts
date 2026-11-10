@@ -1,5 +1,5 @@
 /** Building materials. Units: metres, newtons, in-game dollars. */
-export type MaterialId = 'road' | 'wood' | 'steel' | 'rope';
+export type MaterialId = 'road' | 'wood' | 'steel' | 'rope' | 'piston';
 
 export interface Material {
   id: MaterialId;
@@ -16,6 +16,8 @@ export interface Material {
   isRoad: boolean;
   /** True if it only pulls: it goes slack when pushed. */
   tensionOnly?: boolean;
+  /** Hydraulic: grows by this fraction of its length while the attempt runs. */
+  extends?: number;
 }
 
 export const MATERIALS: Record<MaterialId, Material> = {
@@ -23,6 +25,7 @@ export const MATERIALS: Record<MaterialId, Material> = {
   wood: { id: 'wood', name: 'Wood', maxLength: 2.25, costPerMetre: 100, strength: 12000, massPerMetre: 10, isRoad: false },
   steel: { id: 'steel', name: 'Steel', maxLength: 3.2, costPerMetre: 300, strength: 30000, massPerMetre: 25, isRoad: false },
   rope: { id: 'rope', name: 'Rope', maxLength: 4.5, costPerMetre: 60, strength: 7000, massPerMetre: 2, isRoad: false, tensionOnly: true },
+  piston: { id: 'piston', name: 'Piston', maxLength: 3.2, costPerMetre: 350, strength: 24000, massPerMetre: 15, isRoad: false, extends: 0.5 },
 };
 
-export const MATERIAL_ORDER: MaterialId[] = ['road', 'wood', 'steel', 'rope'];
+export const MATERIAL_ORDER: MaterialId[] = ['road', 'wood', 'steel', 'rope', 'piston'];

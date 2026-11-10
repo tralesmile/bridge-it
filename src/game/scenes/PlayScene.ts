@@ -319,6 +319,7 @@ export class PlayScene extends Phaser.Scene {
       wood: [C.wood, '#9a6431'],
       steel: [C.steel, '#5f7390'],
       rope: [C.rope, '#7d6642'],
+      piston: [C.piston, '#2a7a6f'],
       erase: [C.anchor, '#a8302a'],
     };
     tools.forEach((t, i) => {
@@ -546,6 +547,7 @@ export class PlayScene extends Phaser.Scene {
     if (material === 'road') return { width: 14, color: C.road, light: C.roadLine };
     if (material === 'steel') return { width: 9, color: C.steel, light: C.steelLight };
     if (material === 'rope') return { width: 5, color: C.rope, light: C.ropeLight };
+    if (material === 'piston') return { width: 11, color: C.piston, light: C.pistonLight };
     return { width: 9, color: C.wood, light: C.woodLight };
   }
 
@@ -584,7 +586,7 @@ export class PlayScene extends Phaser.Scene {
     g.clear();
     if (this.mode === 'build') {
       this.drawGrid(g);
-      const order: MaterialId[] = ['rope', 'wood', 'steel', 'road'];
+      const order: MaterialId[] = ['rope', 'wood', 'steel', 'piston', 'road'];
       for (const m of order) for (const beam of this.design.list) if (beam.material === m) this.strokeBeam(g, pointOf(beam.a), pointOf(beam.b), m);
       return;
     }

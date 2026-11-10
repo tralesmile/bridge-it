@@ -104,3 +104,29 @@ describe('rope material', () => {
     expect(design.canAdd({ x: 0, y: 0 }, { x: 6, y: 0 }, 'rope')).toEqual({ ok: false, reason: 'too-long' });
   });
 });
+
+describe('piston material', () => {
+  const level = build(9, [{ name: 'Piston test', gap: 6, materials: ['road', 'wood', 'piston'], extraAnchors: [{ x: 2, y: -2 }], solution: () => roadDeck(0, 6), slack: 3 }])[0];
+  const design: Beam[] = [
+    { a: '0,0', b: '2,0', material: 'road' },
+    { a: '2,-2', b: '2,0', material: 'piston' },
+  ];
+
+  test('a piston grows by half its length while the attempt runs', () => {
+    const sim = new Simulation(level, design);
+    const length = (): number => {
+      const s = sim.beamStates.find((b) => b.beam.material === 'piston')!;
+      return Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y);
+    };
+    expect(length()).toBeCloseTo(2, 1);
+    while (sim.time < 3) sim.step();
+    expect(length()).toBeGreaterThan(2.7);
+    expect(length()).toBeLessThan(3.3);
+  });
+
+  test('a piston can be built up to 3.2 m and not longer', () => {
+    const d = new BridgeDesign(level);
+    expect(d.add({ x: 2, y: -2 }, { x: 2, y: 1 }, 'piston')).toEqual({ ok: true });
+    expect(d.canAdd({ x: 2, y: -2 }, { x: 2, y: 2 }, 'piston')).toEqual({ ok: false, reason: 'too-long' });
+  });
+});

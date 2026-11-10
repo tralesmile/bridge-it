@@ -20,6 +20,9 @@ const NODE_RADIUS = 0.08;
 const NODE_DENSITY = 300;
 const LOAD_FILTER = 0.92;
 const ROAD_THICKNESS = 0.2;
+/** Pistons start to grow at PISTON_START seconds and take PISTON_TIME seconds to reach full length. */
+export const PISTON_START = 0.5;
+export const PISTON_TIME = 1.5;
 
 export interface BeamState {
   beam: Beam;
@@ -72,6 +75,7 @@ export class Simulation {
   private readonly wheels: Body[] = [];
   private readonly vehicleDef: VehicleDef;
   private readonly goalX: number;
+  private readonly pistons: { joint: DistanceJoint; length: number; grow: number }[] = [];
   private stuckTimer = 0;
   private lastX = 0;
 
@@ -89,6 +93,7 @@ export class Simulation {
   /** Advances the world by one fixed step. */
   step(): void {
     if (this.status !== 'running') return;
+    this.growPistons();
     this.world.step(STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.time += STEP;
     if (!this.isFinite()) {
@@ -192,8 +197,14 @@ export class Simulation {
           ? new RopeJoint({ bodyA: na, bodyB: nb, localAnchorA: Vec2(0, 0), localAnchorB: Vec2(0, 0), maxLength: length })
           : new DistanceJoint({ frequencyHz: 0, dampingRatio: 0, length }, na, nb, Vec2(pa.x, pa.y), Vec2(pb.x, pb.y)),
       );
+      if (joint instanceof DistanceJoint && material.extends) this.pistons.push({ joint, length, grow: length * material.extends });
       this.beams.push({ state, joints: joint ? [joint] : [], body: null, strength: material.strength, load: 0 });
     }
+  }
+
+  private growPistons(): void {
+    const t = Math.min(1, Math.max(0, (this.time - PISTON_START) / PISTON_TIME));
+    for (const p of this.pistons) if (p.joint.getBodyA()) p.joint.setLength(p.length + p.grow * t);
   }
 
   private buildVehicle(): Body {

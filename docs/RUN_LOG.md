@@ -2,6 +2,20 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-10 — Run 21
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Piston material (`piston` in `materials.ts`, `growPistons` in `simulation.ts`): rigid distance joint whose length grows 50% from 0.5 s to 2 s. Teal colour in the play scene and toolbar. Save loader accepts it. 2 tests.
+- No World 3 level yet (see roadmap): probing showed a rigid leg under a ramp makes the car stick, and a bare ramp wins anyway.
+
+**Verified**
+- `npm run check` green (203 tests), `npm run e2e` no FAIL.
+
+**Lessons**
+- Do not change the number of "Coming soon" cards without a level in the new world: e2e clicks fixed card positions.
+- Probe designs with a throwaway vitest file writing to the scratchpad, then delete it.
+- Next: World 3 design where growth matters, tighten w1-7 / w1-13 budgets, vehicle-drop physics.
+
 ## 2026-11-10 — Run 20
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

@@ -55,7 +55,7 @@ export function sanitize(raw: unknown): SaveData {
       if (Array.isArray(v)) {
         base.designs[k] = v.filter(
           (b): b is Beam =>
-            !!b && typeof b.a === 'string' && typeof b.b === 'string' && ['road', 'wood', 'steel', 'rope'].includes(b.material),
+            !!b && typeof b.a === 'string' && typeof b.b === 'string' && ['road', 'wood', 'steel', 'rope', 'piston'].includes(b.material),
         );
       }
     }

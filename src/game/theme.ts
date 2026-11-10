@@ -33,6 +33,8 @@ export const C = {
   steelLight: '#c6d4e8',
   rope: '#b99a6b',
   ropeLight: '#e0c89a',
+  piston: '#3fae9f',
+  pistonLight: '#a6ebe1',
   stress: '#ff3b30',
 } as const;
 

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { BUILD_MARGIN_X, BUILD_MAX_Y, BUILD_MIN_Y, BridgeDesign, distance, keyOf, pointOf, snap, type AddResult } from '../../core/bridge';
 import { levelById, nextLevel, type LevelEntry } from '../../core/levels';
 import { MATERIALS, type MaterialId } from '../../core/materials';
+import { decodeBridge, encodeBridge } from '../../core/share';
 import { starsFor } from '../../core/scoring';
 import { MAX_TIME, STEP, Simulation } from '../../core/simulation';
 import type { Point } from '../../core/types';
@@ -64,6 +65,7 @@ export class PlayScene extends Phaser.Scene {
   private goButton!: Button;
   private undoButton!: Button;
   private hintButton!: Button;
+  private pasteButton!: Button;
   private buildUi: Phaser.GameObjects.GameObject[] = [];
   private resultLayer: Phaser.GameObjects.Container | null = null;
 
@@ -297,6 +299,8 @@ export class PlayScene extends Phaser.Scene {
 
   private createHud(): void {
     button(this, 90, 50, '◀', () => this.scene.start('levels', { world: this.level.world }), { width: 76, height: 56, fontSize: 30, color: C.blue, shade: C.blueDark });
+    this.pasteButton = button(this, 215, 50, 'Paste code', () => this.pasteCode(), { width: 170, height: 56, fontSize: 22, color: C.grey, shade: C.greyDark });
+    this.buildUi.push(this.pasteButton);
     const title = label(this, GAME_W / 2, 40, `${this.level.index}. ${this.level.name}`, 34, C.white);
     title.setStroke(C.ink, 8);
 
@@ -496,6 +500,37 @@ export class PlayScene extends Phaser.Scene {
     if (this.design.undo()) {
       sfx.erase();
       this.afterChange();
+    }
+  }
+
+  private pasteCode(): void {
+    if (this.mode !== 'build') return;
+    const text = window.prompt('Paste a bridge code here:');
+    if (!text) return;
+    const result = decodeBridge(text);
+    if (!result.ok) {
+      sfx.error();
+      this.showToast(result.error, 2600);
+      return;
+    }
+    if (result.levelId !== this.level.id) {
+      sfx.error();
+      this.showToast('This code is for a different level.', 2600);
+      return;
+    }
+    this.design = new BridgeDesign(this.level, result.beams);
+    sfx.place(0);
+    this.afterChange();
+    this.showToast('Bridge loaded!');
+  }
+
+  private async copyCode(): Promise<void> {
+    const code = encodeBridge(this.level.id, this.design.list);
+    try {
+      await navigator.clipboard.writeText(code);
+      this.showToast('Code copied! Send it to a friend.', 2400);
+    } catch {
+      window.prompt('Copy this code:', code);
     }
   }
 
@@ -748,8 +783,8 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private showWin(stars: number, cost: number, coins: number): void {
-    const layer = this.resultPanel(420);
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 150, 'Made it!', 56, C.ink));
+    const layer = this.resultPanel(520);
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 170, 'Made it!', 56, C.ink));
     for (let i = 0; i < 3; i++) {
       const star = this.add.image(GAME_W / 2 - 110 + i * 110, GAME_H / 2 - 50, i < stars ? 'star' : 'star-empty').setScale(0);
       layer.add(star);
@@ -773,6 +808,7 @@ export class PlayScene extends Phaser.Scene {
       this.coinFlyIn(Math.min(coins, 8), 900 + stars * 220);
     }
     const nxt = nextLevel(this.level.id);
+    layer.add(button(this, GAME_W / 2, GAME_H / 2 + 225, 'Copy bridge code', () => void this.copyCode(), { width: 280, height: 50, fontSize: 22, color: C.grey, shade: C.greyDark }));
     layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 145, 'Improve', () => this.stopSim(), { width: 220, height: 70, color: C.blue, shade: C.blueDark }));
     layer.add(
       button(this, GAME_W / 2 + 140, GAME_H / 2 + 145, nxt ? 'Next ▶' : 'Levels', async () => {

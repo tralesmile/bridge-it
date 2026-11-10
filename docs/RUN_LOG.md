@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-10 — Run 23
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Share codes UI: "Copy bridge code" on the win panel (clipboard, prompt fallback), "Paste code" at top left while building (checks level id and rules, shows plain errors).
+
+**Verified**
+- `npm run check` green (206 tests), `npm run e2e` no FAIL; fixed two overlaps found in screenshots (Paste vs Back, Copy vs panel edge).
+
+**Lessons**
+- Always open the screenshot after adding UI: both new buttons overlapped on the first try.
+- Paste/copy not in e2e (prompt and clipboard are browser dialogs). Could add a test with a stubbed prompt.
+- Next: tighten w1-7 / w1-13 budgets, vehicle-drop physics, World 3 design.
+
 ## 2026-11-10 — Run 22
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

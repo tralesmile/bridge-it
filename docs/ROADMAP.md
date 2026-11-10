@@ -61,7 +61,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [ ] Sandbox mode
 - [ ] Level editor for players
 - [x] Share codes core: `encodeBridge` / `decodeBridge` in `src/core/share.ts` (format `BI1.<levelId>.<data>.<check>`, checked against level rules; tested on all solutions)
-- [ ] Share codes UI: copy code button after a win, paste-code box on the play scene
+- [x] Share codes UI: "Copy bridge code" on the win panel, "Paste code" button on the play scene (uses window.prompt; not covered by e2e)
 
 ## M6 Web portals
 - [ ] Build flavours: web, crazygames, poki (each picks its platform adapter)

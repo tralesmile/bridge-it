@@ -2,6 +2,21 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-11 — Run 26
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 3 Pirate Bay drafts 3-8 (still in `DRAFT_WORLDS`): Plank Walk (one low rock between road joints, two planks), Crow's Nest (two masts, fan of ropes), Gangplank (car walks down from a 2 m high ship), Tide Pools (rocks between road joints, lean planks on them), Rum Barrels (truck down to a low dock, wood leg + steel diagonals from a deep rock), Shipwreck (a deep rock that is not worth using; a short leg on the high rock wins).
+- e2e screenshots all 8 draft levels with the hint.
+
+**Verified**
+- `npm run check` green (256 tests), `npm run e2e` no FAIL, desktop and phone screenshots of the new levels checked.
+
+**Lessons**
+- Check beam lengths in a probe solution before running: a 2.83 m wood diagonal is over the 2.25 m limit, and only the "built within the rules" test catches it.
+- Shell heredocs with `${...}` and `$` can trip the command safety check; write probe tests with the Write tool.
+- For each new level, probe the solution, empty, road only and road + truss, and a few cheaper ideas; then pick the cheapest robust one as the stored solution.
+- Next: 7 more Pirate Bay levels (still no piston-required idea), then move the world into `WORLDS`.
+
 ## 2026-11-10 — Run 25
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

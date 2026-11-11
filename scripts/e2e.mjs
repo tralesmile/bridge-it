@@ -114,8 +114,9 @@ async function run(viewport, name) {
   await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w2-14' }));
   await sleep(600);
   await page.screenshot({ path: `${OUT}/${name}-9b-train-level.png` });
-  // Draft World 3 levels (opened by id): a lower right dock and a truck ramp.
-  for (const [id, shot] of [['w3-1', '9c-low-dock'], ['w3-2', '9d-ramp-foot']]) {
+  // Draft World 3 levels (opened by id), each with its hint shown.
+  const drafts = [['w3-1', '9c-low-dock'], ['w3-2', '9d-ramp-foot'], ['w3-3', '9e-plank-walk'], ['w3-4', '9f-crows-nest'], ['w3-5', '9g-gangplank'], ['w3-6', '9h-tide-pools'], ['w3-7', '9i-rum-barrels'], ['w3-8', '9j-shipwreck']];
+  for (const [id, shot] of drafts) {
     await page.evaluate((lid) => globalThis.__bridgeit.scene.start('play', { levelId: lid }), id);
     await sleep(600);
     await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });

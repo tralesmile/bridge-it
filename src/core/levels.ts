@@ -104,9 +104,19 @@ const CANYON: LevelSpec[] = [
  * World 3 Pirate Bay, still being made: tested like other levels, opened by id, not shown in menus.
  * Moves into WORLDS when it has 15 levels.
  */
+const beam = (a: string, b: string, material: MaterialId): Beam => ({ a, b, material });
+/** Three ropes from a mast top at (x, h) down to the deck at x-2, x and x+2. */
+const fanRopes = (x: number, h: number): Beam[] => [x - 2, x, x + 2].map((d) => beam(`${x},${h}`, `${d},0`, 'rope'));
+
 const PIRATE: LevelSpec[] = [
   { name: 'Low Dock', gap: 8, rightHeight: -1, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }], solution: (g) => [{ a: '0,0', b: '2,-1', material: 'road' }, ...roadDeck(2, g, -1), { a: '4,-1', b: '4,-2', material: 'wood' }, { a: '0,-2', b: '2,-1', material: 'wood' }, { a: '4,-2', b: '6,-1', material: 'wood' }], slack: 1.3, tip: 'The far dock is lower. A gentle slope down is fine.' },
   { name: 'Ramp Foot', gap: 8, vehicle: 'truck', leftHeight: 1, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 2, y: -2 }, { x: 4, y: -2 }, { x: 6, y: -2 }], solution: (g) => [{ a: '0,1', b: '2,0', material: 'road' }, ...roadDeck(2, g), { a: '2,0', b: '2,-2', material: 'steel' }, { a: '4,0', b: '4,-2', material: 'wood' }, { a: '6,0', b: '6,-2', material: 'wood' }], slack: 1.3, tip: 'The bottom of the ramp carries the whole truck. Make it strong.' },
+  { name: 'Plank Walk', gap: 6, materials: ['road', 'wood'], extraAnchors: [{ x: 3, y: -1 }], solution: (g) => [...roadDeck(0, g), beam('3,-1', '2,0', 'wood'), beam('3,-1', '4,0', 'wood')], slack: 1.3, tip: 'One small rock. Two short planks from it are enough.' },
+  { name: "Crow's Nest", gap: 12, materials: ['road', 'wood', 'rope'], extraAnchors: [{ x: 4, y: 4 }, { x: 8, y: 4 }], solution: (g) => [...roadDeck(0, g), ...[4, 8].flatMap((m) => fanRopes(m, 4))], slack: 1.3, tip: 'Two masts. Hang the road with ropes in a fan.' },
+  { name: 'Gangplank', gap: 6, leftHeight: 2, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 2, y: -2 }, { x: 4, y: -2 }], solution: () => [beam('0,2', '2,1', 'road'), beam('2,1', '4,0', 'road'), beam('4,0', '6,0', 'road'), beam('2,1', '2,-2', 'steel')], slack: 1.3, tip: 'Walk down from the high ship. Keep the slope gentle.' },
+  { name: 'Tide Pools', gap: 10, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 3, y: -2 }, { x: 7, y: -2 }], solution: (g) => [...roadDeck(0, g), ...[3, 7].flatMap((x) => [beam(`${x},-2`, `${x - 1},0`, 'wood'), beam(`${x},-2`, `${x + 1},0`, 'wood')]), ...[0, 4, 8].flatMap((x) => warrenTruss(x, x + 2))], slack: 1.3, tip: 'The rocks are between the road joints. Lean planks on them.' },
+  { name: 'Rum Barrels', gap: 8, vehicle: 'truck', rightHeight: -1, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -3 }], solution: (g) => [beam('0,0', '2,-1', 'road'), ...roadDeck(2, g, -1), beam('4,-1', '4,-3', 'wood'), beam('0,-2', '2,-1', 'wood'), beam('4,-3', '2,-1', 'steel'), beam('4,-3', '6,-1', 'steel')], slack: 1.3, tip: 'A heavy truck goes down to the low dock. Spread the load from the rock.' },
+  { name: 'Shipwreck', gap: 12, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -3 }, { x: 8, y: -1 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), beam('8,0', '8,-1', 'wood')], slack: 1.3, tip: 'Not every rock is worth using.' },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;

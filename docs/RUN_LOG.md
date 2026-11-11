@@ -2,6 +2,22 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-11 — Run 33
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Loose 3-star budgets fixed on 9 levels (w1-8, w1-9, w1-12, w1-14, w2-3, w2-5, w2-9, w3-1, w3-6). A level spec can now list `trim` beams: the hint is the solution without them and sets the 3-star budget; the full (plain) solution still sets the money budget and the 2-star budget, so the plain way earns 2 stars and the clever way 3. `LevelEntry.textbook` keeps the plain design.
+- Big Valley: the greedy search left a loose beam hanging (its weight helped). Used a cleaner design instead (drop both end triangles, keep both posts), which is also cheaper.
+- Tests: each trimmed level's plain design wins, fits the budget and gets exactly 2 stars; the hint gets 3 stars with no break; `dropBeams` throws on a typo.
+
+**Verified**
+- `npm run check` green (458 tests), `npm run report -- --trim` shows no LOOSE level, `npm run e2e` no FAIL; High Cliff hint screenshot checked (road and one post).
+
+**Lessons**
+- `node probe/try.mjs <level> '<a> <b>' ...` (in the git-excluded `probe/`) tests a level's solution minus some beams in seconds. Faster than editing levels.ts for each idea.
+- Greedy trimming can keep a beam with a free end because its weight helps. Remove dangling beams by hand and look for a symmetric design instead.
+- `cmd | grep ...; ls` hides the exit code of `cmd`. e2e prints PASS/FAIL lines; grep for FAIL in a saved output file.
+- Next: World 5 mechanic (faster vehicle + spring landing pads), or M4 (coins and shop, achievements, daily bridge).
+
 ## 2026-11-11 — Run 32
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

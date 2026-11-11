@@ -28,6 +28,8 @@ export function steelTopTruss(x0: number, x1: number, y = 0, h = 1): Beam[] {
 export interface LevelEntry extends LevelDef {
   /** A known working design. Shown as the hint, and checked by tests. */
   solution: Beam[];
+  /** The plain design the budget is made from, when the hint is a cheaper one. It earns 2 stars. */
+  textbook?: Beam[];
 }
 
 export interface LevelSpec {
@@ -48,6 +50,11 @@ export interface LevelSpec {
   shipLane?: ShipLane;
   /** More than one lane (a level with two canals). */
   shipLanes?: ShipLane[];
+  /**
+   * Beams ('a b') taken out of `solution` for the hint and the 3-star budget. The full solution
+   * still sets the money budget and earns 2 stars, so the plain way is fine and the clever way gets 3.
+   */
+  trim?: string[];
 }
 
 const FARM: LevelSpec[] = [
@@ -58,13 +65,13 @@ const FARM: LevelSpec[] = [
   { name: 'Wide River', gap: 8, materials: ['road', 'wood'], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g)], slack: 1.3 },
   { name: 'Rock Pillar', gap: 8, materials: ['road', 'wood'], extraAnchors: [{ x: 4, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, 4), ...warrenTruss(4, g), { a: '4,0', b: '4,-2', material: 'wood' }], tip: 'Use the rock to split one long bridge into two short ones.' },
   { name: 'Hay Truck', gap: 6, vehicle: 'truck', materials: ['road', 'wood', 'steel'], solution: (g) => [...roadDeck(0, g), ...steelTopTruss(0, g)], tip: 'Heavy truck! Wood alone breaks. Steel is strong but expensive: use a little.', slack: 1.4 },
-  { name: 'Big Valley', gap: 10, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 6, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '6,0', b: '6,-2', material: 'wood' }], slack: 1.25 },
-  { name: 'High Cliff', gap: 16, leftHeight: 1, goalDistance: 5, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 12, y: -2 }], solution: (g) => [{ a: '0,1', b: '2,0', material: 'road' }, ...roadDeck(2, g), ...warrenTruss(2, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }, { a: '12,0', b: '12,-2', material: 'wood' }], slack: 1.25, tip: 'You start on a high cliff. Use the rocks below for support.' },
+  { name: 'Big Valley', gap: 10, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 6, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '6,0', b: '6,-2', material: 'wood' }], slack: 1.25 , trim: ['0,0 1,1', '1,1 2,0', '1,1 3,1', '7,1 9,1', '8,0 9,1', '9,1 10,0'] },
+  { name: 'High Cliff', gap: 16, leftHeight: 1, goalDistance: 5, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 12, y: -2 }], solution: (g) => [{ a: '0,1', b: '2,0', material: 'road' }, ...roadDeck(2, g), ...warrenTruss(2, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }, { a: '12,0', b: '12,-2', material: 'wood' }], slack: 1.25, tip: 'You start on a high cliff. Use the rocks below for support.' , trim: ['2,0 3,1', '3,1 4,0', '3,1 5,1', '4,0 5,1', '5,1 6,0', '5,1 7,1', '6,0 7,1', '7,1 8,0', '7,1 9,1', '8,0 9,1', '9,1 10,0', '9,1 11,1', '10,0 11,1', '11,1 12,0', '11,1 13,1', '12,0 13,1', '13,1 14,0', '13,1 15,1', '14,0 15,1', '15,1 16,0', '4,0 4,-2', '12,0 12,-2'] },
   { name: 'Long Haul', gap: 12, vehicle: 'truck', materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }], slack: 1.3, tip: 'A truck on a long bridge. Rocks help a lot.' },
   { name: 'Little Brook', gap: 6, materials: ['road', 'wood'], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g)], slack: 1.25, tip: 'A short gap, but money is tight. Build only what you need.' },
-  { name: 'Two Rocks', gap: 12, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }], slack: 1.2, tip: 'Use both rocks. Less wood means more stars.' },
+  { name: 'Two Rocks', gap: 12, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }], slack: 1.2, tip: 'Use both rocks. Less wood means more stars.' , trim: ['0,0 1,1', '1,1 2,0', '1,1 3,1', '5,1 7,1', '6,0 7,1', '7,1 8,0', '7,1 9,1'] },
   { name: 'Heavy Load', gap: 8, vehicle: 'truck', materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, 4), ...warrenTruss(4, g), { a: '4,0', b: '4,-2', material: 'wood' }], slack: 1.3, tip: 'Too heavy for wood alone. Stand the bridge on the rock.' },
-  { name: 'Deep Gorge', gap: 14, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 10, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }, { a: '10,0', b: '10,-2', material: 'wood' }], slack: 1.25 },
+  { name: 'Deep Gorge', gap: 14, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 10, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }, { a: '10,0', b: '10,-2', material: 'wood' }], slack: 1.25 , trim: ['0,0 1,1', '1,1 2,0', '1,1 3,1', '5,1 7,1', '6,0 7,1', '7,1 8,0', '7,1 9,1', '8,0 9,1', '9,1 10,0', '9,1 11,1'] },
   { name: 'Farm Finale', gap: 16, vehicle: 'truck', goalDistance: 5, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 12, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), { a: '4,0', b: '4,-2', material: 'wood' }, { a: '8,0', b: '8,-2', material: 'wood' }, { a: '12,0', b: '12,-2', material: 'wood' }], slack: 1.3, tip: 'The big one. A heavy truck on a wide gap.' },
 ];
 
@@ -89,13 +96,13 @@ const rockLegs = (gap: number, step: number, material: MaterialId = 'wood'): Bea
 const CANYON: LevelSpec[] = [
   { name: 'Hanging Bridge', gap: 8, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(8, 2, 3), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 3)], tip: 'Ropes pull but never push. Hang the road from the high posts.' },
   { name: 'Rope Hangers', gap: 12, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(12, 2, 3), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 3)], slack: 1.3 },
-  { name: 'Tall Posts', gap: 16, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(16, 2, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 4)], slack: 1.3, tip: 'Ropes are cheap. Roads are not.' },
+  { name: 'Tall Posts', gap: 16, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(16, 2, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 4)], slack: 1.3, tip: 'Ropes are cheap. Roads are not.' , trim: ['2,0 2,4', '6,0 6,4', '12,0 12,4'] },
   { name: 'Canyon Mouth', gap: 14, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(14, 2, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 4)], slack: 1.2 },
-  { name: 'Rail Gorge', gap: 20, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(20, 2, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 4)], slack: 1.25, tip: 'A very wide canyon. Hang it all.' },
+  { name: 'Rail Gorge', gap: 20, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(20, 2, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 4)], slack: 1.25, tip: 'A very wide canyon. Hang it all.' , trim: ['2,0 2,4', '6,0 6,4', '10,0 10,4', '14,0 14,4', '18,0 18,4'] },
   { name: 'Sparse Posts', gap: 12, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(12, 6, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...hangerRopes(g, 6, 4)], slack: 1.3, tip: 'Only one post. A truss and one rope can share the work.' },
   { name: 'Long Cable', gap: 16, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(16, 6, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...hangerRopes(g, 6, 4)], slack: 1.3 },
   { name: 'Grand Canyon', gap: 28, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(28, 4, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 4, 4)], slack: 1.25, tip: 'Very wide. The screen zooms out to fit it.' },
-  { name: 'Skyline Span', gap: 24, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(24, 2, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 4)], slack: 1.3 },
+  { name: 'Skyline Span', gap: 24, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(24, 2, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 2, 4)], slack: 1.3 , trim: ['2,0 2,4', '4,0 4,4', '8,0 8,4', '12,0 12,4', '16,0 16,4', '20,0 20,4'] },
   { name: 'Freight Rails', gap: 12, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: rockPosts(12, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...rockLegs(g, 4)], slack: 1.3, tip: 'Trucks snap ropes. Use a truss and rocks.' },
   { name: 'Ore Train', gap: 16, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: rockPosts(16, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...rockLegs(g, 4)], slack: 1.25 },
   { name: 'Iron Bridge', gap: 20, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: rockPosts(20, 4), solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...rockLegs(g, 4)], slack: 1.25 },
@@ -114,12 +121,12 @@ const woodTower = (x: number): Beam[] =>
   [-1, 1].flatMap((s) => [beam(`${x},-3`, `${x + s},-1`, 'wood'), beam(`${x + s},-1`, `${x + 2 * s},0`, 'wood'), beam(`${x + s},-1`, `${x},0`, 'wood')]);
 
 const PIRATE: LevelSpec[] = [
-  { name: 'Low Dock', gap: 8, rightHeight: -1, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }], solution: (g) => [{ a: '0,0', b: '2,-1', material: 'road' }, ...roadDeck(2, g, -1), { a: '4,-1', b: '4,-2', material: 'wood' }, { a: '0,-2', b: '2,-1', material: 'wood' }, { a: '4,-2', b: '6,-1', material: 'wood' }], slack: 1.3, tip: 'The far dock is lower. A gentle slope down is fine.' },
+  { name: 'Low Dock', gap: 8, rightHeight: -1, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }], solution: (g) => [{ a: '0,0', b: '2,-1', material: 'road' }, ...roadDeck(2, g, -1), { a: '4,-1', b: '4,-2', material: 'wood' }, { a: '0,-2', b: '2,-1', material: 'wood' }, { a: '4,-2', b: '6,-1', material: 'wood' }], slack: 1.3, tip: 'The far dock is lower. A gentle slope down is fine.' , trim: ['4,-1 4,-2', '0,-2 2,-1', '4,-2 6,-1'] },
   { name: 'Ramp Foot', gap: 8, vehicle: 'truck', leftHeight: 1, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 2, y: -2 }, { x: 4, y: -2 }, { x: 6, y: -2 }], solution: (g) => [{ a: '0,1', b: '2,0', material: 'road' }, ...roadDeck(2, g), { a: '2,0', b: '2,-2', material: 'steel' }, { a: '4,0', b: '4,-2', material: 'wood' }, { a: '6,0', b: '6,-2', material: 'wood' }], slack: 1.3, tip: 'The bottom of the ramp carries the whole truck. Make it strong.' },
   { name: 'Plank Walk', gap: 6, materials: ['road', 'wood'], extraAnchors: [{ x: 3, y: -1 }], solution: (g) => [...roadDeck(0, g), beam('3,-1', '2,0', 'wood'), beam('3,-1', '4,0', 'wood')], slack: 1.3, tip: 'One small rock. Two short planks from it are enough.' },
   { name: "Crow's Nest", gap: 12, materials: ['road', 'wood', 'rope'], extraAnchors: [{ x: 4, y: 4 }, { x: 8, y: 4 }], solution: (g) => [...roadDeck(0, g), ...[4, 8].flatMap((m) => fanRopes(m, 4))], slack: 1.3, tip: 'Two masts. Hang the road with ropes in a fan.' },
   { name: 'Gangplank', gap: 6, leftHeight: 2, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 2, y: -2 }, { x: 4, y: -2 }], solution: () => [beam('0,2', '2,1', 'road'), beam('2,1', '4,0', 'road'), beam('4,0', '6,0', 'road'), beam('2,1', '2,-2', 'steel')], slack: 1.3, tip: 'Walk down from the high ship. Keep the slope gentle.' },
-  { name: 'Tide Pools', gap: 10, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 3, y: -2 }, { x: 7, y: -2 }], solution: (g) => [...roadDeck(0, g), ...[3, 7].flatMap((x) => [beam(`${x},-2`, `${x - 1},0`, 'wood'), beam(`${x},-2`, `${x + 1},0`, 'wood')]), ...[0, 4, 8].flatMap((x) => warrenTruss(x, x + 2))], slack: 1.3, tip: 'The rocks are between the road joints. Lean planks on them.' },
+  { name: 'Tide Pools', gap: 10, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 3, y: -2 }, { x: 7, y: -2 }], solution: (g) => [...roadDeck(0, g), ...[3, 7].flatMap((x) => [beam(`${x},-2`, `${x - 1},0`, 'wood'), beam(`${x},-2`, `${x + 1},0`, 'wood')]), ...[0, 4, 8].flatMap((x) => warrenTruss(x, x + 2))], slack: 1.3, tip: 'The rocks are between the road joints. Lean planks on them.' , trim: ['0,0 1,1', '1,1 2,0', '4,0 5,1', '5,1 6,0', '8,0 9,1', '9,1 10,0'] },
   { name: 'Rum Barrels', gap: 8, vehicle: 'truck', rightHeight: -1, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -3 }], solution: (g) => [beam('0,0', '2,-1', 'road'), ...roadDeck(2, g, -1), beam('4,-1', '4,-3', 'wood'), beam('0,-2', '2,-1', 'wood'), beam('4,-3', '2,-1', 'steel'), beam('4,-3', '6,-1', 'steel')], slack: 1.3, tip: 'A heavy truck goes down to the low dock. Spread the load from the rock.' },
   { name: 'Shipwreck', gap: 12, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -3 }, { x: 8, y: -1 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), beam('8,0', '8,-1', 'wood')], slack: 1.3, tip: 'Not every rock is worth using.' },
   { name: 'Treasure Island', gap: 16, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 7, y: -1 }, { x: 9, y: -1 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, 6), ...warrenTruss(10, g), ...[7, 9].flatMap((x) => [beam(`${x},-1`, `${x - 1},0`, 'wood'), beam(`${x},-1`, `${x + 1},0`, 'wood')])], slack: 1.25, tip: 'Rest the middle on the island. Trusses for the rest.' },
@@ -251,14 +258,21 @@ function costOf(beams: Beam[]): number {
   return total;
 }
 
+/** The beams without the listed ones ('a b'). Throws on a key that matches no beam (a typo). */
+export function dropBeams(beams: Beam[], keys: string[]): Beam[] {
+  for (const key of keys) if (!beams.some((b) => `${b.a} ${b.b}` === key)) throw new Error(`dropBeams: no beam ${key}`);
+  return beams.filter((b) => !keys.includes(`${b.a} ${b.b}`));
+}
+
 export function build(world: number, specs: LevelSpec[]): LevelEntry[] {
   return specs.map((spec, i) => {
     const lanes = [...(spec.shipLane ? [spec.shipLane] : []), ...(spec.shipLanes ?? [])];
-    const solution = spec.solution(spec.gap);
-    const solutionCost = costOf(solution);
+    const textbook = spec.solution(spec.gap);
+    const solution = spec.trim ? dropBeams(textbook, spec.trim) : textbook;
+    const solutionCost = costOf(textbook);
     const lh = spec.leftHeight ?? 0;
     const rh = spec.rightHeight ?? 0;
-    const three = roundUp(solutionCost, 50);
+    const three = roundUp(costOf(solution), 50);
     return {
       id: `w${world}-${i + 1}`,
       world,
@@ -271,12 +285,13 @@ export function build(world: number, specs: LevelSpec[]): LevelEntry[] {
       goalDistance: spec.goalDistance,
       anchors: [{ x: 0, y: lh }, { x: spec.gap, y: rh }, { x: 0, y: lh - 2 }, { x: spec.gap, y: rh - 2 }, ...(spec.extraAnchors ?? [])],
       budget: roundUp(solutionCost * (spec.slack ?? 1.6), 100),
-      starBudgets: [roundUp(three * 1.2, 50), three],
+      starBudgets: [Math.max(roundUp(three * 1.2, 50), roundUp(solutionCost, 50)), three],
       vehicle: spec.vehicle ?? 'car',
       materials: spec.materials ?? ['road', 'wood'],
       tip: spec.tip,
       ...(lanes.length ? { shipLanes: lanes } : {}),
       solution,
+      ...(spec.trim ? { textbook } : {}),
     };
   });
 }

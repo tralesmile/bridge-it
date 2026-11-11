@@ -1,9 +1,11 @@
 import { describe, expect, test } from 'vitest';
 import { BridgeDesign } from '../src/core/bridge';
 import type { Beam } from '../src/core/types';
-import { ALL_LEVELS, DRAFT_LEVELS, build, levelFromJson, levelToJson, roadDeck } from '../src/core/levels';
+import { ALL_LEVELS, DRAFT_LEVELS, build, dropBeams, levelFromJson, levelToJson, roadDeck } from '../src/core/levels';
 import { MATERIALS } from '../src/core/materials';
 import { Simulation } from '../src/core/simulation';
+import { starsFor } from '../src/core/scoring';
+import { beamsCost } from '../src/core/difficulty';
 
 describe.each([...ALL_LEVELS, ...DRAFT_LEVELS].map((l) => [l.id, l] as const))('level %s', (_id, level) => {
   test('the known solution crosses', () => {
@@ -37,6 +39,33 @@ describe.each([...ALL_LEVELS, ...DRAFT_LEVELS].map((l) => [l.id, l] as const))('
     for (const beam of level.solution) expect(level.materials).toContain(beam.material);
     for (const m of level.materials) expect(MATERIALS[m]).toBeDefined();
   });
+});
+
+const trimmed = ALL_LEVELS.filter((l) => l.textbook);
+describe.each(trimmed.map((l) => [l.id, l] as const))('trimmed level %s', (_id, level) => {
+  test('the plain (textbook) design still wins, fits the budget and earns 2 stars', () => {
+    const textbook = level.textbook!;
+    const sim = new Simulation(level, textbook);
+    expect(sim.runToEnd()).toBe('won');
+    expect(beamsCost(textbook)).toBeLessThanOrEqual(level.budget);
+    expect(starsFor(level, beamsCost(textbook))).toBe(2);
+  });
+
+  test('the cheaper hint earns 3 stars with no broken beam', () => {
+    const sim = new Simulation(level, level.solution);
+    expect(sim.runToEnd()).toBe('won');
+    expect(sim.brokenCount).toBe(0);
+    expect(starsFor(level, beamsCost(level.solution))).toBe(3);
+  });
+});
+
+test('the 9 loose levels from run 32 have a cheaper hint', () => {
+  expect(trimmed.map((l) => l.id)).toEqual(['w1-8', 'w1-9', 'w1-12', 'w1-14', 'w2-3', 'w2-5', 'w2-9', 'w3-1', 'w3-6']);
+});
+
+test('dropBeams throws on a typo', () => {
+  expect(() => dropBeams(roadDeck(0, 4), ['0,0 9,9'])).toThrow();
+  expect(dropBeams(roadDeck(0, 4), ['0,0 2,0'])).toHaveLength(1);
 });
 
 test('level ids are unique', () => {

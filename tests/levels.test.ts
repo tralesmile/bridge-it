@@ -132,7 +132,7 @@ describe('piston material', () => {
 });
 
 describe('Pirate Bay drafts', () => {
-  const ramp = DRAFT_LEVELS.find((l) => l.name === 'Ramp Foot')!;
+  const ramp = ALL_LEVELS.find((l) => l.name === 'Ramp Foot')!;
   const legs = (materials: ('wood' | 'steel')[]): Beam[] => [
     ...ramp.solution.filter((b) => b.material === 'road'),
     ...[2, 4, 6].map((x, i): Beam => ({ a: `${x},0`, b: `${x},-2`, material: materials[i] })),

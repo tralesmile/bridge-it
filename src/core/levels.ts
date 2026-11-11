@@ -100,13 +100,14 @@ const CANYON: LevelSpec[] = [
   { name: 'Canyon Finale', gap: 32, goalDistance: 5, materials: ['road', 'wood', 'rope'], extraAnchors: hangers(32, 4, 4), solution: (g) => [...roadDeck(0, g), ...hangerRopes(g, 4, 4)], slack: 1.25, tip: 'The longest bridge yet. Ropes only pull, so hang the road.' },
 ];
 
-/**
- * World 3 Pirate Bay, still being made: tested like other levels, opened by id, not shown in menus.
- * Moves into WORLDS when it has 15 levels.
- */
+/** World 3 Pirate Bay: slopes down to low docks, masts for ropes, deep rocks and heavy trucks. */
 const beam = (a: string, b: string, material: MaterialId): Beam => ({ a, b, material });
 /** Three ropes from a mast top at (x, h) down to the deck at x-2, x and x+2. */
 const fanRopes = (x: number, h: number): Beam[] => [x - 2, x, x + 2].map((d) => beam(`${x},${h}`, `${d},0`, 'rope'));
+
+/** Two-step wood tower from a deep rock at (x, -3) up to the deck at x-2, x and x+2. */
+const woodTower = (x: number): Beam[] =>
+  [-1, 1].flatMap((s) => [beam(`${x},-3`, `${x + s},-1`, 'wood'), beam(`${x + s},-1`, `${x + 2 * s},0`, 'wood'), beam(`${x + s},-1`, `${x},0`, 'wood')]);
 
 const PIRATE: LevelSpec[] = [
   { name: 'Low Dock', gap: 8, rightHeight: -1, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }], solution: (g) => [{ a: '0,0', b: '2,-1', material: 'road' }, ...roadDeck(2, g, -1), { a: '4,-1', b: '4,-2', material: 'wood' }, { a: '0,-2', b: '2,-1', material: 'wood' }, { a: '4,-2', b: '6,-1', material: 'wood' }], slack: 1.3, tip: 'The far dock is lower. A gentle slope down is fine.' },
@@ -120,6 +121,10 @@ const PIRATE: LevelSpec[] = [
   { name: 'Treasure Island', gap: 16, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 7, y: -1 }, { x: 9, y: -1 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, 6), ...warrenTruss(10, g), ...[7, 9].flatMap((x) => [beam(`${x},-1`, `${x - 1},0`, 'wood'), beam(`${x},-1`, `${x + 1},0`, 'wood')])], slack: 1.25, tip: 'Rest the middle on the island. Trusses for the rest.' },
   { name: 'Rope Ladder', gap: 16, materials: ['road', 'wood', 'rope'], extraAnchors: [{ x: 4, y: 4 }, { x: 8, y: 4 }, { x: 12, y: 4 }], solution: (g) => [...roadDeck(0, g), ...[4, 8, 12].flatMap((m) => [beam(`${m},4`, `${m - 2},0`, 'rope'), beam(`${m},4`, `${m + 2},0`, 'rope')])], slack: 1.3, tip: 'Three masts. Two ropes each can be enough.' },
   { name: 'Cannon Cart', gap: 12, vehicle: 'truck', rightHeight: -1, materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -3 }], solution: () => [...roadDeck(0, 8), beam('8,0', '10,-1', 'road'), beam('10,-1', '12,-1', 'road'), ...warrenTruss(0, 4), ...warrenTruss(4, 8), beam('4,0', '4,-2', 'wood'), beam('8,0', '8,-3', 'steel'), beam('8,-3', '10,-1', 'steel')], slack: 1.3, tip: 'A heavy cannon cart. Ropes will snap: use rocks and steel.' },
+  { name: 'Cargo Hold', gap: 10, vehicle: 'truck', leftHeight: 1, rightHeight: -1, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -2 }, { x: 6, y: -2 }], solution: () => [beam('0,1', '2,0', 'road'), ...roadDeck(2, 8), beam('8,0', '10,-1', 'road'), beam('4,0', '4,-2', 'wood'), beam('6,0', '6,-2', 'wood'), beam('4,-2', '2,0', 'steel'), beam('6,-2', '8,0', 'steel')], slack: 1.3, tip: 'Down from the ship, down to the dock. Brace both slopes.' },
+  { name: 'One Mast', gap: 12, materials: ['road', 'wood', 'rope'], extraAnchors: [{ x: 6, y: 4 }], solution: (g) => [...roadDeck(0, g), ...fanRopes(6, 4)], slack: 1.3, tip: 'Only one mast, but a long reach. Ropes are cheap.' },
+  { name: 'Deep Water', gap: 14, materials: ['road', 'wood', 'steel'], extraAnchors: [{ x: 4, y: -3 }, { x: 10, y: -3 }], solution: (g) => [...roadDeck(0, g), ...[4, 10].flatMap(woodTower)], slack: 1.25, tip: 'The rocks are deep. Two short planks reach further than one long one.' },
+  { name: 'Pirate Finale', gap: 20, vehicle: 'truck', goalDistance: 5, materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 12, y: -2 }, { x: 16, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...[4, 8, 12, 16].map((x) => beam(`${x},0`, `${x},-2`, 'wood'))], slack: 1.25, tip: 'The longest bridge in the bay. Use every rock.' },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;
@@ -165,12 +170,16 @@ export function build(world: number, specs: LevelSpec[]): LevelEntry[] {
 export const WORLDS = [
   { id: 1, name: 'Farm Valley', levels: build(1, FARM) },
   { id: 2, name: 'Canyon Rails', levels: build(2, CANYON) },
+  { id: 3, name: 'Pirate Bay', levels: build(3, PIRATE) },
 ];
 
 export const ALL_LEVELS: LevelEntry[] = WORLDS.flatMap((w) => w.levels);
 
-/** Worlds still being made (see PIRATE). Not in menus or progress. */
-export const DRAFT_WORLDS = [{ id: 3, name: 'Pirate Bay', levels: build(3, PIRATE) }];
+/**
+ * Worlds still being made: tested like other levels, opened by id, not shown in menus or progress.
+ * A world moves into WORLDS when it has 15 levels.
+ */
+export const DRAFT_WORLDS: { id: number; name: string; levels: LevelEntry[] }[] = [];
 export const DRAFT_LEVELS: LevelEntry[] = DRAFT_WORLDS.flatMap((w) => w.levels);
 
 export function levelById(id: string): LevelEntry | undefined {

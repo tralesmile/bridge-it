@@ -45,7 +45,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [ ] (partly: Sparse Posts and Long Cable mix truss and one rope) Rope level design: ropes cost more than a wood Warren truss when used as X braces; find a level where rope is the clever choice (long span, tension ties)
 - [x] Hydraulic piston material (`piston`: 3.2 m max, 350/m, grows 50% between 0.5 s and 2 s of an attempt; tested)
 - [x] Bug: a beam between two anchors crashed the attempt (planck joint between two static bodies); such beams now get no joint. Test in `tests/core.test.ts`
-- [ ] World 3 Pirate Bay (15 levels; 11 drafts done in `PIRATE`: Low Dock, Ramp Foot, Plank Walk, Crow's Nest, Gangplank, Tide Pools, Rum Barrels, Shipwreck, Treasure Island, Rope Ladder, Cannon Cart, move into `WORLDS` at 15) with piston levels. Probing found no level where the piston is *required*: a rigid leg or prop under a ramp made the car get stuck, while the bare ramp won. Needs a design where growth matters (e.g. a gap that opens, or a start cliff lower than the road). Add `WORLD_BACKGROUNDS` entry and remove Pirate Bay from `COMING_SOON` (e2e positions depend on card count).
+- [x] World 3 Pirate Bay: 15 levels in `WORLDS` (12 Cargo Hold, 13 One Mast, 14 Deep Water, 15 Pirate Finale added this run), ocean backdrop, world select card
+- [ ] Piston levels: no level yet where the piston is the clever choice. Any final shape on the 1 m grid can be built with rigid beams, and a growing piston inside a closed truss fights the other beams. Needs a mechanism idea (a hinged drawbridge leaf lifted by a piston is a 2-bar linkage and does work), then a level where rigid beams cannot reach (e.g. too long or out of the build area)
 - [ ] Springs and World 4 Candy Mountain (15 levels)
 - [x] Per-world backdrop (sky, hills) in play and level select (`WORLD_BACKGROUNDS`; world 2 is canyon orange)
 - [ ] Per-world music and themed world select cards

@@ -114,15 +114,20 @@ async function run(viewport, name) {
   await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w2-14' }));
   await sleep(600);
   await page.screenshot({ path: `${OUT}/${name}-9b-train-level.png` });
-  // Draft World 3 levels (opened by id), each with its hint shown.
-  const drafts = [['w3-1', '9c-low-dock'], ['w3-2', '9d-ramp-foot'], ['w3-3', '9e-plank-walk'], ['w3-4', '9f-crows-nest'], ['w3-5', '9g-gangplank'], ['w3-6', '9h-tide-pools'], ['w3-7', '9i-rum-barrels'], ['w3-8', '9j-shipwreck'], ['w3-9', '9k-treasure-island'], ['w3-10', '9l-rope-ladder'], ['w3-11', '9m-cannon-cart']];
-  for (const [id, shot] of drafts) {
+  // World 3 Pirate Bay levels (opened by id), each with its hint shown.
+  const names = ['low-dock', 'ramp-foot', 'plank-walk', 'crows-nest', 'gangplank', 'tide-pools', 'rum-barrels', 'shipwreck', 'treasure-island', 'rope-ladder', 'cannon-cart', 'cargo-hold', 'one-mast', 'deep-water', 'pirate-finale'];
+  const pirate = names.map((n, i) => [`w3-${i + 1}`, `9w3-${String(i + 1).padStart(2, '0')}-${n}`]);
+  for (const [id, shot] of pirate) {
     await page.evaluate((lid) => globalThis.__bridgeit.scene.start('play', { levelId: lid }), id);
     await sleep(600);
     await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
     await sleep(300);
     await page.screenshot({ path: `${OUT}/${name}-${shot}.png` });
   }
+  await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').scene.start('levels', { world: 3 }));
+  await sleep(600);
+  check(await active('levels'), `${name}: world 3 level select opens`);
+  await page.screenshot({ path: `${OUT}/${name}-9w3-levels.png` });
   await page.close();
 }
 

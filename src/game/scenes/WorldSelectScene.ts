@@ -7,7 +7,7 @@ import { C, GAME_W } from '../theme';
 import { button, label, panel } from '../ui';
 
 /** Worlds that are planned but have no levels yet. Shown as "Coming soon". */
-const COMING_SOON = ['Pirate Bay', 'Candy Mountain'];
+const COMING_SOON = ['Candy Mountain'];
 
 export class WorldSelectScene extends Phaser.Scene {
   constructor() {

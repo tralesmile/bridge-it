@@ -2,6 +2,22 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-11 — Run 27
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Pirate Bay levels 12-15: Cargo Hold (truck from a high ship down to a low dock; wood legs + steel braces), One Mast (12 m, one fan of three ropes is enough; a wood truss breaks), Deep Water (rocks 3 m down: a two-step wood tower beats steel legs), Pirate Finale (20 m truck; wood truss + a wood leg on every rock).
+- World 3 moved from `DRAFT_WORLDS` into `WORLDS`, ocean/sand backdrop in `WORLD_BACKGROUNDS`, Pirate Bay removed from Coming soon. `DRAFT_WORLDS` is kept empty for World 4.
+- e2e: screenshots all 15 Pirate Bay levels and the world 3 level select.
+
+**Verified**
+- `npm run check` green (307 tests), `npm run e2e` no FAIL, difficulty report: no simple design wins any w3 level within budget; screenshots checked (desktop and phone).
+
+**Lessons**
+- Again: wood is 2.25 m max, so a V from a rock 2 m down to deck joints 2 m away (2.83 m) is not buildable. Probe only buildable beams, or put a `canAdd` check in the probe.
+- 1 m uphill to a higher dock over 2 m flips the car; on a 1 m grid there is no gentle uphill ramp. Avoid higher right cliffs.
+- `game.scene.start('levels')` from e2e does not stop the running play scene (play draws on top). Start it from the play scene: `getScene('play').scene.start(...)`.
+- Next: piston mechanism idea, then Springs and World 4.
+
 ## 2026-11-11 — Run 26
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

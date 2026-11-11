@@ -59,4 +59,5 @@ export const GAME_H = 720;
 export const WORLD_BACKGROUNDS = [
   { skyTop: C.skyTop, skyBottom: C.skyBottom, hillFar: C.hillFar, hillNear: C.hillNear },
   { skyTop: '#f2a07a', skyBottom: '#ffe3a8', hillFar: '#d49a78', hillNear: '#b8704f' },
+  { skyTop: '#3fb6e0', skyBottom: '#d6f3ff', hillFar: '#5fa8b8', hillNear: '#e3c88a' },
 ];

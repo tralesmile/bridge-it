@@ -48,7 +48,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] World 3 Pirate Bay: 15 levels in `WORLDS` (12 Cargo Hold, 13 One Mast, 14 Deep Water, 15 Pirate Finale added this run), ocean backdrop, world select card
 - [x] Piston mechanism: drawbridges. Levels can have a `shipLane` (no node or beam inside or across it). The bridge is built standing up on the cliff; a piston swings it down; a road end that comes down onto a cliff edge or pier anchor locks there (`latch` event) and that part's pistons freeze. In piston levels the vehicle waits until the pistons are done. Tests in `tests/drawbridge.test.ts`
 - [x] Draft World 4 River Town (`DRAFT_WORLDS`): w4-1 Drawbridge, w4-2 Twin Leaves (two leaves onto a pier), w4-3 Lock Gate (fixed span to a pier + drawbridge). Ship lane art (pale band, dashed edges, sailboat)
-- [ ] World 4 River Town: 12 more drawbridge levels (truck leaf with steel braces on a longer span, 6 m leaf, leaf from a high cliff, mixed rope + leaf, finale), then move it into `WORLDS` with a river backdrop and world select card
+- [ ] World 4 River Town: 12 more drawbridge levels (note: the truck breaks the current 4 m leaf even with all-steel braces, so a truck leaf needs a new shape, e.g. a deeper truss or a rock under the tip; truck leaf with steel braces on a longer span, 6 m leaf, leaf from a high cliff, mixed rope + leaf, finale), then move it into `WORLDS` with a river backdrop and world select card
 - [ ] Animated ship sailing through the lane at the start of an attempt (visual only)
 - [ ] Springs and World 5 Candy Mountain (15 levels)
 - [x] Per-world backdrop (sky, hills) in play and level select (`WORLD_BACKGROUNDS`; world 2 is canyon orange)

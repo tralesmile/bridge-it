@@ -18,7 +18,8 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 - A grid search in a small Python script quickly showed that a 50% piston cannot turn a leaf exactly 90 degrees onto a grid point; a lock on contact removes the need for exact lengths.
 - In e2e, `scene.getScene('play').scene.start('play', ...)` did not switch levels; the game-level `__bridgeit.scene.start('play', ...)` does. Check that the screenshot shows the level you meant.
 - The difficulty test got slower with more levels; it now has a 30 s timeout.
-- Next: more River Town levels (truck leaf, longer leaf), then springs.
+- Probed a truck on the 4 m leaf (wood, steel, every wood/steel mix of the 4 braces): all lose. A truck leaf needs a new shape.
+- Next: more River Town levels (truck leaf shape, longer leaf), then springs.
 
 ## 2026-11-11 — Run 27
 **Done**

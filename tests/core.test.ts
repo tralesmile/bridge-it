@@ -133,3 +133,13 @@ describe('level select paging', () => {
     expect(pageOfIndex(-1)).toBe(0);
   });
 });
+
+describe('beams between two anchors', () => {
+  test('wood, steel, rope or piston from anchor to anchor does not crash the attempt', () => {
+    const l = levelById('w1-1')!;
+    for (const material of ['wood', 'steel', 'rope', 'piston'] as const) {
+      const sim = new Simulation(l, [...l.solution, { a: '0,0', b: '0,-2', material }]);
+      expect(sim.runToEnd(), material).toBe('won');
+    }
+  });
+});

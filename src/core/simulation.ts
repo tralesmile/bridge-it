@@ -198,6 +198,11 @@ export class Simulation {
       for (const node of [na, nb]) {
         if (node.isDynamic()) node.createFixture(new Circle(NODE_RADIUS), { density: mass / 2 / (Math.PI * NODE_RADIUS ** 2), filterCategoryBits: 0, filterMaskBits: 0 });
       }
+      // A beam between two anchors carries nothing, and planck crashes reading a joint between two static bodies.
+      if (!na.isDynamic() && !nb.isDynamic()) {
+        this.beams.push({ state, joints: [], body: null, strength: material.strength, load: 0 });
+        return;
+      }
       // Ropes only pull (RopeJoint); other beams also push (DistanceJoint).
       const joint = this.world.createJoint(
         material.tensionOnly

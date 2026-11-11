@@ -28,3 +28,5 @@ You are the whole team (producer, designer, artist, engineer, QA, marketing) bui
 - `npm run dev` — local dev server
 - `npm run check` — type check, unit tests, production build
 - `npm run e2e` — browser test with Google Chrome (needs a build first; `npm run check` builds)
+  It takes about 4 minutes: run it in the background as `npm run e2e > <scratchpad>/e2e.txt 2>&1; echo exit $?`, then grep the file for FAIL (a pipe like `npm run e2e | grep` hides the exit code).
+- Quick look at one new screen: a small Playwright script in the git-excluded `probe/` folder (vite preview on its own port, seed localStorage, click, screenshot) before writing the e2e check.

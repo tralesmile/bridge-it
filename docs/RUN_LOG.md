@@ -10,18 +10,21 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 - Spring probe (World 5): springs as shock absorbers under a deck a truck drops 1 m onto do not work (deck moves, roads snap). Written in the roadmap.
 - Coin shop (M4): `src/core/shop.ts` (pure: buy, equip, fallback for bad saves), `ShopScene` with 8 paint jobs (every vehicle gets a texture per paint) and 5 road colours. Save keeps `owned` and `equipped` (sanitized). Menu has a Shop button and the coin count; the menu car now has turning wheels.
 - Achievements (M4): 20 goals in `src/core/achievements.ts` (first win, first fall, 3 stars, hint, truck, half-budget win, finish and perfect each world, 50 and 150 stars, 50 GOs, 100 broken beams, shop buy, every paint). Save keeps `achievements` and `stats` (attempts, fails, broken, hints). A gold banner drops in when one is earned (checked after each attempt, a hint, in the shop and on the menu); more than 2 at once give one "N new achievements!" banner, so an old save does not queue 6 banners. Trophies button on the menu opens the list with progress bars.
+- Daily Bridge (M4): `src/core/daily.ts` picks one of 13 tested variants (truss, rock legs for car or truck, rope hangers, masts) from a hash of the date key, with a random name. Streak with a free weekly streak-saver (one missed day), 20 coins for the first daily win of a day, stored in `save.daily`. Only today's daily design is kept in the save. Daily Bridge button and streak on world select; the win panel shows the streak and "Done".
+- e2e: opens the daily level, builds its solution, wins, checks streak 1 and +20 coins and no daily key in world stars.
 - e2e: buys Sky paint and Brick road with 100 coins, checks the save, a too-expensive item says "You need 80 more coins.", and the level uses `car-paint-sky`.
 - Tests: each trimmed level's plain design wins, fits the budget and gets exactly 2 stars; the hint gets 3 stars with no break; `dropBeams` throws on a typo.
 
 **Verified**
-- `npm run check` green (470 tests), `npm run report -- --trim` shows no LOOSE level, `npm run e2e` exit 0 with no FAIL (47 checks); screenshots checked (High Cliff hint, shop and trophies on desktop and phone, painted car on a brick road).
+- `npm run check` green (503 tests), `npm run report -- --trim` shows no LOOSE level, `npm run e2e` exit 0 with no FAIL (47 checks); screenshots checked (High Cliff hint, shop and trophies on desktop and phone, painted car on a brick road).
 
 **Lessons**
 - `node probe/try.mjs <level> '<a> <b>' ...` (in the git-excluded `probe/`) tests a level's solution minus some beams in seconds. Faster than editing levels.ts for each idea.
 - Greedy trimming can keep a beam with a free end because its weight helps. Remove dangling beams by hand and look for a symmetric design instead.
 - `cmd | grep ...; ls` hides the exit code of `cmd`. e2e prints PASS/FAIL lines; grep for FAIL in a saved output file.
 - A probe with a one-off Playwright script (`probe/shop-shot.mjs`: vite preview on its own port, seed localStorage, click, screenshot) shows a new screen in seconds, before writing the e2e check.
-- Next: Daily Bridge (from the date, streak, weekly streak-saver), then "Cheaper than X% of players". World 5 still needs a mechanic (try a faster vehicle).
+- Pure core modules (`shop`, `achievements`, `daily`) with their own tests first, then a thin scene, then one e2e path, kept each feature to about 30-45 minutes.
+- Next: "Cheaper than X% of players" (local estimate), Stress Test mode, Stats screen. World 5 still needs a mechanic (try a faster vehicle).
 
 ## 2026-11-11 — Run 32
 **Done**

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { dateKey, liveStreak, saverFree } from '../../core/daily';
 import { ALL_LEVELS, WORLDS } from '../../core/levels';
 import { isUnlocked } from '../../core/scoring';
 import { addBackground } from '../background';
@@ -102,6 +103,16 @@ export class WorldSelectScene extends Phaser.Scene {
     panel(this, GAME_W / 2, 395, 1000, 580);
     label(this, GAME_W / 2, 160, 'Choose a world', 48, C.ink);
     button(this, 110, 60, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+
+    // Daily Bridge: a new level every day, with a streak.
+    const today = dateKey(new Date());
+    const done = save.data.daily.last === today;
+    button(this, GAME_W - 150, 60, done ? 'Daily ✓' : 'Daily Bridge', () => this.scene.start('play', { levelId: `daily-${today}` }), {
+      width: 240, height: 56, fontSize: 24, color: done ? C.good : C.gold, shade: done ? C.goodDark : '#d99a14', textColor: done ? C.white : C.ink,
+    });
+    const streak = liveStreak(save.data.daily, today);
+    const saver = saverFree(save.data.daily, today) ? ' · saver ready' : '';
+    label(this, GAME_W - 150, 112, streak > 0 ? `🔥 ${streak} day streak${saver}` : 'Win it every day!', 18, C.ink);
 
     const ids = ALL_LEVELS.map((l) => l.id);
     const total = WORLDS.length + COMING_SOON.length;

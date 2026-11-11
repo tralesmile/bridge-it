@@ -181,6 +181,26 @@ async function run(viewport, name) {
   check(await active('worlds'), `${name}: world select with every world open`);
   await page.screenshot({ path: `${OUT}/${name}-9z-worlds-open.png` });
 
+  // Daily Bridge: opens from world select, the stored solution wins, the streak and coins are saved.
+  await click(1130, 60);
+  const dailyId = await page.evaluate(() => globalThis.__bridgeit.scene.isActive('play') && globalThis.__bridgeit.scene.getScene('play').level.id);
+  check(typeof dailyId === 'string' && /^daily-\d{4}-\d{2}-\d{2}$/.test(dailyId), `${name}: Daily Bridge button opens today's level (${dailyId})`);
+  const coinsBefore = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').coins ?? 0);
+  await page.evaluate(() => {
+    const p = globalThis.__bridgeit.scene.getScene('play');
+    const pt = (k) => { const [x, y] = k.split(',').map(Number); return { x, y }; };
+    for (const b of p.level.solution) p.design.add(pt(b.a), pt(b.b), b.material);
+    p.redraw();
+  });
+  await page.screenshot({ path: `${OUT}/${name}-9d-daily.png` });
+  await click(1160, 662);
+  await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').mode === 'result', null, { timeout: 30000 }).catch(() => {});
+  await sleep(1500);
+  await page.screenshot({ path: `${OUT}/${name}-9d-daily-win.png` });
+  const daily = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}'));
+  check(daily.daily?.streak === 1 && daily.coins === coinsBefore + 20 && !Object.keys(daily.stars || {}).some((k) => k.startsWith('daily-')),
+    `${name}: daily win saves the streak and 20 coins, not world stars (${JSON.stringify(daily.daily)}, coins ${coinsBefore} -> ${daily.coins})`);
+
   // Shop: with 100 coins, buy the Sky paint (second card), check the save, then see it in a level.
   await page.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}');

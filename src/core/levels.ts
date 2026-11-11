@@ -76,21 +76,21 @@ const FARM: LevelSpec[] = [
 ];
 
 /** Rope hangers from high anchors (pylons) holding up a plain road deck. Cars only: a truck snaps them. */
-const hangers = (gap: number, step: number, y: number): Point[] => {
+export const hangers = (gap: number, step: number, y: number): Point[] => {
   const pts: Point[] = [];
   for (let x = step; x < gap; x += step) pts.push({ x, y });
   return pts;
 };
-const hangerRopes = (gap: number, step: number, y: number): Beam[] =>
+export const hangerRopes = (gap: number, step: number, y: number): Beam[] =>
   hangers(gap, step, y).map((p) => ({ a: `${p.x},0`, b: `${p.x},${p.y}`, material: 'rope' as const }));
 
 /** Rocks below the deck every `step` metres, and wood or steel legs down to them (for trucks). */
-const rockPosts = (gap: number, step: number): Point[] => {
+export const rockPosts = (gap: number, step: number): Point[] => {
   const pts: Point[] = [];
   for (let x = step; x < gap; x += step) pts.push({ x, y: -2 });
   return pts;
 };
-const rockLegs = (gap: number, step: number, material: MaterialId = 'wood'): Beam[] =>
+export const rockLegs = (gap: number, step: number, material: MaterialId = 'wood'): Beam[] =>
   rockPosts(gap, step).map((p) => ({ a: `${p.x},0`, b: `${p.x},-2`, material }));
 
 const CANYON: LevelSpec[] = [
@@ -114,7 +114,7 @@ const CANYON: LevelSpec[] = [
 /** World 3 Pirate Bay: slopes down to low docks, masts for ropes, deep rocks and heavy trucks. */
 const beam = (a: string, b: string, material: MaterialId): Beam => ({ a, b, material });
 /** Three ropes from a mast top at (x, h) down to the deck at x-2, x and x+2. */
-const fanRopes = (x: number, h: number): Beam[] => [x - 2, x, x + 2].map((d) => beam(`${x},${h}`, `${d},0`, 'rope'));
+export const fanRopes = (x: number, h: number): Beam[] => [x - 2, x, x + 2].map((d) => beam(`${x},${h}`, `${d},0`, 'rope'));
 
 /** Two-step wood tower from a deep rock at (x, -3) up to the deck at x-2, x and x+2. */
 const woodTower = (x: number): Beam[] =>

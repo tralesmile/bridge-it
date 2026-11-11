@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { BUILD_MARGIN_X, BUILD_MAX_Y, BUILD_MIN_Y, BridgeDesign, distance, keyOf, pointOf, snap, type AddResult } from '../../core/bridge';
+import { DAILY_PREFIX, findLevel, isDailyId } from '../../core/daily';
 import { levelById, nextLevel, type LevelEntry } from '../../core/levels';
 import { MATERIALS, type MaterialId } from '../../core/materials';
 import { decodeBridge, encodeBridge } from '../../core/share';
@@ -92,7 +93,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   init(data: { levelId?: string }): void {
-    const level = levelById(data.levelId ?? '') ?? levelById('w1-1');
+    const level = findLevel(data.levelId ?? '') ?? levelById('w1-1');
     if (!level) throw new Error('No levels defined');
     this.level = level;
     this.design = BridgeDesign.restore(level, save.data.designs[level.id] ?? []);
@@ -340,10 +341,10 @@ export class PlayScene extends Phaser.Scene {
   // ---------- HUD ----------
 
   private createHud(): void {
-    button(this, 90, 50, '◀', () => this.scene.start('levels', { world: this.level.world }), { width: 76, height: 56, fontSize: 30, color: C.blue, shade: C.blueDark });
+    button(this, 90, 50, '◀', () => this.leave(), { width: 76, height: 56, fontSize: 30, color: C.blue, shade: C.blueDark });
     this.pasteButton = button(this, 215, 50, 'Paste code', () => this.pasteCode(), { width: 170, height: 56, fontSize: 22, color: C.grey, shade: C.greyDark });
     this.buildUi.push(this.pasteButton);
-    const title = label(this, GAME_W / 2, 40, `${this.level.index}. ${this.level.name}`, 34, C.white);
+    const title = label(this, GAME_W / 2, 40, isDailyId(this.level.id) ? `Daily: ${this.level.name}` : `${this.level.index}. ${this.level.name}`, 34, C.white);
     title.setStroke(C.ink, 8);
 
     this.costBar = this.add.graphics();
@@ -857,9 +858,15 @@ export class PlayScene extends Phaser.Scene {
     save.recordAttempt(sim.brokenCount);
     if (won) {
       const stars = starsFor(this.level, cost);
-      const coins = save.recordWin(this.level.id, stars, cost);
+      let coins: number;
+      let daily: { coins: number; streak: number; usedSaver: boolean } | undefined;
+      if (isDailyId(this.level.id)) {
+        // Daily wins go to the streak, not to world stars.
+        daily = save.recordDaily(this.level.id.slice(DAILY_PREFIX.length));
+        coins = daily.coins;
+      } else coins = save.recordWin(this.level.id, stars, cost);
       sfx.win(stars);
-      this.time.delayedCall(350, () => this.showWin(stars, cost, coins));
+      this.time.delayedCall(350, () => this.showWin(stars, cost, coins, daily));
     } else {
       save.recordFail(this.level.id);
       this.weakBeams = sim.beamStates
@@ -882,7 +889,13 @@ export class PlayScene extends Phaser.Scene {
     return layer;
   }
 
-  private showWin(stars: number, cost: number, coins: number): void {
+  /** Back to where the player came from: the world's levels, or world select for the daily bridge. */
+  private leave(): void {
+    if (isDailyId(this.level.id)) this.scene.start('worlds');
+    else this.scene.start('levels', { world: this.level.world });
+  }
+
+  private showWin(stars: number, cost: number, coins: number, daily?: { streak: number; usedSaver: boolean }): void {
     const layer = this.resultPanel(520);
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 170, 'Made it!', 56, C.ink));
     for (let i = 0; i < 3; i++) {
@@ -901,20 +914,21 @@ export class PlayScene extends Phaser.Scene {
     }
     this.confettiBurst(stars);
     const next = this.level.starBudgets[stars === 1 ? 0 : 1];
-    const sub = stars < 3 ? `Cost $${cost} · next star at $${next}` : `Cost $${cost} · perfect!`;
+    const streak = daily ? `🔥 Daily streak: ${daily.streak} day${daily.streak === 1 ? '' : 's'}${daily.usedSaver ? ' (saver used)' : ''}` : '';
+    const sub = daily ? streak : stars < 3 ? `Cost $${cost} · next star at $${next}` : `Cost $${cost} · perfect!`;
     layer.add(label(this, GAME_W / 2, GAME_H / 2 + 40, sub, 24, C.greyDark));
     if (coins > 0) {
       layer.add(label(this, GAME_W / 2, GAME_H / 2 + 76, `+${coins} coins`, 24, C.primaryDark));
       this.coinFlyIn(Math.min(coins, 8), 900 + stars * 220);
     }
-    const nxt = nextLevel(this.level.id);
+    const nxt = daily ? undefined : nextLevel(this.level.id);
     layer.add(button(this, GAME_W / 2, GAME_H / 2 + 225, 'Copy bridge code', () => void this.copyCode(), { width: 280, height: 50, fontSize: 22, color: C.grey, shade: C.greyDark }));
     layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 145, 'Improve', () => this.stopSim(), { width: 220, height: 70, color: C.blue, shade: C.blueDark }));
     layer.add(
-      button(this, GAME_W / 2 + 140, GAME_H / 2 + 145, nxt ? 'Next ▶' : 'Levels', async () => {
+      button(this, GAME_W / 2 + 140, GAME_H / 2 + 145, nxt ? 'Next ▶' : daily ? 'Done' : 'Levels', async () => {
         await platform.commercialBreak();
         if (nxt) this.scene.start('play', { levelId: nxt.id });
-        else this.scene.start('levels', { world: this.level.world });
+        else this.leave();
       }, { width: 220, height: 70, color: C.good, shade: C.goodDark }),
     );
   }

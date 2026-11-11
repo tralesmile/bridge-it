@@ -1,4 +1,5 @@
 import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type PlayStats } from '../core/achievements';
+import { DAILY_COINS, EMPTY_DAILY, isDailyId, recordDailyWin, type DailyState } from '../core/daily';
 import { ALL_LEVELS } from '../core/levels';
 import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, type ShopKind, type ShopState } from '../core/shop';
 import type { Beam } from '../core/types';
@@ -19,10 +20,11 @@ export interface SaveData {
   /** Achievement ids earned (kept even if a later change makes one harder). */
   achievements: string[];
   stats: PlayStats;
+  daily: DailyState;
   settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {
@@ -72,6 +74,17 @@ export function sanitize(raw: unknown): SaveData {
   if (r.stats && typeof r.stats === 'object') {
     const st = numberMap(r.stats);
     for (const k of Object.keys(EMPTY_STATS) as (keyof PlayStats)[]) if (st[k] !== undefined) base.stats[k] = Math.max(0, Math.floor(st[k]));
+  }
+  if (r.daily && typeof r.daily === 'object') {
+    const d = r.daily as Partial<DailyState>;
+    const okKey = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+    const okNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0;
+    base.daily = {
+      last: okKey(d.last) ? d.last : null,
+      streak: okNum(d.streak) ? Math.floor(d.streak) : 0,
+      best: okNum(d.best) ? Math.floor(d.best) : 0,
+      saverWeek: okNum(d.saverWeek) ? Math.floor(d.saverWeek) : null,
+    };
   }
   if (r.designs && typeof r.designs === 'object') {
     for (const [k, v] of Object.entries(r.designs)) {
@@ -187,7 +200,22 @@ class SaveStore {
     this.applyShop(equip(this.shop, id));
   }
 
+  /** Records a daily bridge win for the date key. Coins only for the first win of the day. */
+  recordDaily(today: string): { coins: number; streak: number; usedSaver: boolean } {
+    const r = recordDailyWin(this.data.daily, today);
+    this.data.daily = r.state;
+    const coins = r.firstToday ? DAILY_COINS : 0;
+    this.data.coins += coins;
+    this.persist();
+    return { coins, streak: r.state.streak, usedSaver: r.usedSaver };
+  }
+
   saveDesign(levelId: string, beams: Beam[]): void {
+    // Keep only today's daily design, so old days do not fill the save.
+    if (isDailyId(levelId)) {
+      for (const k of Object.keys(this.data.designs)) if (isDailyId(k) && k !== levelId) delete this.data.designs[k];
+      for (const k of Object.keys(this.data.fails)) if (isDailyId(k) && k !== levelId) delete this.data.fails[k];
+    }
     this.data.designs[levelId] = beams;
     this.persist();
   }

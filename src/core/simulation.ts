@@ -25,8 +25,12 @@ const NODE_DENSITY = 300;
 const LOAD_FILTER = 0.92;
 const ROAD_THICKNESS = 0.2;
 /** Pistons start to grow at PISTON_START seconds and take PISTON_TIME seconds to reach full length. */
-export const PISTON_START = 0.5;
-export const PISTON_TIME = 1.5;
+export const PISTON_START = 0.25;
+export const PISTON_TIME = 1.25;
+/** In piston levels, a free bridge node that swings within this distance of an anchor locks onto it. */
+export const LATCH_DIST = 0.25;
+/** Upward speed (m/s) above which a road end does not lock on. */
+const LATCH_MAX_RISE = 0.2;
 
 export interface BeamState {
   beam: Beam;
@@ -47,7 +51,7 @@ export interface VehicleState {
 }
 
 export interface SimEvent {
-  type: 'break';
+  type: 'break' | 'latch';
   at: Point;
   material: Beam['material'];
 }
@@ -80,7 +84,20 @@ export class Simulation {
   private readonly wheelJoints: WheelJoint[] = [];
   private readonly vehicleDef: VehicleDef;
   private readonly goalX: number;
-  private readonly pistons: { joint: DistanceJoint; length: number; grow: number }[] = [];
+  /** A piston stops growing (locked) once its part of the bridge has latched onto an anchor. */
+  private readonly pistons: { joint: DistanceJoint; length: number; grow: number; node: Body; locked: boolean }[] = [];
+  /** Union-find over free nodes: nodes joined by beams belong to the same part of the bridge. */
+  private readonly parent = new Map<Body, Body>();
+  /** Free nodes that can still lock onto an anchor (only in levels that offer pistons). */
+  private readonly latchable: Body[] = [];
+  private readonly anchorBodies: Body[] = [];
+  /** "part|anchor" pairs: the anchors each part of the bridge is built on. */
+  private readonly builtOn = new Set<string>();
+  private readonly bodyIds = new Map<Body, number>();
+  /** Road nodes, the only nodes that can lock onto the far cliff. */
+  private readonly roadNodes = new Set<Body>();
+  /** In piston levels the vehicle waits with its brakes on until the pistons are done. */
+  private departTime = 0;
   private stuckTimer = 0;
   private flipTimer = 0;
   private lastX = 0;
@@ -92,6 +109,20 @@ export class Simulation {
     this.buildTerrain();
     for (const anchor of level.anchors) this.nodeBody(`${anchor.x},${anchor.y}`, true);
     for (const beam of design) this.addBeam(beam);
+    if (level.materials.includes('piston')) {
+      // Only the cliff edges and piers catch a road end: not rocks below the deck, not posts on the cliff top.
+      const deck = Math.min(level.leftHeight, level.rightHeight);
+      for (const a of level.anchors) if (a.y >= deck && a.x >= level.gapStart && a.x <= level.gapEnd) this.anchorBodies.push(this.nodes.get(`${a.x},${a.y}`)!);
+      for (const n of this.roadNodes) if (n.isDynamic()) this.latchable.push(n);
+      // A part of the bridge never locks onto an anchor it is already built on (its own hinge).
+      for (const beam of design) {
+        const ends = [this.nodes.get(beam.a), this.nodes.get(beam.b)];
+        const free = ends.find((n) => n?.isDynamic());
+        const fixed = ends.find((n) => n && !n.isDynamic());
+        if (free && fixed) this.builtOn.add(this.partAnchorKey(free, fixed));
+      }
+      this.departTime = PISTON_START + PISTON_TIME;
+    }
     this.chassis = this.buildVehicle();
     this.lastX = this.chassis.getPosition().x;
   }
@@ -103,6 +134,7 @@ export class Simulation {
     this.coastDownhill();
     this.world.step(STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.time += STEP;
+    this.checkLatches();
     if (!this.isFinite()) {
       // Watchdog: a broken solver must end the attempt, never freeze the game.
       this.lose('collapse');
@@ -174,6 +206,10 @@ export class Simulation {
     const na = this.nodeBody(beam.a, anchors.has(beam.a));
     const nb = this.nodeBody(beam.b, anchors.has(beam.b));
     const state: BeamState = { beam, stress: 0, broken: false, a: pa, b: pb };
+    if (material.isRoad) {
+      this.roadNodes.add(na).add(nb);
+      if (na.isDynamic() && nb.isDynamic()) this.parent.set(this.root(na), this.root(nb));
+    }
     const mass = material.massPerMetre * length;
 
     if (material.isRoad) {
@@ -209,14 +245,65 @@ export class Simulation {
           ? new RopeJoint({ bodyA: na, bodyB: nb, localAnchorA: Vec2(0, 0), localAnchorB: Vec2(0, 0), maxLength: length })
           : new DistanceJoint({ frequencyHz: 0, dampingRatio: 0, length }, na, nb, Vec2(pa.x, pa.y), Vec2(pb.x, pb.y)),
       );
-      if (joint instanceof DistanceJoint && material.extends) this.pistons.push({ joint, length, grow: length * material.extends });
+      if (na.isDynamic() && nb.isDynamic()) this.parent.set(this.root(na), this.root(nb));
+      if (joint instanceof DistanceJoint && material.extends) {
+        this.pistons.push({ joint, length, grow: length * material.extends, node: na.isDynamic() ? na : nb, locked: false });
+      }
       this.beams.push({ state, joints: joint ? [joint] : [], body: null, strength: material.strength, load: 0 });
     }
   }
 
   private growPistons(): void {
     const t = Math.min(1, Math.max(0, (this.time - PISTON_START) / PISTON_TIME));
-    for (const p of this.pistons) if (p.joint.getBodyA()) p.joint.setLength(p.length + p.grow * t);
+    for (const p of this.pistons) if (!p.locked && p.joint.getBodyA()) p.joint.setLength(p.length + p.grow * t);
+  }
+
+  /**
+   * Drawbridges: a road node that swings onto an anchor pins itself there, and the pistons of that
+   * part of the bridge freeze at their current length, so they stop pushing against the locked bridge.
+   */
+  private checkLatches(): void {
+    for (let i = this.latchable.length - 1; i >= 0; i--) {
+      const node = this.latchable[i];
+      const p = node.getPosition();
+      // Only a bridge coming down locks on; a leaf that swung all the way round from below does not.
+      if (node.getLinearVelocity().y > LATCH_MAX_RISE) continue;
+      const anchor = this.anchorBodies.find((a) => Vec2.distance(a.getPosition(), p) < LATCH_DIST && !this.builtOn.has(this.partAnchorKey(node, a)));
+      if (!anchor) continue;
+      this.latchable.splice(i, 1);
+      // Pin at the node's own position so the bridge does not jump.
+      this.world.createJoint(new RevoluteJoint({}, node, anchor, p));
+      this.events.push({ type: 'latch', at: { x: anchor.getPosition().x, y: anchor.getPosition().y }, material: 'piston' });
+      this.lockPistons(this.root(node));
+    }
+  }
+
+  /** Freezes the pistons of one part of the bridge at their current length. */
+  private lockPistons(part: Body): void {
+    for (const p of this.pistons) {
+      if (p.locked || this.root(p.node) !== part) continue;
+      p.locked = true;
+      const a = p.joint.getBodyA();
+      const b = p.joint.getBodyB();
+      if (a && b) p.joint.setLength(Vec2.distance(a.getPosition(), b.getPosition()));
+    }
+    // The vehicle may go as soon as every piston is done.
+    if (this.pistons.every((p) => p.locked)) this.departTime = Math.min(this.departTime, this.time);
+  }
+
+  private partAnchorKey(node: Body, anchor: Body): string {
+    const id = (b: Body): number => {
+      let v = this.bodyIds.get(b);
+      if (v === undefined) this.bodyIds.set(b, (v = this.bodyIds.size));
+      return v;
+    };
+    return `${id(this.root(node))}|${id(anchor)}`;
+  }
+
+  private root(node: Body): Body {
+    let r = node;
+    for (let next = this.parent.get(r); next && next !== r; next = this.parent.get(r)) r = next;
+    return r;
   }
 
   private buildVehicle(): Body {
@@ -255,7 +342,14 @@ export class Simulation {
    */
   private coastDownhill(): void {
     const def = this.vehicleDef;
+    const waiting = this.time < this.departTime;
     for (const joint of this.wheelJoints) {
+      if (waiting) {
+        joint.setMotorSpeed(0);
+        joint.setMaxMotorTorque(def.motorTorque);
+        continue;
+      }
+      joint.setMotorSpeed(def.motorSpeed);
       const tooFast = def.motorSpeed < 0 ? joint.getJointSpeed() < def.motorSpeed : joint.getJointSpeed() > def.motorSpeed;
       joint.setMaxMotorTorque(tooFast ? def.motorTorque * COAST_TORQUE : def.motorTorque);
     }
@@ -335,7 +429,7 @@ export class Simulation {
       return;
     }
     // Stuck: barely moved for 3 seconds.
-    if (Math.abs(p.x - this.lastX) < 0.01) this.stuckTimer += STEP;
+    if (Math.abs(p.x - this.lastX) < 0.01 && this.time >= this.departTime) this.stuckTimer += STEP;
     else this.stuckTimer = 0;
     this.lastX = p.x;
     if (this.stuckTimer > 3) this.lose('stuck');

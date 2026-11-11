@@ -2,6 +2,24 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-11 — Run 28
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Piston mechanism found: drawbridges. New level rule `shipLane` (no node or beam inside or across it; reason "Keep the ship lane clear"). The player builds the leaf standing up on the cliff; a piston from a post behind the hinge swings it down.
+- Physics (only in levels that offer pistons): a road node that comes down onto a cliff edge or pier anchor locks there (`latch` event, small spark and clunk in the game). The pistons of that part of the bridge freeze at their current length. The vehicle waits with brakes on until the pistons are done. Pistons now grow between 0.25 s and 1.5 s.
+- Draft World 4 River Town: Drawbridge, Twin Leaves, Lock Gate. Ship lane art. Difficulty report now includes draft levels and counts designs that break build rules as not buildable.
+- 9 tests in `tests/drawbridge.test.ts`; e2e screenshots the three levels and a leaf swinging, and checks Lock Gate wins in the game.
+
+**Verified**
+- `npm run check` green (331 tests), `npm run e2e` no FAIL, screenshots checked on desktop and phone (moved the lane label and boat after they overlapped the tip text and the pier).
+
+**Lessons**
+- Without a piston, a leaf fell backwards, swung a full circle through the ground (roads do not hit terrain) and locked onto the far side from below. Locks now need the road end to be coming down, and never onto the part's own hinge or posts on the cliff top. Always probe "the solution minus the clever part".
+- A grid search in a small Python script quickly showed that a 50% piston cannot turn a leaf exactly 90 degrees onto a grid point; a lock on contact removes the need for exact lengths.
+- In e2e, `scene.getScene('play').scene.start('play', ...)` did not switch levels; the game-level `__bridgeit.scene.start('play', ...)` does. Check that the screenshot shows the level you meant.
+- The difficulty test got slower with more levels; it now has a 30 s timeout.
+- Next: more River Town levels (truck leaf, longer leaf), then springs.
+
 ## 2026-11-11 — Run 27
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

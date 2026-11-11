@@ -44,6 +44,8 @@ export interface LevelSpec {
   /** Budget as a multiple of the solution cost. */
   slack?: number;
   tip?: string;
+  /** No building between these x values (a drawbridge level). */
+  shipLane?: { x0: number; x1: number };
 }
 
 const FARM: LevelSpec[] = [
@@ -127,6 +129,39 @@ const PIRATE: LevelSpec[] = [
   { name: 'Pirate Finale', gap: 20, vehicle: 'truck', goalDistance: 5, materials: ['road', 'wood', 'steel', 'rope'], extraAnchors: [{ x: 4, y: -2 }, { x: 8, y: -2 }, { x: 12, y: -2 }, { x: 16, y: -2 }], solution: (g) => [...roadDeck(0, g), ...warrenTruss(0, g), ...[4, 8, 12, 16].map((x) => beam(`${x},0`, `${x},-2`, 'wood'))], slack: 1.25, tip: 'The longest bridge in the bay. Use every rock.' },
 ];
 
+/**
+ * World 4 River Town: ship lanes where nothing may be built. The bridge is built standing up on the
+ * cliff and a piston swings it down; its road end locks onto the far side (or a pier).
+ */
+/** A 4 m drawbridge leaf standing on the hinge at (x, 0), with its truss on the land side (dir 1 = on the left cliff, swings right). */
+const leaf = (x: number, dir: 1 | -1, brace: MaterialId = 'wood'): Beam[] => {
+  const p = (dx: number, y: number): string => `${x + dir * dx},${y}`;
+  return [
+    beam(p(0, 0), p(0, 2), 'road'), beam(p(0, 2), p(0, 4), 'road'),
+    beam(p(0, 0), p(-1, 1), brace), beam(p(-1, 1), p(0, 2), brace), beam(p(-1, 1), p(-2, 3), brace), beam(p(-2, 3), p(0, 4), brace),
+    // The piston pushes the top brace from a post 1 m behind the hinge.
+    beam(p(-1, 0), p(-2, 3), 'piston'),
+  ];
+};
+
+const RIVER: LevelSpec[] = [
+  {
+    name: 'Drawbridge', gap: 4, materials: ['road', 'wood', 'piston'], extraAnchors: [{ x: -1, y: 0 }], shipLane: { x0: 0, x1: 4 },
+    solution: () => leaf(0, 1), slack: 1.3,
+    tip: 'Ships pass here: no building in the blue lane. Build the bridge standing up. A piston pushes it down.',
+  },
+  {
+    name: 'Twin Leaves', gap: 8, materials: ['road', 'wood', 'piston'], extraAnchors: [{ x: -1, y: 0 }, { x: 9, y: 0 }, { x: 4, y: 0 }], shipLane: { x0: 0, x1: 8 },
+    solution: (g) => [...leaf(0, 1), ...leaf(g, -1)], slack: 1.25,
+    tip: 'Two bridges, one from each side. Both lock onto the pier in the middle.',
+  },
+  {
+    name: 'Lock Gate', gap: 8, materials: ['road', 'wood', 'piston'], extraAnchors: [{ x: 4, y: 0 }, { x: 9, y: 0 }], shipLane: { x0: 4, x1: 8 },
+    solution: (g) => [...roadDeck(0, 4), ...warrenTruss(0, 4), ...leaf(g, -1)], slack: 1.25,
+    tip: 'A fixed bridge to the pier, and a drawbridge from the right.',
+  },
+];
+
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;
 
 function costOf(beams: Beam[]): number {
@@ -162,6 +197,7 @@ export function build(world: number, specs: LevelSpec[]): LevelEntry[] {
       vehicle: spec.vehicle ?? 'car',
       materials: spec.materials ?? ['road', 'wood'],
       tip: spec.tip,
+      ...(spec.shipLane ? { shipLane: spec.shipLane } : {}),
       solution,
     };
   });
@@ -179,7 +215,7 @@ export const ALL_LEVELS: LevelEntry[] = WORLDS.flatMap((w) => w.levels);
  * Worlds still being made: tested like other levels, opened by id, not shown in menus or progress.
  * A world moves into WORLDS when it has 15 levels.
  */
-export const DRAFT_WORLDS: { id: number; name: string; levels: LevelEntry[] }[] = [];
+export const DRAFT_WORLDS: { id: number; name: string; levels: LevelEntry[] }[] = [{ id: 4, name: 'River Town', levels: build(4, RIVER) }];
 export const DRAFT_LEVELS: LevelEntry[] = DRAFT_WORLDS.flatMap((w) => w.levels);
 
 export function levelById(id: string): LevelEntry | undefined {
@@ -222,6 +258,7 @@ export function levelFromJson(text: string): { ok: true; level: LevelEntry } | {
   if (!Array.isArray(l.starBudgets) || l.starBudgets.length !== 2 || !l.starBudgets.every(isNum)) return { ok: false, error: '"starBudgets" must have 2 numbers.' };
   if (l.vehicle !== 'car' && l.vehicle !== 'truck' && l.vehicle !== 'train') return { ok: false, error: 'Unknown vehicle.' };
   if (!Array.isArray(l.materials) || !l.materials.every((m) => m in MATERIALS)) return { ok: false, error: 'Unknown material.' };
+  if (l.shipLane !== undefined && !(l.shipLane && isNum(l.shipLane.x0) && isNum(l.shipLane.x1))) return { ok: false, error: '"shipLane" must have x0 and x1.' };
   if (!Array.isArray(l.solution) || !l.solution.every((b) => b && typeof b.a === 'string' && typeof b.b === 'string' && b.material in MATERIALS)) {
     return { ok: false, error: '"solution" must be a list of beams.' };
   }

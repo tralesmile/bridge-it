@@ -124,6 +124,24 @@ async function run(viewport, name) {
     await sleep(300);
     await page.screenshot({ path: `${OUT}/${name}-${shot}.png` });
   }
+  // Draft World 4 River Town: drawbridges over ship lanes, with the hint shown, and one leaf swinging down.
+  for (const [id, shot] of [['w4-1', '9w4-01-drawbridge'], ['w4-2', '9w4-02-twin-leaves'], ['w4-3', '9w4-03-lock-gate']]) {
+    await page.evaluate((lid) => globalThis.__bridgeit.scene.start('play', { levelId: lid }), id);
+    await sleep(600);
+    await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
+    await sleep(300);
+    await page.screenshot({ path: `${OUT}/${name}-${shot}.png` });
+  }
+  await page.evaluate(() => {
+    const s = globalThis.__bridgeit.scene.getScene('play');
+    s.design = s.design.constructor.restore(s.level, s.level.solution);
+    s.startSim();
+  });
+  await sleep(900);
+  await page.screenshot({ path: `${OUT}/${name}-9w4-04-leaf-swinging.png` });
+  await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').mode === 'result', null, { timeout: 20000 }).catch(() => {});
+  const lockWon = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').sim?.status);
+  check(lockWon === 'won', `${name}: the Lock Gate drawbridge solution wins in the game (got ${lockWon})`);
   await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').scene.start('levels', { world: 3 }));
   await sleep(600);
   check(await active('levels'), `${name}: world 3 level select opens`);

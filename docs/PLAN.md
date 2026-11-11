@@ -43,10 +43,13 @@ Bridge It! is built by a two-member team: you (owner: accounts, money, final dec
 | --- | --- | --- |
 | 1. Farm Valley | Road, wood, steel, rock pillars | Moo Car, Hay Truck |
 | 2. Canyon Rails | Rope (tension only), long spans | Steam train |
-| 3. Pirate Bay | Hydraulic pistons: bridge opens for ships | Pirate ship, pizza scooter |
-| 4. Candy Mountain | Springs to jump gaps, wobbly jelly ground | Ice-cream van, school bus |
-| 5. Space Port (update) | Low gravity | Moon rover |
-| 6. Lava City (update) | Wood burns near lava | Fire truck |
+| 3. Pirate Bay | Slopes to low docks, masts for ropes, deep rocks | Pirate ship, pizza scooter |
+| 4. River Town | Hydraulic pistons: drawbridges over ship lanes | Delivery van |
+| 5. Candy Mountain | Springs to jump gaps, wobbly jelly ground | Ice-cream van, school bus |
+| 6. Space Port (update) | Low gravity | Moon rover |
+| 7. Lava City (update) | Wood burns near lava | Fire truck |
+
+(2026-11-11: pistons moved from Pirate Bay to their own world, River Town, because Pirate Bay was full of good slope and rope levels.)
 
 ## 3. First five minutes (the retention script)
 

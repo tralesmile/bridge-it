@@ -43,11 +43,14 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] World 2: 4 truck levels (12 to 24 m, wood truss on rocks every 4 m; levels 10-13, finale is now 14)
 - [x] World 2: Little Train vehicle (long 4-wheel body, not multi-car) and level w2-14 Little Train (15 levels total; finale is w2-15)
 - [ ] (partly: Sparse Posts and Long Cable mix truss and one rope) Rope level design: ropes cost more than a wood Warren truss when used as X braces; find a level where rope is the clever choice (long span, tension ties)
-- [x] Hydraulic piston material (`piston`: 3.2 m max, 350/m, grows 50% between 0.5 s and 2 s of an attempt; tested)
+- [x] Hydraulic piston material (`piston`: 3.2 m max, 350/m, grows 50% between 0.25 s and 1.5 s of an attempt; tested)
 - [x] Bug: a beam between two anchors crashed the attempt (planck joint between two static bodies); such beams now get no joint. Test in `tests/core.test.ts`
 - [x] World 3 Pirate Bay: 15 levels in `WORLDS` (12 Cargo Hold, 13 One Mast, 14 Deep Water, 15 Pirate Finale added this run), ocean backdrop, world select card
-- [ ] Piston levels: no level yet where the piston is the clever choice. Any final shape on the 1 m grid can be built with rigid beams, and a growing piston inside a closed truss fights the other beams. Needs a mechanism idea (a hinged drawbridge leaf lifted by a piston is a 2-bar linkage and does work), then a level where rigid beams cannot reach (e.g. too long or out of the build area)
-- [ ] Springs and World 4 Candy Mountain (15 levels)
+- [x] Piston mechanism: drawbridges. Levels can have a `shipLane` (no node or beam inside or across it). The bridge is built standing up on the cliff; a piston swings it down; a road end that comes down onto a cliff edge or pier anchor locks there (`latch` event) and that part's pistons freeze. In piston levels the vehicle waits until the pistons are done. Tests in `tests/drawbridge.test.ts`
+- [x] Draft World 4 River Town (`DRAFT_WORLDS`): w4-1 Drawbridge, w4-2 Twin Leaves (two leaves onto a pier), w4-3 Lock Gate (fixed span to a pier + drawbridge). Ship lane art (pale band, dashed edges, sailboat)
+- [ ] World 4 River Town: 12 more drawbridge levels (truck leaf with steel braces on a longer span, 6 m leaf, leaf from a high cliff, mixed rope + leaf, finale), then move it into `WORLDS` with a river backdrop and world select card
+- [ ] Animated ship sailing through the lane at the start of an attempt (visual only)
+- [ ] Springs and World 5 Candy Mountain (15 levels)
 - [x] Per-world backdrop (sky, hills) in play and level select (`WORLD_BACKGROUNDS`; world 2 is canyon orange)
 - [ ] Per-world music and themed world select cards
 - [x] Difficulty report (`npm run report`, `src/core/difficulty.ts`): solution cost vs budget, and which simple designs (bare road, wood/steel truss) win within budget. Min-cost search not done.

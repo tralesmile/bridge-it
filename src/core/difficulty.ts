@@ -1,12 +1,12 @@
-import { distance, pointOf } from './bridge';
-import { ALL_LEVELS, roadDeck, warrenTruss } from './levels';
+import { BridgeDesign, distance, pointOf } from './bridge';
+import { ALL_LEVELS, DRAFT_LEVELS, roadDeck, warrenTruss } from './levels';
 import { MATERIALS } from './materials';
 import { Simulation } from './simulation';
 import type { Beam, LevelDef } from './types';
 
 export interface SimpleDesign {
   name: string;
-  /** True if the design is within the level budget. */
+  /** True if the design can be built: within the level budget and the build rules (e.g. ship lanes). */
   affordable: boolean;
   cost: number;
   won: boolean;
@@ -47,7 +47,8 @@ export function simpleDesigns(level: LevelDef): { name: string; beams: Beam[] }[
 export function difficultyRow(level: LevelDef & { solution: Beam[] }): DifficultyRow {
   const designs: SimpleDesign[] = simpleDesigns(level).map((d) => {
     const cost = beamsCost(d.beams);
-    return { name: d.name, cost, affordable: cost <= level.budget, won: new Simulation(level, d.beams).runToEnd() === 'won' };
+    const buildable = BridgeDesign.restore(level, d.beams).list.length === d.beams.length;
+    return { name: d.name, cost, affordable: cost <= level.budget && buildable, won: new Simulation(level, d.beams).runToEnd() === 'won' };
   });
   const solutionCost = beamsCost(level.solution);
   return {
@@ -63,7 +64,8 @@ export function difficultyRow(level: LevelDef & { solution: Beam[] }): Difficult
   };
 }
 
-export const difficultyReport = (): DifficultyRow[] => ALL_LEVELS.map(difficultyRow);
+/** Every level, then the draft levels (so new worlds are checked before they ship). */
+export const difficultyReport = (): DifficultyRow[] => [...ALL_LEVELS, ...DRAFT_LEVELS].map(difficultyRow);
 
 export function formatReport(rows: DifficultyRow[]): string {
   const lines = ['id      gap  cost  3star budget  tight  simple designs that win within budget'];

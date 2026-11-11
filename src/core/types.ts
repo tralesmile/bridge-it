@@ -31,6 +31,8 @@ export interface LevelDef {
   materials: MaterialId[];
   /** Short tip shown at level start. */
   tip?: string;
+  /** Ship lane: no node and no beam may be built with x between x0 and x1 (a drawbridge level). */
+  shipLane?: { x0: number; x1: number };
 }
 
 export interface Beam {

@@ -29,7 +29,7 @@ const beamId = (a: string, b: string): string => (a < b ? `${a}|${b}` : `${b}|${
 
 export type AddResult =
   | { ok: true }
-  | { ok: false; reason: 'same-point' | 'in-ground' | 'too-long' | 'duplicate' | 'out-of-area' | 'material-locked' | 'over-budget' };
+  | { ok: false; reason: 'same-point' | 'in-ground' | 'too-long' | 'duplicate' | 'out-of-area' | 'in-lane' | 'material-locked' | 'over-budget' };
 
 /**
  * The player's bridge design: a set of beams between points.
@@ -88,6 +88,12 @@ export class BridgeDesign {
     );
   }
 
+  /** True if a beam from a to b would touch the inside of the level's ship lane. */
+  crossesLane(a: Point, b: Point): boolean {
+    const lane = this.level.shipLane;
+    return !!lane && Math.min(a.x, b.x) < lane.x1 && Math.max(a.x, b.x) > lane.x0;
+  }
+
   /** True if p is buried inside a cliff (anchors on the cliff face are fine). */
   insideTerrain(p: Point): boolean {
     if (this.isAnchor(keyOf(p))) return false;
@@ -113,6 +119,7 @@ export class BridgeDesign {
     if (!this.level.materials.includes(material)) return { ok: false, reason: 'material-locked' };
     if (!this.inBuildArea(a) || !this.inBuildArea(b)) return { ok: false, reason: 'out-of-area' };
     if (this.insideTerrain(a) || this.insideTerrain(b)) return { ok: false, reason: 'in-ground' };
+    if (this.crossesLane(a, b)) return { ok: false, reason: 'in-lane' };
     if (distance(a, b) > MATERIALS[material].maxLength + 1e-6) return { ok: false, reason: 'too-long' };
     const existing = this.beams.get(beamId(ka, kb));
     if (existing && existing.material === material) return { ok: false, reason: 'duplicate' };

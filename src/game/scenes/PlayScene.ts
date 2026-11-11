@@ -24,6 +24,7 @@ const HINT_AFTER_FAILS = 2;
 const REASONS: Record<string, string> = {
   'too-long': 'Too long for this material',
   'out-of-area': 'Outside the building area',
+  'in-lane': 'Keep the ship lane clear',
   'in-ground': 'Cannot build inside the ground',
   'over-budget': 'Not enough money',
   'material-locked': 'Not available here yet',
@@ -77,6 +78,7 @@ export class PlayScene extends Phaser.Scene {
   private timeScale = 1;
   private slowMoUntil = 0;
   private eventsSeen = 0;
+  private breaksSeen = 0;
   private splashed = false;
   private showHint = false;
   /** Beams that broke or were near breaking in the last failed attempt (shown while editing). */
@@ -160,6 +162,7 @@ export class PlayScene extends Phaser.Scene {
     g.fillRect(0, water.y, GAME_W, GAME_H - water.y);
     g.fillStyle(hex(C.waterLight), 0.6);
     g.fillRect(0, water.y, GAME_W, 8);
+    this.drawShipLane(g, water.y);
 
     const cliff = (x0: number, x1: number, top: number, edgeRight: boolean) => {
       const a = this.toScreen({ x: x0, y: top });
@@ -205,6 +208,36 @@ export class PlayScene extends Phaser.Scene {
     g.fillRect(flag.x - 2, flag.y - 90, 5, 90);
     g.fillStyle(hex(C.gold), 1);
     g.fillTriangle(flag.x + 3, flag.y - 90, flag.x + 48, flag.y - 74, flag.x + 3, flag.y - 58);
+  }
+
+  /** Ship lane (drawbridge levels): a pale blue band with dashed edges, a label and a little sailboat. */
+  private drawShipLane(g: Phaser.GameObjects.Graphics, waterY: number): void {
+    const lane = this.level.shipLane;
+    if (!lane) return;
+    const left = this.toScreen({ x: lane.x0, y: BUILD_MAX_Y }).x;
+    const right = this.toScreen({ x: lane.x1, y: BUILD_MAX_Y }).x;
+    g.fillStyle(hex(C.waterLight), 0.3);
+    g.fillRect(left, 0, right - left, waterY);
+    g.fillStyle(0xffffff, 0.7);
+    for (let y = 8; y < waterY; y += 24) {
+      g.fillRect(left - 2, y, 4, 12);
+      g.fillRect(right - 2, y, 4, 12);
+    }
+    // Off-centre, so a pier in the middle of the lane does not hide the boat.
+    const mid = left + (right - left) * 0.3;
+    const s = this.ppm / PX_PER_M;
+    // Label just above the boat, clear of the title and tip text at the top.
+    label(this, mid, waterY - 80 * s, 'Ship lane', 22, C.white).setAlpha(0.9);
+    // Sailboat on the water.
+    g.fillStyle(hex('#8a5a3c'), 1);
+    g.fillTriangle(mid - 34 * s, waterY - 2, mid + 34 * s, waterY - 2, mid + 22 * s, waterY + 12 * s);
+    g.fillTriangle(mid - 34 * s, waterY - 2, mid - 22 * s, waterY + 12 * s, mid + 22 * s, waterY + 12 * s);
+    g.fillStyle(hex(C.ink), 1);
+    g.fillRect(mid - 2, waterY - 62 * s, 4, 60 * s);
+    g.fillStyle(0xffffff, 1);
+    g.fillTriangle(mid + 3, waterY - 60 * s, mid + 3, waterY - 10 * s, mid + 34 * s, waterY - 10 * s);
+    g.fillStyle(hex('#e85d4f'), 1);
+    g.fillTriangle(mid - 3, waterY - 54 * s, mid - 3, waterY - 14 * s, mid - 26 * s, waterY - 14 * s);
   }
 
   private createEffects(): void {
@@ -571,6 +604,7 @@ export class PlayScene extends Phaser.Scene {
     for (let x = gapStart - BUILD_MARGIN_X; x <= gapEnd + BUILD_MARGIN_X; x++) {
       for (let y = BUILD_MIN_Y; y <= BUILD_MAX_Y; y++) {
         if (this.design.insideTerrain({ x, y })) continue;
+        if (this.design.crossesLane({ x, y }, { x, y })) continue;
         const s = this.toScreen({ x, y });
         g.fillStyle(0xffffff, 0.35);
         g.fillCircle(s.x, s.y, 2.5);
@@ -692,6 +726,7 @@ export class PlayScene extends Phaser.Scene {
     this.timeScale = 1;
     this.slowMoUntil = 0;
     this.eventsSeen = 0;
+    this.breaksSeen = 0;
     this.splashed = false;
     this.placeStreak = 0;
     sfx.go();
@@ -740,11 +775,18 @@ export class PlayScene extends Phaser.Scene {
     while (this.eventsSeen < sim.events.length) {
       const e = sim.events[this.eventsSeen++];
       const s = this.toScreen(e.at);
+      if (e.type === 'latch') {
+        // The drawbridge locked onto the far side: a small spark and a clunk, no slow motion.
+        this.sparks.explode(8, s.x, s.y);
+        sfx.place(0);
+        continue;
+      }
+      this.breaksSeen++;
       if (e.material === 'wood') this.chips.explode(14, s.x, s.y);
       else this.sparks.explode(18, s.x, s.y);
       sfx.snap(e.material);
       if (save.data.settings.shake && !save.data.settings.reducedMotion) this.cameras.main.shake(180, 0.006);
-      if (this.eventsSeen === 1) {
+      if (this.breaksSeen === 1) {
         // Slow motion on the first break: the funny moment people share.
         this.timeScale = 0.25;
         this.slowMoUntil = time + 1100;

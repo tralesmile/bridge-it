@@ -1,3 +1,4 @@
+import { notesAt, stepSeconds, trackFor } from '../core/music';
 import { save } from './save';
 
 /**
@@ -6,6 +7,58 @@ import { save } from './save';
  */
 class Sfx {
   private ctx: AudioContext | null = null;
+  /** Background music: the world whose loop plays (0 = none), the next step and when it starts. */
+  private musicWorld = 0;
+  private musicStep = 0;
+  private musicNext = 0;
+  private musicTimer: ReturnType<typeof setInterval> | null = null;
+
+  /** Plays the loop of a world (the menu uses world 1). Calling it again with the same world keeps the loop going. */
+  music(world: number): void {
+    if (world === this.musicWorld) return;
+    this.musicWorld = world;
+    this.musicStep = 0;
+    this.musicNext = 0;
+    if (!this.musicTimer) this.musicTimer = setInterval(() => this.scheduleMusic(), 50);
+  }
+
+  /** Looks 0.2 s ahead and schedules the notes that start in that time. */
+  private scheduleMusic(): void {
+    const ctx = this.ctx;
+    if (!ctx || ctx.state !== 'running' || !this.musicWorld) return;
+    if (!save.data.settings.music) {
+      this.musicNext = 0;
+      return;
+    }
+    const track = trackFor(this.musicWorld);
+    const dt = stepSeconds(track);
+    // Start (or restart after a pause) a little in the future.
+    if (this.musicNext < ctx.currentTime - 0.1) this.musicNext = ctx.currentTime + 0.05;
+    while (this.musicNext < ctx.currentTime + 0.2) {
+      for (const n of notesAt(track, this.musicStep)) {
+        if (n.voice === 'lead') this.note(n.hz, n.duration, track.lead, 0.035, this.musicNext);
+        else this.note(n.hz, n.duration, 'triangle', 0.05, this.musicNext);
+      }
+      this.musicStep++;
+      this.musicNext += dt;
+    }
+  }
+
+  /** A soft note with a short attack, at an exact AudioContext time. */
+  private note(freq: number, duration: number, type: OscillatorType, volume: number, at: number): void {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, at);
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(volume, at + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(at);
+    osc.stop(at + duration + 0.02);
+  }
 
   unlock(): void {
     try {

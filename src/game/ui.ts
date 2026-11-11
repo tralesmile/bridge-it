@@ -10,6 +10,8 @@ export interface ButtonOptions {
   shade?: string;
   fontSize?: number;
   textColor?: string;
+  /** Moves the label down (or up) from the centre, in pixels. */
+  textOffsetY?: number;
 }
 
 export interface Button extends Phaser.GameObjects.Container {
@@ -43,7 +45,7 @@ export function button(scene: Phaser.Scene, x: number, y: number, label: string,
     base.fillRoundedRect(-w / 2, -h / 2 + (pressed ? 2 : 0), w, h - 2, 18);
     base.fillStyle(0xffffff, 0.18);
     base.fillRoundedRect(-w / 2 + 8, -h / 2 + 6 + (pressed ? 2 : 0), w - 16, h * 0.28, 10);
-    text.y = (pressed ? 0 : -3) - 1;
+    text.y = (pressed ? 0 : -3) - 1 + (opts.textOffsetY ?? 0);
   };
   draw(false);
   container.add([base, ring, text]);
@@ -109,18 +111,19 @@ export function panel(scene: Phaser.Scene, x: number, y: number, w: number, h: n
   return g;
 }
 
-/** Settings window with three on/off switches. Shows on top of any scene; `onClose` runs when it closes. */
+/** Settings window with on/off switches. Shows on top of any scene; `onClose` runs when it closes. */
 export function openSettings(scene: Phaser.Scene, onChange: () => void = () => undefined): void {
   const W = 1280;
   const H = 720;
   const layer = scene.add.container(0, 0).setDepth(50);
   const shade = scene.add.rectangle(0, 0, W, H, hex(C.ink), 0.45).setOrigin(0).setInteractive();
-  layer.add([shade, panel(scene, W / 2, H / 2, 620, 520)]);
-  layer.add(label(scene, W / 2, H / 2 - 200, 'Settings', 48, C.ink));
-  const rows: Array<{ key: 'sound' | 'reducedMotion' | 'shake'; text: string }> = [
+  layer.add([shade, panel(scene, W / 2, H / 2, 620, 600)]);
+  layer.add(label(scene, W / 2, H / 2 - 220, 'Settings', 48, C.ink));
+  const rows: Array<{ key: 'sound' | 'music' | 'reducedMotion' | 'shake'; text: string }> = [
     { key: 'sound', text: 'Sound' },
     { key: 'shake', text: 'Screen shake' },
     { key: 'reducedMotion', text: 'Less motion' },
+    { key: 'music', text: 'Music' },
   ];
   rows.forEach((row, i) => {
     const y = H / 2 - 95 + i * 80;
@@ -137,5 +140,5 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
     }, { width: 130, height: 58, fontSize: 26, ...colors() });
     layer.add(b);
   });
-  layer.add(button(scene, W / 2, H / 2 + 190, 'Close', () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
+  layer.add(button(scene, W / 2, H / 2 + 230, 'Close', () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
 }

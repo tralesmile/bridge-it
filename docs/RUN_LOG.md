@@ -2,6 +2,25 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-11 — Run 32
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Spring material: soft and bouncy, never snaps. It is a Hooke force with damping on its two nodes (not a planck soft joint, whose stiffness changes with node mass). Pink coil art. Added last in the share code material list, so old codes still work. No level uses it yet.
+- Candy Mountain design probes (all failed, written in the roadmap): spring trampoline, ramp kicker, bobbing jelly piers.
+- Music: one short synth loop per world (and one for Candy Mountain), note data in `src/core/music.ts`, played by a look-ahead scheduler in `audio.ts`. Starts from `addBackground`, so every scene gets its world's loop. New Music switch in Settings (saved).
+- World select cards: each world has its own colour and a small picture drawn in code (barn, mesas, ship, drawbridge).
+- e2e: checks the Music switch saves, and screenshots the world select with every world open (`9z-worlds-open`).
+
+**Verified**
+- `npm run check` green (437 tests), `npm run e2e` no FAIL, screenshots checked on desktop and phone.
+
+**Lessons**
+- Probe a new mechanic before building levels or UI for it. Three ideas took about an hour and none worked; finding that out in a probe was cheap.
+- The cars are slow (car about 3 m/s). Jumps and bounces need more speed or a gentle shape; a car going off a flat edge always noses down.
+- Planck joints give a little, so a rigid post on a moving anchor does not snap. Do not design a puzzle around "rigid beams break when the ground moves".
+- In `background.ts` a local variable was already called `sfx`; import the audio object under another name there.
+- Next: decide the Candy Mountain mechanic (try a faster vehicle with springs as landing pads), or go on to M4 (coins and shop, achievements, daily bridge).
+
 ## 2026-11-11 — Run 31
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

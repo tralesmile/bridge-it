@@ -363,6 +363,7 @@ export class PlayScene extends Phaser.Scene {
       steel: [C.steel, '#5f7390'],
       rope: [C.rope, '#7d6642'],
       piston: [C.piston, '#2a7a6f'],
+      spring: [C.spring, '#b03b72'],
       erase: [C.anchor, '#a8302a'],
     };
     tools.forEach((t, i) => {
@@ -623,6 +624,7 @@ export class PlayScene extends Phaser.Scene {
     if (material === 'steel') return { width: 9, color: C.steel, light: C.steelLight };
     if (material === 'rope') return { width: 5, color: C.rope, light: C.ropeLight };
     if (material === 'piston') return { width: 11, color: C.piston, light: C.pistonLight };
+    if (material === 'spring') return { width: 5, color: C.spring, light: C.springLight };
     return { width: 9, color: C.wood, light: C.woodLight };
   }
 
@@ -650,6 +652,25 @@ export class PlayScene extends Phaser.Scene {
       const uy = (sb.y - sa.y) / len;
       g.lineStyle(3, hex(style.light), alpha);
       for (let t = 8; t < len - 8; t += 22) g.lineBetween(sa.x + ux * t, sa.y + uy * t, sa.x + ux * Math.min(t + 10, len - 8), sa.y + uy * Math.min(t + 10, len - 8));
+    } else if (material === 'spring') {
+      // Coil: a zigzag across the beam.
+      const len = Math.hypot(sb.x - sa.x, sb.y - sa.y);
+      if (len < 1) return;
+      const ux = (sb.x - sa.x) / len;
+      const uy = (sb.y - sa.y) / len;
+      const turns = Math.max(4, Math.round(len / 12));
+      g.lineStyle(4, hex(style.light), alpha);
+      let px = sa.x;
+      let py = sa.y;
+      for (let i = 1; i <= turns; i++) {
+        const t = (i / turns) * len;
+        const side = i === turns ? 0 : i % 2 ? 7 : -7;
+        const x = sa.x + ux * t - uy * side;
+        const y = sa.y + uy * t + ux * side;
+        g.lineBetween(px, py, x, y);
+        px = x;
+        py = y;
+      }
     } else {
       g.lineStyle(2, hex(style.light), 0.7 * alpha);
       g.lineBetween(sa.x, sa.y - 2, sb.x, sb.y - 2);
@@ -661,7 +682,7 @@ export class PlayScene extends Phaser.Scene {
     g.clear();
     if (this.mode === 'build') {
       this.drawGrid(g);
-      const order: MaterialId[] = ['rope', 'wood', 'steel', 'piston', 'road'];
+      const order: MaterialId[] = ['rope', 'spring', 'wood', 'steel', 'piston', 'road'];
       for (const m of order) for (const beam of this.design.list) if (beam.material === m) this.strokeBeam(g, pointOf(beam.a), pointOf(beam.b), m);
       return;
     }

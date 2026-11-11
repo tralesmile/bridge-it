@@ -87,6 +87,7 @@ export class Simulation {
   private readonly vehicleDef: VehicleDef;
   private readonly goalX: number;
   /** A piston stops growing (locked) once its part of the bridge has latched onto an anchor. */
+  private readonly springs: { a: Body; b: Body; length: number; stiffness: number; damping: number }[] = [];
   private readonly pistons: { joint: DistanceJoint; length: number; grow: number; node: Body; locked: boolean }[] = [];
   /** Union-find over free nodes: nodes joined by beams belong to the same part of the bridge. */
   private readonly parent = new Map<Body, Body>();
@@ -110,6 +111,7 @@ export class Simulation {
     this.goalX = level.gapEnd + (level.goalDistance ?? 4);
     this.buildTerrain();
     for (const anchor of level.anchors) this.nodeBody(`${anchor.x},${anchor.y}`, true);
+
     for (const beam of design) this.addBeam(beam);
     if (level.materials.includes('piston')) {
       // Only the cliff edges and piers catch a road end: not rocks below the deck, not posts on the cliff top.
@@ -133,6 +135,7 @@ export class Simulation {
   step(): void {
     if (this.status !== 'running') return;
     this.growPistons();
+    this.pushSprings();
     this.coastDownhill();
     this.world.step(STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.time += STEP;
@@ -241,6 +244,13 @@ export class Simulation {
         this.beams.push({ state, joints: [], body: null, strength: material.strength, load: 0 });
         return;
       }
+      if (material.spring) {
+        // Springs are a force, not a joint, so their stiffness does not depend on the node masses.
+        this.springs.push({ a: na, b: nb, length, ...material.spring });
+        if (na.isDynamic() && nb.isDynamic()) this.parent.set(this.root(na), this.root(nb));
+        this.beams.push({ state, joints: [], body: null, strength: material.strength, load: 0 });
+        return;
+      }
       // Ropes only pull (RopeJoint); other beams also push (DistanceJoint).
       const joint = this.world.createJoint(
         material.tensionOnly
@@ -252,6 +262,27 @@ export class Simulation {
         this.pistons.push({ joint, length, grow: length * material.extends, node: na.isDynamic() ? na : nb, locked: false });
       }
       this.beams.push({ state, joints: joint ? [joint] : [], body: null, strength: material.strength, load: 0 });
+    }
+  }
+
+  /** Hooke's law with damping, applied to both ends of each spring. */
+  private pushSprings(): void {
+    for (const s of this.springs) {
+      const pa = s.a.getPosition();
+      const pb = s.b.getPosition();
+      const dx = pb.x - pa.x;
+      const dy = pb.y - pa.y;
+      const len = Math.hypot(dx, dy);
+      if (len < 1e-6) continue;
+      const ux = dx / len;
+      const uy = dy / len;
+      const va = s.a.getLinearVelocity();
+      const vb = s.b.getLinearVelocity();
+      const stretchSpeed = (vb.x - va.x) * ux + (vb.y - va.y) * uy;
+      // Positive force pulls the ends together.
+      const f = s.stiffness * (len - s.length) + s.damping * stretchSpeed;
+      if (s.a.isDynamic()) s.a.applyForceToCenter(Vec2(ux * f, uy * f), true);
+      if (s.b.isDynamic()) s.b.applyForceToCenter(Vec2(-ux * f, -uy * f), true);
     }
   }
 

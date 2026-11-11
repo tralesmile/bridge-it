@@ -56,9 +56,10 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Ship lane list: `shipLanes` (old share codes with one `shipLane` still load)
 - [x] Bug: the finish flag was off-screen on 20 m levels with a 5 m flag distance; the view now leaves room for the flag
 - [x] Animated ship: at GO each lane's boat sails up into the distance (smaller, fading) while the pistons work; hidden at once with Less motion; back when you edit (visual only)
-- [ ] Springs and World 5 Candy Mountain (15 levels)
+- [x] Spring material (`spring`: soft, bouncy, never snaps; a Hooke force with damping, not a joint; drawn as a pink coil). Tests in `tests/spring.test.ts`. No level uses it yet
+- [ ] World 5 Candy Mountain (15 levels): find a mechanic where springs are the clever choice. Probes that did NOT work (run 32): a car dropping onto a spring pad noses down and flips; ramp kickers flip the car; jelly anchors that bob (moving piers) do not need springs (a rigid post just swings with the jelly, and a spring soft enough to take the bob is too soft to hold the deck). Ideas left: a faster vehicle (ice-cream van) for real jumps, springs as landing pads after a down-ramp jump, a seesaw or counterweight
 - [x] Per-world backdrop (sky, hills) in play and level select (`WORLD_BACKGROUNDS`; world 2 is canyon orange)
-- [ ] Per-world music and themed world select cards
+- [x] Per-world music (`src/core/music.ts`: one synth loop per world, Music switch in Settings) and themed world select cards (world colour and a small picture drawn in code)
 - [x] Difficulty report (`npm run report`, `src/core/difficulty.ts`): solution cost vs budget, and which simple designs (bare road, wood/steel truss) win within budget. Min-cost search not done.
 - [x] Retune w1-7 Hay Truck (gap 6, wood fails, steel top chord wins) and w1-13 Heavy Load (wood truss on the rock; steel truss now over budget). Saved designs that break new rules are dropped on load (`BridgeDesign.restore`)
 - [ ] Difficulty report: min-cost search per level (to check 3-star budgets are not too loose)

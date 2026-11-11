@@ -41,8 +41,15 @@ async function run(viewport, name) {
   await click(810, 425); // Less motion is the third row (y = 360 - 95 + 160)
   const still = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.reducedMotion);
   await click(810, 425); // switch back
-  await click(640, 550);
+  await click(640, 590);
   check(still === true, `${name}: settings switch saves (reducedMotion ${still})`);
+  // Music is the fourth row (y = 265 + 240). Turn it off and on again.
+  await click(1180, 60);
+  await click(810, 505);
+  const music = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.music);
+  await click(810, 505);
+  await click(640, 590);
+  check(music === false, `${name}: music switch saves (music ${music})`);
 
   await click(640, 430);
   check(await active('worlds'), `${name}: PLAY opens world select`);
@@ -160,6 +167,19 @@ async function run(viewport, name) {
   await sleep(600);
   check(await active('worlds') && !(await active('levels')), `${name}: world select opens with 5 cards`);
   await page.screenshot({ path: `${OUT}/${name}-9z-worlds.png` });
+  // Every world open: shows the themed cards with their pictures.
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}');
+    s.stars = s.stars || {};
+    for (let w = 1; w <= 4; w++) for (let i = 1; i <= 15; i++) s.stars[`w${w}-${i}`] = s.stars[`w${w}-${i}`] || 1;
+    localStorage.setItem('bridgeit.save', JSON.stringify(s));
+  });
+  await page.reload();
+  await page.waitForFunction(() => globalThis.__bridgeit?.scene?.isActive('menu'), null, { timeout: 15000 });
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('menu').scene.start('worlds'); });
+  await sleep(600);
+  check(await active('worlds'), `${name}: world select with every world open`);
+  await page.screenshot({ path: `${OUT}/${name}-9z-worlds-open.png` });
   await page.close();
 }
 

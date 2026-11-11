@@ -1,9 +1,11 @@
 import Phaser from 'phaser';
+import { sfx as audio } from './audio';
 import { save } from './save';
 import { GAME_H, GAME_W, WORLD_BACKGROUNDS } from './theme';
 
-/** The shared animated backdrop: sky, sun, drifting clouds and two parallax hill layers. */
+/** The shared animated backdrop: sky, sun, drifting clouds and two parallax hill layers. Also picks the world's music. */
 export function addBackground(scene: Phaser.Scene, world = 1): void {
+  audio.music(world);
   const sfx = world > 1 && world <= WORLD_BACKGROUNDS.length ? `-w${world}` : '';
   scene.add.image(0, 0, `sky${sfx}`).setOrigin(0).setDisplaySize(GAME_W, GAME_H).setScrollFactor(0);
   const sun = scene.add.image(1040, 130, 'sun').setScale(1.4).setScrollFactor(0);

@@ -1,5 +1,5 @@
 /** Building materials. Units: metres, newtons, in-game dollars. */
-export type MaterialId = 'road' | 'wood' | 'steel' | 'rope' | 'piston';
+export type MaterialId = 'road' | 'wood' | 'steel' | 'rope' | 'piston' | 'spring';
 
 export interface Material {
   id: MaterialId;
@@ -18,6 +18,8 @@ export interface Material {
   tensionOnly?: boolean;
   /** Hydraulic: grows by this fraction of its length while the attempt runs. */
   extends?: number;
+  /** Spring: pushes and pulls back to its built length with this stiffness (N per m) and damping (N per m/s). Never snaps. */
+  spring?: { stiffness: number; damping: number };
 }
 
 export const MATERIALS: Record<MaterialId, Material> = {
@@ -26,6 +28,7 @@ export const MATERIALS: Record<MaterialId, Material> = {
   steel: { id: 'steel', name: 'Steel', maxLength: 3.2, costPerMetre: 300, strength: 30000, massPerMetre: 25, isRoad: false },
   rope: { id: 'rope', name: 'Rope', maxLength: 4.5, costPerMetre: 60, strength: 7000, massPerMetre: 2, isRoad: false, tensionOnly: true },
   piston: { id: 'piston', name: 'Piston', maxLength: 3.2, costPerMetre: 350, strength: 24000, massPerMetre: 15, isRoad: false, extends: 0.5 },
+  spring: { id: 'spring', name: 'Spring', maxLength: 2.25, costPerMetre: 150, strength: Infinity, massPerMetre: 6, isRoad: false, spring: { stiffness: 24000, damping: 120 } },
 };
 
-export const MATERIAL_ORDER: MaterialId[] = ['road', 'wood', 'steel', 'rope', 'piston'];
+export const MATERIAL_ORDER: MaterialId[] = ['road', 'wood', 'steel', 'rope', 'piston', 'spring'];

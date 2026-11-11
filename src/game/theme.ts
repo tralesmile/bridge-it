@@ -35,6 +35,8 @@ export const C = {
   ropeLight: '#e0c89a',
   piston: '#3fae9f',
   pistonLight: '#a6ebe1',
+  spring: '#e85d9c',
+  springLight: '#ffc2df',
   stress: '#ff3b30',
 } as const;
 

@@ -10,10 +10,10 @@ export interface SaveData {
   designs: Record<string, Beam[]>;
   coins: number;
   fails: Record<string, number>;
-  settings: { sound: boolean; reducedMotion: boolean; shake: boolean };
+  settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, settings: { sound: true, reducedMotion: false, shake: true } });
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {
@@ -55,13 +55,14 @@ export function sanitize(raw: unknown): SaveData {
       if (Array.isArray(v)) {
         base.designs[k] = v.filter(
           (b): b is Beam =>
-            !!b && typeof b.a === 'string' && typeof b.b === 'string' && ['road', 'wood', 'steel', 'rope', 'piston'].includes(b.material),
+            !!b && typeof b.a === 'string' && typeof b.b === 'string' && ['road', 'wood', 'steel', 'rope', 'piston', 'spring'].includes(b.material),
         );
       }
     }
   }
   if (r.settings && typeof r.settings === 'object') {
     base.settings.sound = r.settings.sound !== false;
+    base.settings.music = r.settings.music !== false;
     base.settings.reducedMotion = r.settings.reducedMotion === true;
     base.settings.shake = r.settings.shake !== false;
   }

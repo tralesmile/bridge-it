@@ -55,7 +55,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [ ] Drawbridge ideas for later: 6 m leaf; leaf onto a lower bank (its hinge brace breaks from the swing speed, so it needs a slower swing or a damper)
 - [x] Ship lane list: `shipLanes` (old share codes with one `shipLane` still load)
 - [x] Bug: the finish flag was off-screen on 20 m levels with a 5 m flag distance; the view now leaves room for the flag
-- [ ] Animated ship sailing through the lane at the start of an attempt (visual only)
+- [x] Animated ship: at GO each lane's boat sails up into the distance (smaller, fading) while the pistons work; hidden at once with Less motion; back when you edit (visual only)
 - [ ] Springs and World 5 Candy Mountain (15 levels)
 - [x] Per-world backdrop (sky, hills) in play and level select (`WORLD_BACKGROUNDS`; world 2 is canyon orange)
 - [ ] Per-world music and themed world select cards

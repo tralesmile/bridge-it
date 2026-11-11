@@ -4,7 +4,7 @@ import { levelById, nextLevel, type LevelEntry } from '../../core/levels';
 import { MATERIALS, type MaterialId } from '../../core/materials';
 import { decodeBridge, encodeBridge } from '../../core/share';
 import { starsFor } from '../../core/scoring';
-import { MAX_TIME, STEP, Simulation } from '../../core/simulation';
+import { MAX_TIME, PISTON_START, PISTON_TIME, STEP, Simulation } from '../../core/simulation';
 import type { Point, ShipLane } from '../../core/types';
 import type { Mood } from '../art';
 import { sfx } from '../audio';
@@ -56,6 +56,8 @@ export class PlayScene extends Phaser.Scene {
   private chassisSprite!: Phaser.GameObjects.Image;
   private wheelSprites: Phaser.GameObjects.Image[] = [];
   private sparks!: Phaser.GameObjects.Particles.ParticleEmitter;
+  /** One sailboat per ship lane; it sails away into the distance when an attempt starts. */
+  private boats: { g: Phaser.GameObjects.Graphics; x: number; y: number }[] = [];
   private chips!: Phaser.GameObjects.Particles.ParticleEmitter;
   private puffs!: Phaser.GameObjects.Particles.ParticleEmitter;
 
@@ -94,6 +96,7 @@ export class PlayScene extends Phaser.Scene {
     this.level = level;
     this.design = BridgeDesign.restore(level, save.data.designs[level.id] ?? []);
     this.mode = 'build';
+    this.boats = [];
     this.tool = level.materials[0];
     this.sim = null;
     this.dragFrom = null;
@@ -228,16 +231,19 @@ export class PlayScene extends Phaser.Scene {
     const s = this.ppm / PX_PER_M;
     // Label just above the boat, clear of the title and tip text at the top.
     label(this, mid, waterY - 80 * s, 'Ship lane', 22, C.white).setAlpha(0.9);
-    // Sailboat on the water.
-    g.fillStyle(hex('#8a5a3c'), 1);
-    g.fillTriangle(mid - 34 * s, waterY - 2, mid + 34 * s, waterY - 2, mid + 22 * s, waterY + 12 * s);
-    g.fillTriangle(mid - 34 * s, waterY - 2, mid - 22 * s, waterY + 12 * s, mid + 22 * s, waterY + 12 * s);
-    g.fillStyle(hex(C.ink), 1);
-    g.fillRect(mid - 2, waterY - 62 * s, 4, 60 * s);
-    g.fillStyle(0xffffff, 1);
-    g.fillTriangle(mid + 3, waterY - 60 * s, mid + 3, waterY - 10 * s, mid + 34 * s, waterY - 10 * s);
-    g.fillStyle(hex('#e85d4f'), 1);
-    g.fillTriangle(mid - 3, waterY - 54 * s, mid - 3, waterY - 14 * s, mid - 26 * s, waterY - 14 * s);
+    // Sailboat on the water, in its own graphics so it can sail away.
+    const boat = this.add.graphics({ x: mid, y: waterY });
+    this.children.moveAbove(boat as never, this.world as never);
+    boat.fillStyle(hex('#8a5a3c'), 1);
+    boat.fillTriangle(-34 * s, -2, 34 * s, -2, 22 * s, 12 * s);
+    boat.fillTriangle(-34 * s, -2, -22 * s, 12 * s, 22 * s, 12 * s);
+    boat.fillStyle(hex(C.ink), 1);
+    boat.fillRect(-2, -62 * s, 4, 60 * s);
+    boat.fillStyle(0xffffff, 1);
+    boat.fillTriangle(3, -60 * s, 3, -10 * s, 34 * s, -10 * s);
+    boat.fillStyle(hex('#e85d4f'), 1);
+    boat.fillTriangle(-3, -54 * s, -3, -14 * s, -26 * s, -14 * s);
+    this.boats.push({ g: boat, x: mid, y: waterY });
   }
 
   private createEffects(): void {
@@ -730,6 +736,7 @@ export class PlayScene extends Phaser.Scene {
     this.splashed = false;
     this.placeStreak = 0;
     sfx.go();
+    this.sailBoats();
     this.goButton.setLabel('Edit');
     for (const o of this.buildUi) (o as unknown as Phaser.GameObjects.Components.Visible).setVisible(false);
     this.redraw();
@@ -744,7 +751,27 @@ export class PlayScene extends Phaser.Scene {
     this.resultLayer?.destroy();
     this.resultLayer = null;
     this.placeVehicle(new Simulation(this.level, []));
+    this.resetBoats();
     this.redraw();
+  }
+
+  /** Visual only: each boat sails up the lane into the distance (smaller, higher, fading) while the pistons work. */
+  private sailBoats(): void {
+    this.resetBoats();
+    for (const b of this.boats) {
+      if (save.data.settings.reducedMotion) {
+        b.g.setAlpha(0);
+        continue;
+      }
+      this.tweens.add({ targets: b.g, y: b.y - 40, scale: 0.45, alpha: 0, duration: (PISTON_START + PISTON_TIME) * 1000, ease: 'Sine.easeIn' });
+    }
+  }
+
+  private resetBoats(): void {
+    for (const b of this.boats) {
+      this.tweens.killTweensOf(b.g);
+      b.g.setPosition(b.x, b.y).setScale(1).setAlpha(1);
+    }
   }
 
   override update(time: number, delta: number): void {

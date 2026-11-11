@@ -143,6 +143,8 @@ async function run(viewport, name) {
   });
   await sleep(900);
   await page.screenshot({ path: `${OUT}/${name}-9w4-03b-leaf-swinging.png` });
+  const boatAlpha = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').boats.map((b) => b.g.alpha));
+  check(boatAlpha.length === 1 && boatAlpha[0] < 0.9, `${name}: the boat sails away when the attempt starts (alpha ${boatAlpha})`);
   await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').mode === 'result', null, { timeout: 20000 }).catch(() => {});
   const lockWon = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').sim?.status);
   check(lockWon === 'won', `${name}: the Lock Gate drawbridge solution wins in the game (got ${lockWon})`);

@@ -88,10 +88,11 @@ export class BridgeDesign {
     );
   }
 
-  /** True if a beam from a to b would touch the inside of the level's ship lane. */
+  /** True if a beam from a to b would touch the inside of one of the level's ship lanes. */
   crossesLane(a: Point, b: Point): boolean {
-    const lane = this.level.shipLane;
-    return !!lane && Math.min(a.x, b.x) < lane.x1 && Math.max(a.x, b.x) > lane.x0;
+    const lo = Math.min(a.x, b.x);
+    const hi = Math.max(a.x, b.x);
+    return (this.level.shipLanes ?? []).some((lane) => lo < lane.x1 && hi > lane.x0);
   }
 
   /** True if p is buried inside a cliff (anchors on the cliff face are fine). */

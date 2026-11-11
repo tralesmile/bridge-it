@@ -22,14 +22,16 @@ export class WorldSelectScene extends Phaser.Scene {
 
     const ids = ALL_LEVELS.map((l) => l.id);
     const total = WORLDS.length + COMING_SOON.length;
-    const cardW = 210;
-    const gap = 30;
+    // Cards share the panel width (5 cards fit at 170 px).
+    const gap = 20;
+    const cardW = Math.min(210, Math.floor((940 - (total - 1) * gap) / total));
     const startX = GAME_W / 2 - ((total - 1) * (cardW + gap)) / 2;
 
     WORLDS.forEach((world, i) => {
       const x = startX + i * (cardW + gap);
       const open = world.levels.length > 0 && isUnlocked(ids, save.data.stars, world.levels[0].id);
-      const b = button(this, x, 350, open ? world.name : '🔒', () => this.scene.start('levels', { world: world.id }), {
+      // Two-word names go on two lines so they fit a narrow card.
+      const b = button(this, x, 350, open ? world.name.replace(' ', '\n') : '🔒', () => this.scene.start('levels', { world: world.id }), {
         width: cardW,
         height: 190,
         fontSize: open ? 30 : 56,

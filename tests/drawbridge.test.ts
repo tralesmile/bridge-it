@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { BridgeDesign } from '../src/core/bridge';
-import { levelById } from '../src/core/levels';
+import { levelById, levelFromJson, levelToJson } from '../src/core/levels';
 import { PISTON_START, PISTON_TIME, Simulation } from '../src/core/simulation';
 
 const level = (id: string) => {
@@ -26,6 +26,24 @@ describe('ship lane', () => {
     expect(d.canAdd({ x: 0, y: 0 }, { x: 2, y: 0 }, 'road')).toEqual({ ok: true });
     expect(d.canAdd({ x: 4, y: 0 }, { x: 6, y: 0 }, 'road')).toEqual({ ok: false, reason: 'in-lane' });
   });
+
+  test('a level can have two lanes (Two Canals); the gap between them is free', () => {
+    const d = new BridgeDesign(level('w4-13'));
+    expect(level('w4-13').shipLanes).toHaveLength(2);
+    expect(d.canAdd({ x: 0, y: 0 }, { x: 2, y: 0 }, 'road')).toEqual({ ok: false, reason: 'in-lane' });
+    expect(d.canAdd({ x: 4, y: 0 }, { x: 6, y: 0 }, 'road')).toEqual({ ok: true });
+    expect(d.canAdd({ x: 8, y: 0 }, { x: 10, y: 0 }, 'road')).toEqual({ ok: false, reason: 'in-lane' });
+    expect(d.crossesLane({ x: 6, y: 1 }, { x: 10, y: 1 })).toBe(true);
+  });
+
+  test('level JSON with one old "shipLane" still loads as a lane list', () => {
+    const json = JSON.parse(levelToJson(level('w4-1')));
+    json.shipLane = json.shipLanes[0];
+    delete json.shipLanes;
+    const r = levelFromJson(JSON.stringify(json));
+    expect(r.ok && r.level.shipLanes).toEqual([{ x0: 0, x1: 4 }]);
+    expect(levelFromJson(JSON.stringify({ ...json, shipLane: { x0: 1 } })).ok).toBe(false);
+  });
 });
 
 describe('drawbridge', () => {
@@ -45,7 +63,7 @@ describe('drawbridge', () => {
     expect(sim.events.filter((e) => e.type === 'latch').map((e) => e.at)).toEqual([{ x: 4, y: 0 }, { x: 4, y: 0 }]);
   });
 
-  test.each(['w4-1', 'w4-2', 'w4-3', 'w4-4', 'w4-5', 'w4-6', 'w4-7', 'w4-8', 'w4-9', 'w4-10', 'w4-11'])('%s: the same leaf without its piston loses (no lock from a leaf that swung round)', (id) => {
+  test.each(['w4-1', 'w4-2', 'w4-3', 'w4-4', 'w4-5', 'w4-6', 'w4-7', 'w4-8', 'w4-9', 'w4-10', 'w4-11', 'w4-12', 'w4-13', 'w4-14', 'w4-15'])('%s: the same leaf without its piston loses (no lock from a leaf that swung round)', (id) => {
     const l = level(id);
     const sim = new Simulation(l, l.solution.filter((b) => b.material !== 'piston'));
     expect(sim.runToEnd()).toBe('lost');
@@ -78,8 +96,20 @@ describe('drawbridge', () => {
     expect(new Simulation(level('w4-8'), level('w4-3').solution).runToEnd()).toBe('lost');
   });
 
-  test('Rope Market and Long Wharf: the fixed road needs its ropes', () => {
-    for (const id of ['w4-9', 'w4-11']) {
+  test('Grain Barges: the light Two Canals bridge breaks under the truck', () => {
+    expect(new Simulation(level('w4-14'), level('w4-13').solution).runToEnd()).toBe('lost');
+  });
+
+  test('River Finale: both leaves lock onto the piers, and the long middle needs its rock legs', () => {
+    const l = level('w4-15');
+    const sim = new Simulation(l, l.solution);
+    expect(sim.runToEnd()).toBe('won');
+    expect(sim.events.filter((e) => e.type === 'latch').map((e) => e.at)).toEqual(expect.arrayContaining([{ x: 4, y: 0 }, { x: 16, y: 0 }]));
+    expect(new Simulation(l, l.solution.filter((b) => !b.b.endsWith(',-2'))).runToEnd()).toBe('lost');
+  });
+
+  test('Rope Market, Long Wharf and Harbour Mast: the fixed road needs its ropes', () => {
+    for (const id of ['w4-9', 'w4-11', 'w4-12']) {
       const l = level(id);
       expect(new Simulation(l, l.solution.filter((b) => b.material !== 'rope')).runToEnd(), id).toBe('lost');
     }

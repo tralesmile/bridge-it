@@ -5,7 +5,7 @@ import { MATERIALS, type MaterialId } from '../../core/materials';
 import { decodeBridge, encodeBridge } from '../../core/share';
 import { starsFor } from '../../core/scoring';
 import { MAX_TIME, STEP, Simulation } from '../../core/simulation';
-import type { Point } from '../../core/types';
+import type { Point, ShipLane } from '../../core/types';
 import type { Mood } from '../art';
 import { sfx } from '../audio';
 import { addBackground } from '../background';
@@ -107,7 +107,9 @@ export class PlayScene extends Phaser.Scene {
     this.wheelSprites = [];
     const mid = (level.gapStart + level.gapEnd) / 2;
     // Zoom out so wide levels fit on the screen (never zoom in past the normal size).
-    const widthM = level.gapEnd - level.gapStart + 10;
+    // Room on each side for the car and the finish flag (with its cloth, 1.5 m past the pole).
+    const side = Math.max(5, (level.goalDistance ?? 4) + 1.5);
+    const widthM = level.gapEnd - level.gapStart + 2 * side;
     this.ppm = Math.max(MIN_PX_PER_M, Math.min(PX_PER_M, GAME_W / widthM));
     this.ox = GAME_W / 2 - mid * this.ppm;
     this.oy = 390;
@@ -162,7 +164,7 @@ export class PlayScene extends Phaser.Scene {
     g.fillRect(0, water.y, GAME_W, GAME_H - water.y);
     g.fillStyle(hex(C.waterLight), 0.6);
     g.fillRect(0, water.y, GAME_W, 8);
-    this.drawShipLane(g, water.y);
+    for (const lane of this.level.shipLanes ?? []) this.drawShipLane(g, water.y, lane);
 
     const cliff = (x0: number, x1: number, top: number, edgeRight: boolean) => {
       const a = this.toScreen({ x: x0, y: top });
@@ -211,9 +213,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   /** Ship lane (drawbridge levels): a pale blue band with dashed edges, a label and a little sailboat. */
-  private drawShipLane(g: Phaser.GameObjects.Graphics, waterY: number): void {
-    const lane = this.level.shipLane;
-    if (!lane) return;
+  private drawShipLane(g: Phaser.GameObjects.Graphics, waterY: number, lane: ShipLane): void {
     const left = this.toScreen({ x: lane.x0, y: BUILD_MAX_Y }).x;
     const right = this.toScreen({ x: lane.x1, y: BUILD_MAX_Y }).x;
     g.fillStyle(hex(C.waterLight), 0.3);

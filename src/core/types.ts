@@ -31,8 +31,8 @@ export interface LevelDef {
   materials: MaterialId[];
   /** Short tip shown at level start. */
   tip?: string;
-  /** Ship lane: no node and no beam may be built with x between x0 and x1 (a drawbridge level). */
-  shipLane?: { x0: number; x1: number };
+  /** Ship lanes: no node and no beam may be built with x between x0 and x1 of any lane (drawbridge levels). */
+  shipLanes?: ShipLane[];
 }
 
 export interface Beam {
@@ -43,3 +43,8 @@ export interface Beam {
 
 export type SimStatus = 'running' | 'won' | 'lost';
 export type LossReason = 'fell' | 'timeout' | 'stuck' | 'collapse' | 'flipped';
+
+export interface ShipLane {
+  x0: number;
+  x1: number;
+}

@@ -29,7 +29,7 @@ export function button(scene: Phaser.Scene, x: number, y: number, label: string,
   const base = scene.add.graphics();
   const ring = scene.add.graphics();
   const text = scene.add
-    .text(0, -3, label, { fontFamily: FONT, fontSize: `${opts.fontSize ?? 28}px`, fontStyle: 'bold', color: opts.textColor ?? C.white })
+    .text(0, -3, label, { fontFamily: FONT, fontSize: `${opts.fontSize ?? 28}px`, fontStyle: 'bold', color: opts.textColor ?? C.white, align: 'center' })
     .setOrigin(0.5);
   text.setShadow(0, 2, 'rgba(0,0,0,0.25)', 0);
   let enabled = true;

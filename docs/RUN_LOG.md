@@ -2,6 +2,24 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-11 — Run 31
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Ship lanes are now a list (`shipLanes`); each lane gets its own band and boat. Level JSON with one old `shipLane` still loads.
+- River Town w4-12 to w4-15: Harbour Mast (leaf onto a pier, then a road hung from one mast), Two Canals (two lanes, a leaf over each, a truss between the piers), Grain Barges (the same with the truck), River Finale (20 m, truck, two canals and two rock legs).
+- World 4 River Town moved into `WORLDS` (15 levels), river backdrop colours, world select cards shrink to fit 5 and put two-word names on two lines.
+- Fix: on 20 m levels with a 5 m flag distance (Pirate Finale, River Finale) the flag was off the right edge. The view now leaves room for the flag.
+- Tests: two-lane rules, old JSON, no-piston loses for all 15, Grain Barges loses with the light bridge, River Finale needs its legs, Harbour Mast needs its ropes. e2e shots all 15 River Town levels, the world 4 level select and world select.
+
+**Verified**
+- `npm run check` green (428 tests), `npm run e2e` no FAIL (31 checks), screenshots checked on desktop and phone.
+
+**Lessons**
+- New levels built only from proven parts (`leaf`, `truckLeaf`, `fanRopes`, trusses on rocks) won on the first try with 0 breaks. When a mechanic is hard to tune, combine tested parts in new layouts first.
+- In e2e, `__bridgeit.scene.start('worlds')` (game level) runs the new scene on top of the old one without stopping it; use `getScene('<current>').scene.start(...)` inside `{ }` so `page.evaluate` returns nothing (returning the scene plugin fails with "object reference chain is too long").
+- Check the right edge of wide levels in screenshots: the flag had been hidden since Pirate Finale and nobody saw it.
+- Next: animated ship in the lane, then springs and World 5 Candy Mountain.
+
 ## 2026-11-11 — Run 30
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

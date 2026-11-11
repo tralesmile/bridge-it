@@ -1,5 +1,5 @@
 import { MATERIALS, type MaterialId } from './materials';
-import type { Beam, LevelDef, Point, VehicleId } from './types';
+import type { Beam, LevelDef, Point, ShipLane, VehicleId } from './types';
 
 /** Helpers that write common bridge shapes. Used for level solutions (hints) and tests. */
 const k = (x: number, y: number): string => `${x},${y}`;
@@ -45,7 +45,9 @@ export interface LevelSpec {
   slack?: number;
   tip?: string;
   /** No building between these x values (a drawbridge level). */
-  shipLane?: { x0: number; x1: number };
+  shipLane?: ShipLane;
+  /** More than one lane (a level with two canals). */
+  shipLanes?: ShipLane[];
 }
 
 const FARM: LevelSpec[] = [
@@ -215,6 +217,26 @@ const RIVER: LevelSpec[] = [
     solution: () => [...roadDeck(0, 12), ...fanRopes(4, 4), ...fanRopes(8, 4), ...leaf(16, -1)], slack: 1.25,
     tip: 'A long fixed road needs two masts. The drawbridge is at the far end.',
   },
+  {
+    name: 'Harbour Mast', gap: 12, materials: ['road', 'wood', 'rope', 'piston'], extraAnchors: [{ x: -1, y: 0 }, { x: 4, y: 0 }, { x: 8, y: 4 }], shipLane: { x0: 0, x1: 4 },
+    solution: (g) => [...leaf(0, 1), ...roadDeck(4, g), ...fanRopes(8, 4)], slack: 1.25,
+    tip: 'This time the drawbridge comes first. Then hang the road from the mast.',
+  },
+  {
+    name: 'Two Canals', gap: 12, materials: ['road', 'wood', 'piston'], extraAnchors: [{ x: -1, y: 0 }, { x: 4, y: 0 }, { x: 8, y: 0 }, { x: 13, y: 0 }], shipLanes: [{ x0: 0, x1: 4 }, { x0: 8, x1: 12 }],
+    solution: (g) => [...leaf(0, 1), ...roadDeck(4, 8), ...warrenTruss(4, 8), ...leaf(g, -1)], slack: 1.25,
+    tip: 'Two ship lanes. A drawbridge over each, and a fixed bridge between the piers.',
+  },
+  {
+    name: 'Grain Barges', gap: 12, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'piston'], extraAnchors: [{ x: -1, y: 0 }, { x: 4, y: 0 }, { x: 8, y: 0 }, { x: 13, y: 0 }], shipLanes: [{ x0: 0, x1: 4 }, { x0: 8, x1: 12 }],
+    solution: (g) => [...truckLeaf(0, 1), ...roadDeck(4, 8), ...steelTopTruss(4, 8), ...truckLeaf(g, -1)], slack: 1.25,
+    tip: 'Two canals and a heavy truck. Every part must be strong.',
+  },
+  {
+    name: 'River Finale', gap: 20, vehicle: 'truck', goalDistance: 5, materials: ['road', 'wood', 'steel', 'rope', 'piston'], extraAnchors: [{ x: -1, y: 0 }, { x: 4, y: 0 }, { x: 16, y: 0 }, { x: 21, y: 0 }, { x: 8, y: -2 }, { x: 12, y: -2 }], shipLanes: [{ x0: 0, x1: 4 }, { x0: 16, x1: 20 }],
+    solution: (g) => [...truckLeaf(0, 1), ...roadDeck(4, 16), ...warrenTruss(4, 16), beam('8,0', '8,-2', 'wood'), beam('12,0', '12,-2', 'wood'), ...truckLeaf(g, -1)], slack: 1.25,
+    tip: 'The whole river: two canals, a long middle and a heavy truck.',
+  },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;
@@ -231,6 +253,7 @@ function costOf(beams: Beam[]): number {
 
 export function build(world: number, specs: LevelSpec[]): LevelEntry[] {
   return specs.map((spec, i) => {
+    const lanes = [...(spec.shipLane ? [spec.shipLane] : []), ...(spec.shipLanes ?? [])];
     const solution = spec.solution(spec.gap);
     const solutionCost = costOf(solution);
     const lh = spec.leftHeight ?? 0;
@@ -252,7 +275,7 @@ export function build(world: number, specs: LevelSpec[]): LevelEntry[] {
       vehicle: spec.vehicle ?? 'car',
       materials: spec.materials ?? ['road', 'wood'],
       tip: spec.tip,
-      ...(spec.shipLane ? { shipLane: spec.shipLane } : {}),
+      ...(lanes.length ? { shipLanes: lanes } : {}),
       solution,
     };
   });
@@ -262,6 +285,7 @@ export const WORLDS = [
   { id: 1, name: 'Farm Valley', levels: build(1, FARM) },
   { id: 2, name: 'Canyon Rails', levels: build(2, CANYON) },
   { id: 3, name: 'Pirate Bay', levels: build(3, PIRATE) },
+  { id: 4, name: 'River Town', levels: build(4, RIVER) },
 ];
 
 export const ALL_LEVELS: LevelEntry[] = WORLDS.flatMap((w) => w.levels);
@@ -270,7 +294,7 @@ export const ALL_LEVELS: LevelEntry[] = WORLDS.flatMap((w) => w.levels);
  * Worlds still being made: tested like other levels, opened by id, not shown in menus or progress.
  * A world moves into WORLDS when it has 15 levels.
  */
-export const DRAFT_WORLDS: { id: number; name: string; levels: LevelEntry[] }[] = [{ id: 4, name: 'River Town', levels: build(4, RIVER) }];
+export const DRAFT_WORLDS: { id: number; name: string; levels: LevelEntry[] }[] = [];
 export const DRAFT_LEVELS: LevelEntry[] = DRAFT_WORLDS.flatMap((w) => w.levels);
 
 export function levelById(id: string): LevelEntry | undefined {
@@ -313,7 +337,15 @@ export function levelFromJson(text: string): { ok: true; level: LevelEntry } | {
   if (!Array.isArray(l.starBudgets) || l.starBudgets.length !== 2 || !l.starBudgets.every(isNum)) return { ok: false, error: '"starBudgets" must have 2 numbers.' };
   if (l.vehicle !== 'car' && l.vehicle !== 'truck' && l.vehicle !== 'train') return { ok: false, error: 'Unknown vehicle.' };
   if (!Array.isArray(l.materials) || !l.materials.every((m) => m in MATERIALS)) return { ok: false, error: 'Unknown material.' };
-  if (l.shipLane !== undefined && !(l.shipLane && isNum(l.shipLane.x0) && isNum(l.shipLane.x1))) return { ok: false, error: '"shipLane" must have x0 and x1.' };
+  const isLane = (v: unknown): v is ShipLane => !!v && isNum((v as ShipLane).x0) && isNum((v as ShipLane).x1);
+  // Older share codes have one "shipLane"; turn it into a list.
+  const old = (l as { shipLane?: unknown }).shipLane;
+  if (old !== undefined) {
+    if (!isLane(old)) return { ok: false, error: '"shipLane" must have x0 and x1.' };
+    l.shipLanes = [...(l.shipLanes ?? []), old];
+    delete (l as { shipLane?: unknown }).shipLane;
+  }
+  if (l.shipLanes !== undefined && !(Array.isArray(l.shipLanes) && l.shipLanes.every(isLane))) return { ok: false, error: '"shipLanes" must be a list with x0 and x1.' };
   if (!Array.isArray(l.solution) || !l.solution.every((b) => b && typeof b.a === 'string' && typeof b.b === 'string' && b.material in MATERIALS)) {
     return { ok: false, error: '"solution" must be a list of beams.' };
   }

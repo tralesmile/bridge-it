@@ -124,8 +124,12 @@ async function run(viewport, name) {
     await sleep(300);
     await page.screenshot({ path: `${OUT}/${name}-${shot}.png` });
   }
-  // Draft World 4 River Town: drawbridges over ship lanes, with the hint shown, and one leaf swinging down.
-  for (const [id, shot] of [['w4-1', '9w4-01-drawbridge'], ['w4-2', '9w4-02-twin-leaves'], ['w4-4', '9w4-05-heavy-leaf'], ['w4-5', '9w4-06-market-canal'], ['w4-6', '9w4-07-ferry-road'], ['w4-7', '9w4-08-mill-wharf'], ['w4-8', '9w4-09-toll-bridge'], ['w4-9', '9w4-10-rope-market'], ['w4-10', '9w4-11-ferry-train'], ['w4-11', '9w4-12-long-wharf'], ['w4-3', '9w4-03-lock-gate']]) {
+  // World 4 River Town: drawbridges over ship lanes, with the hint shown, and one leaf swinging down.
+  // Lock Gate (w4-3) stays last: the swing and win check below run on it.
+  const river = ['drawbridge', 'twin-leaves', 'lock-gate', 'heavy-leaf', 'market-canal', 'ferry-road', 'mill-wharf', 'toll-bridge', 'rope-market', 'ferry-train', 'long-wharf', 'harbour-mast', 'two-canals', 'grain-barges', 'river-finale']
+    .map((n, i) => [`w4-${i + 1}`, `9w4-${String(i + 1).padStart(2, '0')}-${n}`])
+    .sort((a, b) => (a[0] === 'w4-3') - (b[0] === 'w4-3'));
+  for (const [id, shot] of river) {
     await page.evaluate((lid) => globalThis.__bridgeit.scene.start('play', { levelId: lid }), id);
     await sleep(600);
     await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
@@ -138,7 +142,7 @@ async function run(viewport, name) {
     s.startSim();
   });
   await sleep(900);
-  await page.screenshot({ path: `${OUT}/${name}-9w4-04-leaf-swinging.png` });
+  await page.screenshot({ path: `${OUT}/${name}-9w4-03b-leaf-swinging.png` });
   await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').mode === 'result', null, { timeout: 20000 }).catch(() => {});
   const lockWon = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').sim?.status);
   check(lockWon === 'won', `${name}: the Lock Gate drawbridge solution wins in the game (got ${lockWon})`);
@@ -146,6 +150,14 @@ async function run(viewport, name) {
   await sleep(600);
   check(await active('levels'), `${name}: world 3 level select opens`);
   await page.screenshot({ path: `${OUT}/${name}-9w3-levels.png` });
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('levels').scene.start('levels', { world: 4 }); });
+  await sleep(600);
+  check(await active('levels'), `${name}: world 4 level select opens`);
+  await page.screenshot({ path: `${OUT}/${name}-9w4-levels.png` });
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('levels').scene.start('worlds'); });
+  await sleep(600);
+  check(await active('worlds') && !(await active('levels')), `${name}: world select opens with 5 cards`);
+  await page.screenshot({ path: `${OUT}/${name}-9z-worlds.png` });
   await page.close();
 }
 

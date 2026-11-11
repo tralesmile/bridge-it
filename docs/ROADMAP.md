@@ -51,8 +51,10 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] River Town w4-4 to w4-7: Heavy Leaf (truck leaf: close the top triangle, steel at the hinge and long brace), Market Canal (fixed roads on rock legs + drawbridge from a pier), Ferry Road (two truck leaves onto a pier), Mill Wharf (Market Canal with the truck)
 - [x] Latch rule: only a part that has a piston can lock on, and only until 0.5 s after the pistons are done (a closed leaf with no piston fell over, swung round and locked onto the far side)
 - [x] River Town w4-8 to w4-11: Toll Bridge (Lock Gate with the truck, strong leaf), Rope Market (rope fan from a mast on the fixed road + leaf; ropes beat a truss), Ferry Train (train on two strong leaves), Long Wharf (16 m, two masts + leaf at the far end)
-- [ ] World 4 River Town: 4 more drawbridge levels (ideas: 6 m leaf with two posts or a lighter leaf; leaf onto a lower bank: a leaf leaning back from (0,0) via (0,2) to (-1,4) with a piston from (-1,0) to (-2,3) reaches (4,-1), but its hinge brace breaks from the swing speed in every wood/steel mix, so it needs a slower swing or a damper; finale), then move it into `WORLDS` with a river backdrop and world select card
-- [ ] Ship lane list: allow more than one lane per level (for a two-canal level)
+- [x] World 4 River Town complete: w4-12 Harbour Mast (leaf first, then a rope fan), w4-13 Two Canals, w4-14 Grain Barges (truck), w4-15 River Finale (20 m, truck, two canals). In `WORLDS` with a river backdrop and a world select card (cards now shrink to fit 5)
+- [ ] Drawbridge ideas for later: 6 m leaf; leaf onto a lower bank (its hinge brace breaks from the swing speed, so it needs a slower swing or a damper)
+- [x] Ship lane list: `shipLanes` (old share codes with one `shipLane` still load)
+- [x] Bug: the finish flag was off-screen on 20 m levels with a 5 m flag distance; the view now leaves room for the flag
 - [ ] Animated ship sailing through the lane at the start of an attempt (visual only)
 - [ ] Springs and World 5 Candy Mountain (15 levels)
 - [x] Per-world backdrop (sky, hills) in play and level select (`WORLD_BACKGROUNDS`; world 2 is canyon orange)

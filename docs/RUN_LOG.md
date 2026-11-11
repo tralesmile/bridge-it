@@ -10,6 +10,7 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 - Music: one short synth loop per world (and one for Candy Mountain), note data in `src/core/music.ts`, played by a look-ahead scheduler in `audio.ts`. Starts from `addBackground`, so every scene gets its world's loop. New Music switch in Settings (saved).
 - World select cards: each world has its own colour and a small picture drawn in code (barn, mesas, ship, drawbridge).
 - e2e: checks the Music switch saves, and screenshots the world select with every world open (`9z-worlds-open`).
+- Min-cost search for the difficulty report (`npm run report -- --trim`): 9 levels have loose 3-star budgets (listed in the roadmap). On High Cliff a road with one post wins at 49% of the 3-star cost.
 
 **Verified**
 - `npm run check` green (437 tests), `npm run e2e` no FAIL, screenshots checked on desktop and phone.
@@ -18,6 +19,7 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 - Probe a new mechanic before building levels or UI for it. Three ideas took about an hour and none worked; finding that out in a probe was cheap.
 - The cars are slow (car about 3 m/s). Jumps and bounces need more speed or a gentle shape; a car going off a flat edge always noses down.
 - Planck joints give a little, so a rigid post on a moving anchor does not snap. Do not design a puzzle around "rigid beams break when the ground moves".
+- Roads hang like a chain between their pins, so a long road with a few posts can win without a truss. Check new levels with `npm run report -- --trim`.
 - In `background.ts` a local variable was already called `sfx`; import the audio object under another name there.
 - Next: decide the Candy Mountain mechanic (try a faster vehicle with springs as landing pads), or go on to M4 (coins and shop, achievements, daily bridge).
 

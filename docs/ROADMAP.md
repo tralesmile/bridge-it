@@ -62,7 +62,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Per-world music (`src/core/music.ts`: one synth loop per world, Music switch in Settings) and themed world select cards (world colour and a small picture drawn in code)
 - [x] Difficulty report (`npm run report`, `src/core/difficulty.ts`): solution cost vs budget, and which simple designs (bare road, wood/steel truss) win within budget. Min-cost search not done.
 - [x] Retune w1-7 Hay Truck (gap 6, wood fails, steel top chord wins) and w1-13 Heavy Load (wood truss on the rock; steel truss now over budget). Saved designs that break new rules are dropped on load (`BridgeDesign.restore`)
-- [ ] Difficulty report: min-cost search per level (to check 3-star budgets are not too loose)
+- [x] Difficulty report: min-cost search per level (`trimSolution`, greedy: drop beams and swap to cheaper materials while it still wins with no breaks; `npm run report -- --trim`, about 2 minutes)
+- [ ] Decide on loose 3-star budgets found by the search (trimmed cost under 85% of the 3-star budget): w1-8, w1-9 (49%: road + one post on the middle rock wins, the sagging road holds the car like a rope), w1-12, w1-14, w2-3, w2-5, w2-9, w3-1, w3-6. Options: lower the 3-star budget (the hint then gives 2 stars), or add rules that stop the trick
 
 ## M4 Meta and retention
 - [ ] Coins, vehicle collection and bridge skins shop (cosmetic only)

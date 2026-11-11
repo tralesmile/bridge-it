@@ -2,6 +2,23 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-11 — Run 29
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- River Town drafts w4-4 to w4-7: Heavy Leaf (truck, 4 m leaf with the extra brace that closes the top triangle, steel on the hinge brace and long brace), Market Canal (car, 12 m, lane in the middle, fixed roads each on one wood leg from a rock, leaf from the right pier), Ferry Road (truck, two strong leaves onto a pier), Mill Wharf (Market Canal with the truck).
+- Physics fix: a leaf with no piston fell over, swung round and locked onto the far side, so it won. Now only a part with a piston locks on, and only until 0.5 s after the pistons are done.
+- Tests: no-piston loses for all 7 River Town levels, the open steel leaf loses Heavy Leaf, Market Canal loses without the rock legs, no lock without a piston. e2e screenshots the 4 new levels.
+
+**Verified**
+- `npm run check` green (358 tests), `npm run e2e` no FAIL, screenshots checked.
+
+**Lessons**
+- The truck broke the 4 m leaf because the middle road joint hung on one diagonal. One more brace (top node to middle road joint) made even all-wood win. Look at which beam breaks first (`break` events) before trying stronger materials.
+- Probe "the solution minus the piston" again after every leaf change: the closed leaf has a different swing and found a new way to lock.
+- A probe test needs `console.log` replaced by writing a file (vitest hid the output) and a long timeout for big searches. Keep probes out of `tests/` when running `npm run check` (tsc checks them).
+- 6 m leaf: all 256 wood/steel mixes with one piston break a beam while the leaf hangs; it needs a new idea.
+- Next: more River Town levels (6 m leaf, high cliff, rope + leaf, finale), then move it into `WORLDS`.
+
 ## 2026-11-11 — Run 28
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

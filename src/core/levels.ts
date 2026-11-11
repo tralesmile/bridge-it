@@ -143,6 +143,21 @@ const leaf = (x: number, dir: 1 | -1, brace: MaterialId = 'wood'): Beam[] => {
     beam(p(-1, 0), p(-2, 3), 'piston'),
   ];
 };
+/** A leaf strong enough for a truck: the extra brace closes the top triangle, steel at the hinge and on the long brace. */
+const truckLeaf = (x: number, dir: 1 | -1): Beam[] => {
+  const p = (dx: number, y: number): string => `${x + dir * dx},${y}`;
+  return [
+    beam(p(0, 0), p(0, 2), 'road'), beam(p(0, 2), p(0, 4), 'road'),
+    beam(p(0, 0), p(-1, 1), 'steel'), beam(p(-1, 1), p(0, 2), 'wood'), beam(p(-1, 1), p(-2, 3), 'steel'), beam(p(-2, 3), p(0, 4), 'wood'), beam(p(-2, 3), p(0, 2), 'wood'),
+    beam(p(-1, 0), p(-2, 3), 'piston'),
+  ];
+};
+/** Market canal: fixed roads from each cliff to a pier, each resting on one wood leg from a rock. */
+const canalSides = (): Beam[] => [
+  ...roadDeck(0, 4), beam('2,0', '2,-2', 'wood'),
+  ...roadDeck(8, 12), beam('10,0', '10,-2', 'wood'),
+];
+const CANAL_ANCHORS: Point[] = [{ x: 4, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 2, y: -2 }, { x: 10, y: -2 }];
 
 const RIVER: LevelSpec[] = [
   {
@@ -159,6 +174,26 @@ const RIVER: LevelSpec[] = [
     name: 'Lock Gate', gap: 8, materials: ['road', 'wood', 'piston'], extraAnchors: [{ x: 4, y: 0 }, { x: 9, y: 0 }], shipLane: { x0: 4, x1: 8 },
     solution: (g) => [...roadDeck(0, 4), ...warrenTruss(0, 4), ...leaf(g, -1)], slack: 1.25,
     tip: 'A fixed bridge to the pier, and a drawbridge from the right.',
+  },
+  {
+    name: 'Heavy Leaf', gap: 4, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'piston'], extraAnchors: [{ x: -1, y: 0 }], shipLane: { x0: 0, x1: 4 },
+    solution: () => truckLeaf(0, 1), slack: 1.3,
+    tip: 'A heavy truck. Close every triangle in the bridge, and use steel where it pulls hard.',
+  },
+  {
+    name: 'Market Canal', gap: 12, materials: ['road', 'wood', 'piston'], extraAnchors: CANAL_ANCHORS, shipLane: { x0: 4, x1: 8 },
+    solution: () => [...canalSides(), ...leaf(8, -1)], slack: 1.3,
+    tip: 'Fixed roads on the rocks, and a drawbridge from the right pier.',
+  },
+  {
+    name: 'Ferry Road', gap: 8, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'piston'], extraAnchors: [{ x: -1, y: 0 }, { x: 9, y: 0 }, { x: 4, y: 0 }], shipLane: { x0: 0, x1: 8 },
+    solution: (g) => [...truckLeaf(0, 1), ...truckLeaf(g, -1)], slack: 1.25,
+    tip: 'Two strong leaves for the truck. Both lock onto the middle pier.',
+  },
+  {
+    name: 'Mill Wharf', gap: 12, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'piston'], extraAnchors: CANAL_ANCHORS, shipLane: { x0: 4, x1: 8 },
+    solution: () => [...canalSides(), ...truckLeaf(8, -1)], slack: 1.25,
+    tip: 'The truck again. Fixed roads on the rocks, a strong leaf in the middle.',
   },
 ];
 

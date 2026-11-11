@@ -45,11 +45,33 @@ describe('drawbridge', () => {
     expect(sim.events.filter((e) => e.type === 'latch').map((e) => e.at)).toEqual([{ x: 4, y: 0 }, { x: 4, y: 0 }]);
   });
 
-  test.each(['w4-1', 'w4-2', 'w4-3'])('%s: the same leaf without its piston loses (no lock from a leaf that swung round)', (id) => {
+  test.each(['w4-1', 'w4-2', 'w4-3', 'w4-4', 'w4-5', 'w4-6', 'w4-7'])('%s: the same leaf without its piston loses (no lock from a leaf that swung round)', (id) => {
     const l = level(id);
     const sim = new Simulation(l, l.solution.filter((b) => b.material !== 'piston'));
     expect(sim.runToEnd()).toBe('lost');
     expect(sim.events.some((e) => e.type === 'latch')).toBe(false);
+  });
+
+  test('a truck breaks the open leaf even in steel; closing the top triangle holds it (Heavy Leaf)', () => {
+    const l = level('w4-4');
+    expect(new Simulation(l, l.solution).runToEnd()).toBe('won');
+    // The Drawbridge leaf with steel braces, no closing brace.
+    const open = level('w4-1').solution.map((b) => (b.material === 'wood' ? { ...b, material: 'steel' as const } : b));
+    expect(new Simulation(l, open).runToEnd()).toBe('lost');
+  });
+
+  test('a leaf with no piston that falls over and swings round never locks on', () => {
+    for (const id of ['w4-4', 'w4-6', 'w4-7']) {
+      const l = level(id);
+      const sim = new Simulation(l, l.solution.filter((b) => b.material !== 'piston'));
+      sim.runToEnd();
+      expect(sim.events.some((e) => e.type === 'latch'), id).toBe(false);
+    }
+  });
+
+  test('Market Canal: the fixed roads need their rock legs', () => {
+    const l = level('w4-5');
+    expect(new Simulation(l, l.solution.filter((b) => !b.b.endsWith(',-2'))).runToEnd()).toBe('lost');
   });
 
   test('the vehicle waits with its brakes on until the leaf has locked', () => {

@@ -125,7 +125,7 @@ async function run(viewport, name) {
     await page.screenshot({ path: `${OUT}/${name}-${shot}.png` });
   }
   // Draft World 4 River Town: drawbridges over ship lanes, with the hint shown, and one leaf swinging down.
-  for (const [id, shot] of [['w4-1', '9w4-01-drawbridge'], ['w4-2', '9w4-02-twin-leaves'], ['w4-3', '9w4-03-lock-gate']]) {
+  for (const [id, shot] of [['w4-1', '9w4-01-drawbridge'], ['w4-2', '9w4-02-twin-leaves'], ['w4-4', '9w4-05-heavy-leaf'], ['w4-5', '9w4-06-market-canal'], ['w4-6', '9w4-07-ferry-road'], ['w4-7', '9w4-08-mill-wharf'], ['w4-3', '9w4-03-lock-gate']]) {
     await page.evaluate((lid) => globalThis.__bridgeit.scene.start('play', { levelId: lid }), id);
     await sleep(600);
     await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });

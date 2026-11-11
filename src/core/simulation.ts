@@ -31,6 +31,8 @@ export const PISTON_TIME = 1.25;
 export const LATCH_DIST = 0.25;
 /** Upward speed (m/s) above which a road end does not lock on. */
 const LATCH_MAX_RISE = 0.2;
+/** Road ends lock on only until this long after the pistons are done, so a leaf that fell over and swung round does not. */
+const LATCH_GRACE = 0.5;
 
 export interface BeamState {
   beam: Beam;
@@ -263,11 +265,15 @@ export class Simulation {
    * part of the bridge freeze at their current length, so they stop pushing against the locked bridge.
    */
   private checkLatches(): void {
+    if (this.time > PISTON_START + PISTON_TIME + LATCH_GRACE) return;
     for (let i = this.latchable.length - 1; i >= 0; i--) {
       const node = this.latchable[i];
       const p = node.getPosition();
       // Only a bridge coming down locks on; a leaf that swung all the way round from below does not.
       if (node.getLinearVelocity().y > LATCH_MAX_RISE) continue;
+      // Only a part that a piston moves can lock on.
+      const part = this.root(node);
+      if (!this.pistons.some((pi) => this.root(pi.node) === part)) continue;
       const anchor = this.anchorBodies.find((a) => Vec2.distance(a.getPosition(), p) < LATCH_DIST && !this.builtOn.has(this.partAnchorKey(node, a)));
       if (!anchor) continue;
       this.latchable.splice(i, 1);

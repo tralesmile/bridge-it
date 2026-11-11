@@ -207,6 +207,15 @@ async function run(viewport, name) {
   const tex = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').chassisSprite.texture.key);
   check(tex === 'car-paint-sky', `${name}: the level uses the bought paint (${tex})`);
   await page.screenshot({ path: `${OUT}/${name}-9s-painted-car.png` });
+
+  // Achievements: earlier wins and the purchase are saved; the Trophies screen lists them.
+  const ach = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').achievements || []);
+  check(ach.includes('first-win') && ach.includes('shop') && ach.includes('world-1'), `${name}: achievements saved (${ach.join(',')})`);
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('play').scene.start('menu'); });
+  await sleep(500);
+  await click(270, 60);
+  check(await active('trophies'), `${name}: Trophies button opens the achievements list`);
+  await page.screenshot({ path: `${OUT}/${name}-9t-trophies.png` });
   await page.close();
 }
 

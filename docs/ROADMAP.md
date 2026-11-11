@@ -68,7 +68,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 ## M4 Meta and retention
 - [x] Coin shop, cosmetic only (`src/core/shop.ts`, `ShopScene`): 8 paint jobs for every vehicle and 5 road colours, fixed prices in coins (coins come only from new stars; all items cost 1160 of 1800 possible coins). Shop button and coin count on the menu
 - [ ] Shop: more coin uses (new vehicles such as an ice-cream van; wood and steel skins), and a coin reward for the daily bridge
-- [ ] Achievements (start with 20)
+- [x] Achievements: 20 (`src/core/achievements.ts`, progress from the save; play counters in `save.stats`), gold banner when one is earned (one banner when more than 2 at once), Trophies screen with progress bars
+- [ ] Achievements for later worlds (World 5) and for the daily bridge streak
 - [ ] Daily Bridge generated from the date, with a streak counter and a weekly free streak-saver
 - [ ] "Cheaper than X% of players" (local estimate first, online later)
 - [ ] Stress Test mode after a level is solved

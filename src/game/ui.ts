@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { sfx } from './audio';
+import { ACHIEVEMENTS } from '../core/achievements';
 import { save } from './save';
 import { C, FONT, hex } from './theme';
 
@@ -141,4 +142,33 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
     layer.add(b);
   });
   layer.add(button(scene, W / 2, H / 2 + 230, 'Close', () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
+}
+
+/**
+ * Checks for new achievements and shows a banner for each one at the top of the screen.
+ * The banner does not take input, so it never blocks a button.
+ */
+export function announceAchievements(scene: Phaser.Scene, delay = 0): void {
+  const ids = save.checkAchievements();
+  // Many at once (an old save, or a big win): one banner, not a long queue.
+  const banners = ids.length > 2 ? [`${ids.length} new achievements!`] : ids.map((id) => ACHIEVEMENTS.find((x) => x.id === id)?.name ?? '');
+  banners.forEach((name, n) => {
+    const box = scene.add.container(1280 / 2, -60).setDepth(60);
+    const g = scene.add.graphics();
+    g.fillStyle(hex(C.ink), 0.25);
+    g.fillRoundedRect(-260, -36 + 6, 520, 72, 20);
+    g.fillStyle(hex(C.gold), 1);
+    g.fillRoundedRect(-260, -36, 520, 72, 20);
+    box.add([g, label(scene, 0, -12, '🏆 Achievement!', 20, C.ink), label(scene, 0, 14, name, 26, C.ink)]);
+    const still = save.data.settings.reducedMotion;
+    scene.tweens.add({
+      targets: box,
+      y: 60,
+      delay: delay + n * 2600,
+      duration: still ? 1 : 350,
+      ease: 'Back.easeOut',
+      onStart: () => sfx.coin(),
+      onComplete: () => scene.tweens.add({ targets: box, alpha: 0, y: still ? 60 : 30, delay: 1900, duration: 300, onComplete: () => box.destroy() }),
+    });
+  });
 }

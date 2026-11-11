@@ -13,7 +13,7 @@ import { addBackground } from '../background';
 import { platform } from '../platform';
 import { save } from '../save';
 import { C, FONT, GAME_H, GAME_W, PX_PER_M, hex, mix } from '../theme';
-import { button, label, panel, type Button } from '../ui';
+import { announceAchievements, button, label, panel, type Button } from '../ui';
 
 type Tool = MaterialId | 'erase';
 type Mode = 'build' | 'sim' | 'result';
@@ -596,6 +596,8 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
     this.showHint = true;
+    save.recordHint();
+    announceAchievements(this);
     this.showToast('Follow the dotted ghost bridge');
     this.redraw();
   }
@@ -852,6 +854,7 @@ export class PlayScene extends Phaser.Scene {
     this.mode = 'result';
     const won = sim.status === 'won';
     const cost = this.design.cost;
+    save.recordAttempt(sim.brokenCount);
     if (won) {
       const stars = starsFor(this.level, cost);
       const coins = save.recordWin(this.level.id, stars, cost);
@@ -865,6 +868,7 @@ export class PlayScene extends Phaser.Scene {
       sfx.lose();
       this.time.delayedCall(700, () => this.showLoss(sim.lossReason ?? 'fell'));
     }
+    announceAchievements(this, won ? 1400 : 900);
   }
 
   private resultPanel(height: number): Phaser.GameObjects.Container {

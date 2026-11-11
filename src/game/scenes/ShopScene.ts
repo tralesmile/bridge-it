@@ -4,7 +4,7 @@ import { sfx } from '../audio';
 import { addBackground } from '../background';
 import { save } from '../save';
 import { C, GAME_W, hex } from '../theme';
-import { button, label, panel } from '../ui';
+import { announceAchievements, button, label, panel } from '../ui';
 
 const CARD_W = 136;
 const CARD_H = 196;
@@ -33,6 +33,7 @@ export class ShopScene extends Phaser.Scene {
     label(this, GAME_W / 2, 668, 'Earn coins with new stars. Looks only: the bridge works the same.', 20, C.greyDark);
 
     this.toast = label(this, GAME_W / 2, 400, '', 34, C.white).setStroke(C.ink, 8).setDepth(20).setAlpha(0);
+    announceAchievements(this);
   }
 
   private row(items: ShopItem[], y: number): void {

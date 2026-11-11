@@ -1,3 +1,5 @@
+import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type PlayStats } from '../core/achievements';
+import { ALL_LEVELS } from '../core/levels';
 import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, type ShopKind, type ShopState } from '../core/shop';
 import type { Beam } from '../core/types';
 
@@ -14,10 +16,13 @@ export interface SaveData {
   /** Shop items bought (ids), and the item worn for each kind. */
   owned: string[];
   equipped: Record<ShopKind, string>;
+  /** Achievement ids earned (kept even if a later change makes one harder). */
+  achievements: string[];
+  stats: PlayStats;
   settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {
@@ -61,6 +66,12 @@ export function sanitize(raw: unknown): SaveData {
       const id = (r.equipped as Record<string, unknown>)[kind];
       if (typeof id === 'string' && ids.has(id)) base.equipped[kind] = id;
     }
+  }
+  const known = new Set(ACHIEVEMENTS.map((a) => a.id));
+  if (Array.isArray(r.achievements)) base.achievements = [...new Set(r.achievements.filter((id): id is string => typeof id === 'string' && known.has(id)))];
+  if (r.stats && typeof r.stats === 'object') {
+    const st = numberMap(r.stats);
+    for (const k of Object.keys(EMPTY_STATS) as (keyof PlayStats)[]) if (st[k] !== undefined) base.stats[k] = Math.max(0, Math.floor(st[k]));
   }
   if (r.designs && typeof r.designs === 'object') {
     for (const [k, v] of Object.entries(r.designs)) {
@@ -124,9 +135,33 @@ class SaveStore {
 
   recordFail(levelId: string): number {
     const fails = (this.data.fails[levelId] ?? 0) + 1;
+    this.data.stats.fails += 1;
     this.data.fails[levelId] = fails;
     this.persist();
     return fails;
+  }
+
+  /** Counts an attempt (GO) and the beams it broke. Call when the attempt ends. */
+  recordAttempt(broken: number): void {
+    this.data.stats.attempts += 1;
+    this.data.stats.broken += broken;
+    this.persist();
+  }
+
+  recordHint(): void {
+    this.data.stats.hints += 1;
+    this.persist();
+  }
+
+  /** Saves and returns achievements earned since the last check. */
+  checkAchievements(): string[] {
+    const d = this.data;
+    const fresh = newAchievements({ stars: d.stars, bestCost: d.bestCost, owned: d.owned, stats: d.stats, levels: ALL_LEVELS }, d.achievements);
+    if (fresh.length) {
+      d.achievements = [...d.achievements, ...fresh];
+      this.persist();
+    }
+    return fresh;
   }
 
   get shop(): ShopState {

@@ -4,7 +4,7 @@ import { equipped } from '../../core/shop';
 import { addBackground } from '../background';
 import { save } from '../save';
 import { C, FONT, GAME_W } from '../theme';
-import { button, label, openSettings } from '../ui';
+import { announceAchievements, button, label, openSettings } from '../ui';
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -39,8 +39,11 @@ export class MenuScene extends Phaser.Scene {
     label(this, GAME_W / 2, 520, `★ ${stars} / ${ALL_LEVELS.length * 3}`, 28, C.ink);
 
     button(this, 100, 60, 'Shop', () => this.scene.start('shop'), { width: 150, height: 52, fontSize: 22, color: C.gold, shade: '#d99a14', textColor: C.ink });
+    button(this, 270, 60, 'Trophies', () => this.scene.start('trophies'), { width: 170, height: 52, fontSize: 22, color: C.primary, shade: C.primaryDark });
     this.add.image(60, 125, 'coin').setScale(0.8);
     label(this, 80, 125, `${save.data.coins}`, 26, C.ink).setOrigin(0, 0.5);
+
+    announceAchievements(this, 300);
 
     button(this, GAME_W - 100, 60, 'Settings', () => openSettings(this), { width: 170, height: 52, fontSize: 22, color: C.blue, shade: C.blueDark });
   }

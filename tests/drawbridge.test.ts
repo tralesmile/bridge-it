@@ -45,7 +45,7 @@ describe('drawbridge', () => {
     expect(sim.events.filter((e) => e.type === 'latch').map((e) => e.at)).toEqual([{ x: 4, y: 0 }, { x: 4, y: 0 }]);
   });
 
-  test.each(['w4-1', 'w4-2', 'w4-3', 'w4-4', 'w4-5', 'w4-6', 'w4-7'])('%s: the same leaf without its piston loses (no lock from a leaf that swung round)', (id) => {
+  test.each(['w4-1', 'w4-2', 'w4-3', 'w4-4', 'w4-5', 'w4-6', 'w4-7', 'w4-8', 'w4-9', 'w4-10', 'w4-11'])('%s: the same leaf without its piston loses (no lock from a leaf that swung round)', (id) => {
     const l = level(id);
     const sim = new Simulation(l, l.solution.filter((b) => b.material !== 'piston'));
     expect(sim.runToEnd()).toBe('lost');
@@ -72,6 +72,21 @@ describe('drawbridge', () => {
   test('Market Canal: the fixed roads need their rock legs', () => {
     const l = level('w4-5');
     expect(new Simulation(l, l.solution.filter((b) => !b.b.endsWith(',-2'))).runToEnd()).toBe('lost');
+  });
+
+  test('Toll Bridge: the light Lock Gate leaf breaks under the truck', () => {
+    expect(new Simulation(level('w4-8'), level('w4-3').solution).runToEnd()).toBe('lost');
+  });
+
+  test('Rope Market and Long Wharf: the fixed road needs its ropes', () => {
+    for (const id of ['w4-9', 'w4-11']) {
+      const l = level(id);
+      expect(new Simulation(l, l.solution.filter((b) => b.material !== 'rope')).runToEnd(), id).toBe('lost');
+    }
+  });
+
+  test('Ferry Train: two light leaves break under the train', () => {
+    expect(new Simulation(level('w4-10'), level('w4-2').solution).runToEnd()).toBe('lost');
   });
 
   test('the vehicle waits with its brakes on until the leaf has locked', () => {

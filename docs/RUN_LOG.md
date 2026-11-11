@@ -2,6 +2,21 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-11 — Run 30
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- River Town drafts w4-8 to w4-11: Toll Bridge (truck; Lock Gate shape with the strong leaf), Rope Market (12 m; a rope fan from a mast holds the fixed road, cheaper than a truss), Ferry Train (train on two strong leaves), Long Wharf (16 m; two masts, leaf at the far end; a wood truss alone breaks).
+- Tests: no-piston loses for all 11 levels; light leaves lose Toll Bridge and Ferry Train; Rope Market and Long Wharf lose without ropes. e2e screenshots the 4 new levels.
+
+**Verified**
+- `npm run check` green (385 tests), `npm run e2e` no FAIL, screenshots checked (desktop and phone).
+
+**Lessons**
+- The e2e "Lock Gate wins in the game" check runs on the last level of the screenshot loop. Keep `w4-3` last when adding levels to that list.
+- Probe harness: `probe/` (listed in `.git/info/exclude`) with its own `vitest.config.ts`; run `npx vitest run --config probe/vitest.config.ts`. A helper that adds each beam with `BridgeDesign.add` reports too-long beams, so a probe never "wins" with an unbuildable design (a 5 m rope did).
+- Leaf onto a lower bank: the geometry works (Python check of piston ratio and that it grows the whole way), but the leaf swings too fast and breaks the hinge brace. Wins that keep a broken beam are luck; only keep designs with 0 breaks.
+- Next: 4 more River Town levels (6 m leaf, lower bank, finale), then move it into `WORLDS`.
+
 ## 2026-11-11 — Run 29
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

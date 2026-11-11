@@ -195,6 +195,26 @@ const RIVER: LevelSpec[] = [
     solution: () => [...canalSides(), ...truckLeaf(8, -1)], slack: 1.25,
     tip: 'The truck again. Fixed roads on the rocks, a strong leaf in the middle.',
   },
+  {
+    name: 'Toll Bridge', gap: 8, vehicle: 'truck', materials: ['road', 'wood', 'steel', 'piston'], extraAnchors: [{ x: 4, y: 0 }, { x: 9, y: 0 }], shipLane: { x0: 4, x1: 8 },
+    solution: (g) => [...roadDeck(0, 4), ...warrenTruss(0, 4), ...truckLeaf(g, -1)], slack: 1.25,
+    tip: 'The truck pays the toll. A fixed bridge to the pier, then a strong leaf.',
+  },
+  {
+    name: 'Rope Market', gap: 12, materials: ['road', 'wood', 'rope', 'piston'], extraAnchors: [{ x: 8, y: 0 }, { x: 13, y: 0 }, { x: 4, y: 4 }], shipLane: { x0: 8, x1: 12 },
+    solution: () => [...roadDeck(0, 8), ...fanRopes(4, 4), ...leaf(12, -1)], slack: 1.25,
+    tip: 'Hang the fixed road from the mast. Ropes are cheaper than a truss.',
+  },
+  {
+    name: 'Ferry Train', gap: 8, vehicle: 'train', materials: ['road', 'wood', 'steel', 'piston'], extraAnchors: [{ x: -1, y: 0 }, { x: 9, y: 0 }, { x: 4, y: 0 }], shipLane: { x0: 0, x1: 8 },
+    solution: (g) => [...truckLeaf(0, 1), ...truckLeaf(g, -1)], slack: 1.25,
+    tip: 'The long train is on both leaves at once. Make both strong.',
+  },
+  {
+    name: 'Long Wharf', gap: 16, materials: ['road', 'wood', 'rope', 'piston'], extraAnchors: [{ x: 12, y: 0 }, { x: 17, y: 0 }, { x: 4, y: 4 }, { x: 8, y: 4 }], shipLane: { x0: 12, x1: 16 },
+    solution: () => [...roadDeck(0, 12), ...fanRopes(4, 4), ...fanRopes(8, 4), ...leaf(16, -1)], slack: 1.25,
+    tip: 'A long fixed road needs two masts. The drawbridge is at the far end.',
+  },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;

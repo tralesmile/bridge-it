@@ -50,7 +50,9 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Draft World 4 River Town (`DRAFT_WORLDS`): w4-1 Drawbridge, w4-2 Twin Leaves (two leaves onto a pier), w4-3 Lock Gate (fixed span to a pier + drawbridge). Ship lane art (pale band, dashed edges, sailboat)
 - [x] River Town w4-4 to w4-7: Heavy Leaf (truck leaf: close the top triangle, steel at the hinge and long brace), Market Canal (fixed roads on rock legs + drawbridge from a pier), Ferry Road (two truck leaves onto a pier), Mill Wharf (Market Canal with the truck)
 - [x] Latch rule: only a part that has a piston can lock on, and only until 0.5 s after the pistons are done (a closed leaf with no piston fell over, swung round and locked onto the far side)
-- [ ] World 4 River Town: 8 more drawbridge levels (6 m leaf: in a 256-design search every single-piston 6 m leaf breaks a beam while it hangs before locking; try two posts or a lighter leaf; leaf from a high cliff, mixed rope + leaf, finale), then move it into `WORLDS` with a river backdrop and world select card
+- [x] River Town w4-8 to w4-11: Toll Bridge (Lock Gate with the truck, strong leaf), Rope Market (rope fan from a mast on the fixed road + leaf; ropes beat a truss), Ferry Train (train on two strong leaves), Long Wharf (16 m, two masts + leaf at the far end)
+- [ ] World 4 River Town: 4 more drawbridge levels (ideas: 6 m leaf with two posts or a lighter leaf; leaf onto a lower bank: a leaf leaning back from (0,0) via (0,2) to (-1,4) with a piston from (-1,0) to (-2,3) reaches (4,-1), but its hinge brace breaks from the swing speed in every wood/steel mix, so it needs a slower swing or a damper; finale), then move it into `WORLDS` with a river backdrop and world select card
+- [ ] Ship lane list: allow more than one lane per level (for a two-canal level)
 - [ ] Animated ship sailing through the lane at the start of an attempt (visual only)
 - [ ] Springs and World 5 Candy Mountain (15 levels)
 - [x] Per-world backdrop (sky, hills) in play and level select (`WORLD_BACKGROUNDS`; world 2 is canyon orange)

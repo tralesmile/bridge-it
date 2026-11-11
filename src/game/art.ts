@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SHOP_ITEMS } from '../core/shop';
 import { C, WORLD_BACKGROUNDS } from './theme';
 
 /**
@@ -174,20 +175,20 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.fillRect(0, 0, 160, 160);
   });
 
-  canvas(scene, 'car', 172, 96, (ctx) => {
+  const drawCar = (ctx: Ctx, [main, light, dark]: readonly string[]) => {
     // Shadow under body.
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     roundRect(ctx, 12, 50, 150, 34, 16);
     ctx.fill();
     // Body.
     const g = ctx.createLinearGradient(0, 30, 0, 80);
-    g.addColorStop(0, '#ff6b5c');
-    g.addColorStop(1, '#d93b30');
+    g.addColorStop(0, main);
+    g.addColorStop(1, dark);
     ctx.fillStyle = g;
     roundRect(ctx, 6, 40, 160, 38, 18);
     ctx.fill();
     // Cabin.
-    ctx.fillStyle = '#ff8a7c';
+    ctx.fillStyle = light;
     roundRect(ctx, 46, 8, 78, 42, 16);
     ctx.fill();
     ctx.fillStyle = '#bfe8ff';
@@ -203,9 +204,9 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.moveTo(24, 46);
     ctx.lineTo(146, 46);
     ctx.stroke();
-  });
+  };
 
-  canvas(scene, 'truck', 260, 120, (ctx) => {
+  const drawTruck = (ctx: Ctx, [main]: readonly string[]) => {
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     roundRect(ctx, 10, 72, 240, 36, 16);
     ctx.fill();
@@ -222,7 +223,7 @@ export function makeTextures(scene: Phaser.Scene): void {
       ctx.stroke();
     }
     // Body and cab.
-    ctx.fillStyle = '#3c8dff';
+    ctx.fillStyle = main;
     roundRect(ctx, 6, 64, 248, 36, 16);
     ctx.fill();
     roundRect(ctx, 166, 18, 84, 56, 16);
@@ -230,9 +231,9 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.fillStyle = '#bfe8ff';
     roundRect(ctx, 182, 28, 54, 30, 10);
     ctx.fill();
-  });
+  };
 
-  canvas(scene, 'train', 340, 120, (ctx) => {
+  const drawTrain = (ctx: Ctx, [main]: readonly string[]) => {
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     roundRect(ctx, 10, 72, 320, 36, 16);
     ctx.fill();
@@ -247,7 +248,7 @@ export function makeTextures(scene: Phaser.Scene): void {
       ctx.fill();
     }
     // Body, cab and chimney.
-    ctx.fillStyle = '#e8503a';
+    ctx.fillStyle = main;
     roundRect(ctx, 6, 64, 328, 36, 16);
     ctx.fill();
     roundRect(ctx, 168, 22, 160, 50, 14);
@@ -258,7 +259,16 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.fillStyle = '#bfe8ff';
     roundRect(ctx, 236, 28, 50, 30, 10);
     ctx.fill();
-  });
+  };
+
+  // Each vehicle once per shop paint: 'car' is the classic look, 'car-paint-sky' the Sky paint, and so on.
+  for (const paint of SHOP_ITEMS.filter((i) => i.kind === 'paint')) {
+    const classic = paint.id === 'paint-classic';
+    const sfx = classic ? '' : `-${paint.id}`;
+    canvas(scene, `car${sfx}`, 172, 96, (ctx) => drawCar(ctx, paint.colors));
+    canvas(scene, `truck${sfx}`, 260, 120, (ctx) => drawTruck(ctx, classic ? ['#3c8dff'] : paint.colors));
+    canvas(scene, `train${sfx}`, 340, 120, (ctx) => drawTrain(ctx, classic ? ['#e8503a'] : paint.colors));
+  }
 
   canvas(scene, 'wheel', 64, 64, (ctx) => {
     ctx.fillStyle = '#2b2140';

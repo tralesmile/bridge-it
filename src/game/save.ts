@@ -1,3 +1,4 @@
+import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, type ShopKind, type ShopState } from '../core/shop';
 import type { Beam } from '../core/types';
 
 const KEY = 'bridgeit.save';
@@ -10,10 +11,13 @@ export interface SaveData {
   designs: Record<string, Beam[]>;
   coins: number;
   fails: Record<string, number>;
+  /** Shop items bought (ids), and the item worn for each kind. */
+  owned: string[];
+  equipped: Record<ShopKind, string>;
   settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {
@@ -50,6 +54,14 @@ export function sanitize(raw: unknown): SaveData {
   base.bestCost = numberMap(r.bestCost);
   base.fails = numberMap(r.fails);
   base.coins = typeof r.coins === 'number' && Number.isFinite(r.coins) ? Math.max(0, Math.floor(r.coins)) : 0;
+  const ids = new Set(SHOP_ITEMS.map((i) => i.id));
+  if (Array.isArray(r.owned)) base.owned = [...new Set(r.owned.filter((id): id is string => typeof id === 'string' && ids.has(id)))];
+  if (r.equipped && typeof r.equipped === 'object') {
+    for (const kind of Object.keys(DEFAULT_EQUIPPED) as ShopKind[]) {
+      const id = (r.equipped as Record<string, unknown>)[kind];
+      if (typeof id === 'string' && ids.has(id)) base.equipped[kind] = id;
+    }
+  }
   if (r.designs && typeof r.designs === 'object') {
     for (const [k, v] of Object.entries(r.designs)) {
       if (Array.isArray(v)) {
@@ -115,6 +127,29 @@ class SaveStore {
     this.data.fails[levelId] = fails;
     this.persist();
     return fails;
+  }
+
+  get shop(): ShopState {
+    return { coins: this.data.coins, owned: this.data.owned, equipped: this.data.equipped };
+  }
+
+  private applyShop(state: ShopState): void {
+    this.data.coins = state.coins;
+    this.data.owned = state.owned;
+    this.data.equipped = state.equipped;
+    this.persist();
+  }
+
+  /** Buys and puts on a shop item. Returns an error text when it cannot. */
+  buyItem(id: string): string | null {
+    const r = buy(this.shop, id);
+    if (!r.ok) return r.error;
+    this.applyShop(r.state);
+    return null;
+  }
+
+  equipItem(id: string): void {
+    this.applyShop(equip(this.shop, id));
   }
 
   saveDesign(levelId: string, beams: Beam[]): void {

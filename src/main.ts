@@ -5,6 +5,7 @@ import { LevelSelectScene } from './game/scenes/LevelSelectScene';
 import { WorldSelectScene } from './game/scenes/WorldSelectScene';
 import { MenuScene } from './game/scenes/MenuScene';
 import { PlayScene } from './game/scenes/PlayScene';
+import { ShopScene } from './game/scenes/ShopScene';
 import { C, GAME_H, GAME_W } from './game/theme';
 
 async function loadFont(): Promise<void> {
@@ -28,7 +29,7 @@ const game = new Phaser.Game({
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   input: { activePointers: 3 },
   render: { antialias: true, roundPixels: false },
-  scene: [BootScene, MenuScene, WorldSelectScene, LevelSelectScene, PlayScene],
+  scene: [BootScene, MenuScene, WorldSelectScene, LevelSelectScene, PlayScene, ShopScene],
 });
 
 // Exposed for automated browser tests only.

@@ -110,6 +110,15 @@ describe('save data', () => {
     expect(s.settings.reducedMotion).toBe(true);
     expect(s.settings.shake).toBe(false);
   });
+
+  test('keeps only known shop items and falls back for bad equipped ids', () => {
+    const fresh = sanitize({});
+    expect(fresh.owned).toEqual([]);
+    expect(fresh.equipped).toEqual({ paint: 'paint-classic', deck: 'deck-classic' });
+    const s = sanitize({ owned: ['paint-sky', 'paint-sky', 'lava', 7], equipped: { paint: 'paint-sky', deck: 42 } });
+    expect(s.owned).toEqual(['paint-sky']);
+    expect(s.equipped).toEqual({ paint: 'paint-sky', deck: 'deck-classic' });
+  });
 });
 
 describe('Simulation watchdog', () => {

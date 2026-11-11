@@ -57,7 +57,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Bug: the finish flag was off-screen on 20 m levels with a 5 m flag distance; the view now leaves room for the flag
 - [x] Animated ship: at GO each lane's boat sails up into the distance (smaller, fading) while the pistons work; hidden at once with Less motion; back when you edit (visual only)
 - [x] Spring material (`spring`: soft, bouncy, never snaps; a Hooke force with damping, not a joint; drawn as a pink coil). Tests in `tests/spring.test.ts`. No level uses it yet
-- [ ] World 5 Candy Mountain (15 levels): find a mechanic where springs are the clever choice. Probes that did NOT work (run 32): a car dropping onto a spring pad noses down and flips; ramp kickers flip the car; jelly anchors that bob (moving piers) do not need springs (a rigid post just swings with the jelly, and a spring soft enough to take the bob is too soft to hold the deck). Ideas left: a faster vehicle (ice-cream van) for real jumps, springs as landing pads after a down-ramp jump, a seesaw or counterweight
+- [ ] World 5 Candy Mountain (15 levels): find a mechanic where springs are the clever choice. Probes that did NOT work (run 32): a car dropping onto a spring pad noses down and flips; ramp kickers flip the car; jelly anchors that bob (moving piers) do not need springs (a rigid post just swings with the jelly, and a spring soft enough to take the bob is too soft to hold the deck). Run 33 probe: springs as shock absorbers under a deck that a truck drops 1 m onto do NOT work either (the deck moves, the roads snap; wood X braces or steel posts win). Ideas left: a faster vehicle (ice-cream van) for real jumps, springs as landing pads after a down-ramp jump, a seesaw or counterweight
 - [x] Per-world backdrop (sky, hills) in play and level select (`WORLD_BACKGROUNDS`; world 2 is canyon orange)
 - [x] Per-world music (`src/core/music.ts`: one synth loop per world, Music switch in Settings) and themed world select cards (world colour and a small picture drawn in code)
 - [x] Difficulty report (`npm run report`, `src/core/difficulty.ts`): solution cost vs budget, and which simple designs (bare road, wood/steel truss) win within budget. Min-cost search not done.
@@ -66,7 +66,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Loose 3-star budgets (w1-8, w1-9, w1-12, w1-14, w2-3, w2-5, w2-9, w3-1, w3-6): the hint is now the cheaper design (`trim` in the level spec), which sets the 3-star budget. The plain design still sets the money budget and earns 2 stars (tested). `npm run report -- --trim` shows no LOOSE level now
 
 ## M4 Meta and retention
-- [ ] Coins, vehicle collection and bridge skins shop (cosmetic only)
+- [x] Coin shop, cosmetic only (`src/core/shop.ts`, `ShopScene`): 8 paint jobs for every vehicle and 5 road colours, fixed prices in coins (coins come only from new stars; all items cost 1160 of 1800 possible coins). Shop button and coin count on the menu
+- [ ] Shop: more coin uses (new vehicles such as an ice-cream van; wood and steel skins), and a coin reward for the daily bridge
 - [ ] Achievements (start with 20)
 - [ ] Daily Bridge generated from the date, with a streak counter and a weekly free streak-saver
 - [ ] "Cheaper than X% of players" (local estimate first, online later)

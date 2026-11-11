@@ -180,6 +180,33 @@ async function run(viewport, name) {
   await sleep(600);
   check(await active('worlds'), `${name}: world select with every world open`);
   await page.screenshot({ path: `${OUT}/${name}-9z-worlds-open.png` });
+
+  // Shop: with 100 coins, buy the Sky paint (second card), check the save, then see it in a level.
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}');
+    s.coins = 100;
+    s.owned = [];
+    s.equipped = { paint: 'paint-classic', deck: 'deck-classic' };
+    localStorage.setItem('bridgeit.save', JSON.stringify(s));
+  });
+  await page.reload();
+  await page.waitForFunction(() => globalThis.__bridgeit?.scene?.isActive('menu'), null, { timeout: 15000 });
+  await sleep(300);
+  await click(100, 60);
+  check(await active('shop'), `${name}: Shop button opens the shop`);
+  await page.screenshot({ path: `${OUT}/${name}-9s-shop.png` });
+  await click(265, 320); // Sky paint, 40 coins
+  await click(490, 588); // Brick road, 60 coins
+  await click(640, 588); // Forest road, 80 coins: too expensive now
+  const bought = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}'));
+  check(bought.coins === 0 && bought.owned?.join() === 'paint-sky,deck-brick' && bought.equipped?.paint === 'paint-sky' && bought.equipped?.deck === 'deck-brick',
+    `${name}: buying saves coins, items and what is in use (${JSON.stringify({ c: bought.coins, o: bought.owned, e: bought.equipped })})`);
+  await page.screenshot({ path: `${OUT}/${name}-9s-shop-bought.png` });
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('shop').scene.start('play', { levelId: 'w1-3' }); });
+  await sleep(700);
+  const tex = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').chassisSprite.texture.key);
+  check(tex === 'car-paint-sky', `${name}: the level uses the bought paint (${tex})`);
+  await page.screenshot({ path: `${OUT}/${name}-9s-painted-car.png` });
   await page.close();
 }
 

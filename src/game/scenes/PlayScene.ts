@@ -4,6 +4,7 @@ import { levelById, nextLevel, type LevelEntry } from '../../core/levels';
 import { MATERIALS, type MaterialId } from '../../core/materials';
 import { decodeBridge, encodeBridge } from '../../core/share';
 import { starsFor } from '../../core/scoring';
+import { equipped } from '../../core/shop';
 import { MAX_TIME, PISTON_START, PISTON_TIME, STEP, Simulation } from '../../core/simulation';
 import type { Point, ShipLane } from '../../core/types';
 import type { Mood } from '../art';
@@ -279,7 +280,9 @@ export class PlayScene extends Phaser.Scene {
     const tex = { car: { key: 'car', w: 172, h: 96, oy: 0.62, head: { x: 88 - 86, y: 34 - 96 * 0.62, s: 1 } },
       truck: { key: 'truck', w: 260, h: 120, oy: 0.68, head: { x: 208 - 130, y: 48 - 120 * 0.68, s: 15 / 17 } },
       train: { key: 'train', w: 340, h: 120, oy: 0.68, head: { x: 266 - 170, y: 46 - 120 * 0.68, s: 15 / 17 } } }[kind];
-    this.chassisSprite = this.add.image(0, 0, tex.key).setOrigin(0.5, tex.oy);
+    const paint = equipped(save.shop, 'paint').id;
+    const key = paint === 'paint-classic' ? tex.key : `${tex.key}-${paint}`;
+    this.chassisSprite = this.add.image(0, 0, this.textures.exists(key) ? key : tex.key).setOrigin(0.5, tex.oy);
     this.chassisSprite.setDisplaySize((v.def.halfWidth * 2 + 0.3) * this.ppm, (v.def.halfWidth * 2 + 0.3) * this.ppm * (tex.h / tex.w));
     this.vehicle.add(this.chassisSprite);
     // Cow head sits in the cabin; offsets are texture pixels from the sprite origin.
@@ -358,7 +361,7 @@ export class PlayScene extends Phaser.Scene {
     // Bottom tool bar.
     const tools: Tool[] = [...this.level.materials, 'erase'];
     const colors: Record<Tool, [string, string]> = {
-      road: [C.road, '#2d2938'],
+      road: [equipped(save.shop, 'deck').colors[0], equipped(save.shop, 'deck').colors[2]],
       wood: [C.wood, '#9a6431'],
       steel: [C.steel, '#5f7390'],
       rope: [C.rope, '#7d6642'],
@@ -620,7 +623,10 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private beamStyle(material: MaterialId): { width: number; color: string; light: string } {
-    if (material === 'road') return { width: 14, color: C.road, light: C.roadLine };
+    if (material === 'road') {
+      const [color, light] = equipped(save.shop, 'deck').colors;
+      return { width: 14, color, light };
+    }
     if (material === 'steel') return { width: 9, color: C.steel, light: C.steelLight };
     if (material === 'rope') return { width: 5, color: C.rope, light: C.ropeLight };
     if (material === 'piston') return { width: 11, color: C.piston, light: C.pistonLight };

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ALL_LEVELS } from '../../core/levels';
+import { equipped } from '../../core/shop';
 import { addBackground } from '../background';
 import { save } from '../save';
 import { C, FONT, GAME_W } from '../theme';
@@ -22,10 +23,13 @@ export class MenuScene extends Phaser.Scene {
 
     label(this, GAME_W / 2, 310, 'Build it. Break it. Laugh. Try again.', 30, C.ink);
 
-    const carImage = this.add.image(0, 0, 'car');
+    const paint = equipped(save.shop, 'paint').id;
+    const carImage = this.add.image(0, 0, paint === 'paint-classic' ? 'car' : `car-${paint}`);
     // Cow head sits in the cabin (texture centre is 86,48; head is at 88,34).
     const cow = this.add.image(2, -14, 'cow-calm');
-    const car = this.add.container(-120, 560, [carImage, cow]).setScale(0.9);
+    const wheels = [-47, 47].map((dx) => this.add.image(dx, 28, 'wheel').setScale(0.72));
+    const car = this.add.container(-120, 560, [...wheels, carImage, cow]).setScale(0.9);
+    if (!save.data.settings.reducedMotion) this.tweens.add({ targets: wheels, angle: 360, duration: 900, repeat: -1 });
     if (save.data.settings.reducedMotion) car.setX(GAME_W / 2 + 300);
     else this.tweens.add({ targets: car, x: GAME_W + 120, duration: 7000, repeat: -1, delay: 500 });
 
@@ -33,6 +37,10 @@ export class MenuScene extends Phaser.Scene {
 
     const stars = save.totalStars;
     label(this, GAME_W / 2, 520, `★ ${stars} / ${ALL_LEVELS.length * 3}`, 28, C.ink);
+
+    button(this, 100, 60, 'Shop', () => this.scene.start('shop'), { width: 150, height: 52, fontSize: 22, color: C.gold, shade: '#d99a14', textColor: C.ink });
+    this.add.image(60, 125, 'coin').setScale(0.8);
+    label(this, 80, 125, `${save.data.coins}`, 26, C.ink).setOrigin(0, 0.5);
 
     button(this, GAME_W - 100, 60, 'Settings', () => openSettings(this), { width: 170, height: 52, fontSize: 22, color: C.blue, shade: C.blueDark });
   }

@@ -83,7 +83,25 @@ async function run(viewport, name) {
   await sleep(1200);
   const stars = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').stars?.['w1-1'] ?? 0);
   check(stars >= 1, `${name}: crossing level 1 earns stars (got ${stars})`);
+  const cheaper = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').lastCheaper);
+  check(Number.isInteger(cheaper) && cheaper >= 1 && cheaper <= 99, `${name}: win panel shows "cheaper than X% of players" (${cheaper})`);
   await page.screenshot({ path: `${OUT}/${name}-5-result.png` });
+
+  // Stress Test from the win panel: same bridge, the truck; nothing is saved.
+  const before = await page.evaluate(() => localStorage.getItem('bridgeit.save'));
+  await click(780, 585);
+  const stressOn = await page.evaluate(() => { const p = globalThis.__bridgeit.scene.getScene('play'); return p.stress && p.level.vehicle; });
+  check(stressOn === 'truck', `${name}: Stress test button opens level 1 with the truck (${stressOn})`);
+  await sleep(400);
+  await click(1160, 664);
+  await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').mode === 'result', null, { timeout: 30000 }).catch(() => {});
+  await sleep(1000);
+  await page.screenshot({ path: `${OUT}/${name}-5b-stress-result.png` });
+  const after = await page.evaluate(() => localStorage.getItem('bridgeit.save'));
+  check(before === after, `${name}: a stress test changes nothing in the save`);
+  await click(780, 450);
+  const backFromStress = await page.evaluate(() => { const p = globalThis.__bridgeit.scene.getScene('play'); return `${p.stress} ${p.level.vehicle} ${p.mode}`; });
+  check(backFromStress === 'false car build', `${name}: Back to level returns to the normal level (${backFromStress})`);
 
   // Level 3 with a bad bridge should fail, then the Fix it button returns to building.
   await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w1-3' }));
@@ -236,6 +254,17 @@ async function run(viewport, name) {
   await click(270, 60);
   check(await active('trophies'), `${name}: Trophies button opens the achievements list`);
   await page.screenshot({ path: `${OUT}/${name}-9t-trophies.png` });
+
+  // Stats screen from the menu: the attempts and levels done match the save.
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('trophies').scene.start('menu'); });
+  await sleep(500);
+  await click(445, 60);
+  check(await active('stats'), `${name}: Stats button opens the stats screen`);
+  const statTexts = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('stats').children.list.filter((o) => o.type === 'Text').map((o) => o.text));
+  const attempts = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').stats?.attempts ?? -1);
+  check(statTexts.includes('Attempts (GO)') && statTexts.includes(String(attempts)) && !statTexts.some((t) => /NaN|undefined/.test(t)),
+    `${name}: stats screen lists ${attempts} attempts`);
+  await page.screenshot({ path: `${OUT}/${name}-9u-stats.png` });
   await page.close();
 }
 

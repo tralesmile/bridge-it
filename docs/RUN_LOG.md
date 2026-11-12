@@ -2,6 +2,24 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-12 — Run 34
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- "Cheaper than about X% of players" on the win panel (not on the daily). `cheaperThanPercent` in `src/core/stats.ts` is a local guess from the level budgets (3-star budget = 85%, 2-star = 50%, full budget = 5%, linear between, 1 to 99). Real online data is a later task.
+- Stats screen: `statRows` (pure) and `StatsScene`, Stats button on the menu next to Trophies. Wins = attempts − fails.
+- Stress Test mode: `src/core/stress.ts` (car → truck → train). The win panel has a "💪 Stress test" button (beside Copy bridge code) that restarts the level with `{ stress: true }`. In a stress test nothing is saved (no stars, coins, fails, attempts, achievements, design), the hint is hidden, and the result says "It held!" or "It broke!" with Try again and Back to level.
+- Tests: percent anchors, never higher for a dearer bridge, 3-star beats 2-star on every level; stat rows on a fresh and a full save; every stress run of a solution ends the same way twice, and some hold and some break.
+- e2e: win panel percent, stress test opens with the truck and leaves the save unchanged, Back to level returns to the car, Stats screen shows the saved attempts.
+
+**Verified**
+- `npm run check` green (512 tests), `npm run e2e` exit 0 with no FAIL; screenshots checked (win panel with the new line and buttons, stress result, stats on phone).
+
+**Lessons**
+- A bash heredoc with `<<'EOF'` plus `$` and backticks in the body can trip the shell safety check; write new files with the Write tool.
+- A feature that only re-runs the play scene with a changed level copy (`{ ...level, vehicle }`) plus a mode flag needs almost no new UI code. Guard every save write with the flag and check in e2e that the save string is unchanged.
+- Starting a new e2e while an old one still runs fights over port 4179; stop the old one (`pkill -f scripts/e2e.mjs; pkill -f "vite preview"`) first.
+- Next: World 5 mechanic (faster vehicle), Stress Test achievement, Daily Bridge variants, or M6 build flavours.
+
 ## 2026-11-11 — Run 33
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

@@ -5,6 +5,9 @@ import { levelById, nextLevel, type LevelEntry } from '../../core/levels';
 import { MATERIALS, type MaterialId } from '../../core/materials';
 import { decodeBridge, encodeBridge } from '../../core/share';
 import { starsFor } from '../../core/scoring';
+import { cheaperThanPercent } from '../../core/stats';
+import { stressLevel } from '../../core/stress';
+import { VEHICLES } from '../../core/vehicles';
 import { equipped } from '../../core/shop';
 import { MAX_TIME, PISTON_START, PISTON_TIME, STEP, Simulation } from '../../core/simulation';
 import type { Point, ShipLane } from '../../core/types';
@@ -73,6 +76,10 @@ export class PlayScene extends Phaser.Scene {
   private pasteButton!: Button;
   private buildUi: Phaser.GameObjects.GameObject[] = [];
   private resultLayer: Phaser.GameObjects.Container | null = null;
+  /** Last "cheaper than X% of players" shown on the win panel (read by e2e). */
+  lastCheaper: number | null = null;
+  /** Stress Test run: nothing is saved and no stars, coins or fails are counted. */
+  stress = false;
 
   private dragFrom: Point | null = null;
   private dragTo: Point | null = null;
@@ -92,9 +99,13 @@ export class PlayScene extends Phaser.Scene {
     super('play');
   }
 
-  init(data: { levelId?: string }): void {
-    const level = findLevel(data.levelId ?? '') ?? levelById('w1-1');
-    if (!level) throw new Error('No levels defined');
+  init(data: { levelId?: string; stress?: boolean }): void {
+    const found = findLevel(data.levelId ?? '') ?? levelById('w1-1');
+    if (!found) throw new Error('No levels defined');
+    // Stress Test: the same level and saved bridge with the next heavier vehicle.
+    const heavy = data.stress ? stressLevel(found) : null;
+    this.stress = !!heavy;
+    const level = heavy ?? found;
     this.level = level;
     this.design = BridgeDesign.restore(level, save.data.designs[level.id] ?? []);
     this.mode = 'build';
@@ -134,7 +145,8 @@ export class PlayScene extends Phaser.Scene {
     this.createHud();
     this.redraw();
     this.bindInput();
-    this.showToast(this.level.tip ?? `Level ${this.level.index}: ${this.level.name}`, 3500);
+    const tip = this.stress ? `Stress test: can your bridge hold the ${VEHICLES[this.level.vehicle].name}?` : this.level.tip;
+    this.showToast(tip ?? `Level ${this.level.index}: ${this.level.name}`, 3500);
     // If the app is hidden during a drive, wait for a tap so the player does not miss the collapse.
     const onHidden = (): void => {
       if (this.mode === 'sim' && !this.pauseLayer) this.showPause();
@@ -344,7 +356,8 @@ export class PlayScene extends Phaser.Scene {
     button(this, 90, 50, '◀', () => this.leave(), { width: 76, height: 56, fontSize: 30, color: C.blue, shade: C.blueDark });
     this.pasteButton = button(this, 215, 50, 'Paste code', () => this.pasteCode(), { width: 170, height: 56, fontSize: 22, color: C.grey, shade: C.greyDark });
     this.buildUi.push(this.pasteButton);
-    const title = label(this, GAME_W / 2, 40, isDailyId(this.level.id) ? `Daily: ${this.level.name}` : `${this.level.index}. ${this.level.name}`, 34, C.white);
+    const name = isDailyId(this.level.id) ? `Daily: ${this.level.name}` : `${this.level.index}. ${this.level.name}`;
+    const title = label(this, GAME_W / 2, 40, this.stress ? `Stress test: ${this.level.name}` : name, 34, C.white);
     title.setStroke(C.ink, 8);
 
     this.costBar = this.add.graphics();
@@ -385,7 +398,7 @@ export class PlayScene extends Phaser.Scene {
     this.undoButton = button(this, 110 + tools.length * 170, GAME_H - 52, 'Undo', () => this.undo(), { width: 130, height: 60, fontSize: 24, color: C.grey, shade: C.greyDark });
     this.buildUi.push(this.undoButton);
     this.hintButton = button(this, GAME_W - 330, GAME_H - 52, '💡 Hint', () => void this.requestHint(), { width: 150, height: 60, fontSize: 24, color: C.gold, shade: '#d29b1b', textColor: C.ink });
-    this.hintButton.setVisible((save.data.fails[this.level.id] ?? 0) >= HINT_AFTER_FAILS);
+    this.hintButton.setVisible(this.hintAllowed());
     this.buildUi.push(this.hintButton);
 
     this.goButton = button(this, GAME_W - 120, GAME_H - 56, 'GO!', () => this.toggleSim(), { width: 190, height: 76, fontSize: 38, color: C.good, shade: C.goodDark });
@@ -578,8 +591,13 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
+  private hintAllowed(): boolean {
+    return !this.stress && (save.data.fails[this.level.id] ?? 0) >= HINT_AFTER_FAILS;
+  }
+
   private afterChange(): void {
-    save.saveDesign(this.level.id, this.design.list);
+    // A stress test may change the bridge for fun; the level's saved bridge stays as it was.
+    if (!this.stress) save.saveDesign(this.level.id, this.design.list);
     this.redraw();
   }
 
@@ -777,7 +795,7 @@ export class PlayScene extends Phaser.Scene {
     this.mode = 'build';
     this.goButton.setLabel('GO!');
     for (const o of this.buildUi) (o as unknown as Phaser.GameObjects.Components.Visible).setVisible(true);
-    this.hintButton.setVisible((save.data.fails[this.level.id] ?? 0) >= HINT_AFTER_FAILS);
+    this.hintButton.setVisible(this.hintAllowed());
     this.resultLayer?.destroy();
     this.resultLayer = null;
     this.placeVehicle(new Simulation(this.level, []));
@@ -855,6 +873,12 @@ export class PlayScene extends Phaser.Scene {
     this.mode = 'result';
     const won = sim.status === 'won';
     const cost = this.design.cost;
+    if (this.stress) {
+      if (won) sfx.win(1);
+      else sfx.lose();
+      this.time.delayedCall(won ? 350 : 700, () => this.showStressResult(won, sim.brokenCount));
+      return;
+    }
     save.recordAttempt(sim.brokenCount);
     if (won) {
       const stars = starsFor(this.level, cost);
@@ -916,13 +940,31 @@ export class PlayScene extends Phaser.Scene {
     const next = this.level.starBudgets[stars === 1 ? 0 : 1];
     const streak = daily ? `🔥 Daily streak: ${daily.streak} day${daily.streak === 1 ? '' : 's'}${daily.usedSaver ? ' (saver used)' : ''}` : '';
     const sub = daily ? streak : stars < 3 ? `Cost $${cost} · next star at $${next}` : `Cost $${cost} · perfect!`;
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 + 40, sub, 24, C.greyDark));
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 + 28, sub, 24, C.greyDark));
+    if (!daily) {
+      const pct = cheaperThanPercent(this.level, cost);
+      this.lastCheaper = pct;
+      layer.add(label(this, GAME_W / 2, GAME_H / 2 + 58, `Cheaper than about ${pct}% of players`, 20, C.greyDark));
+    }
     if (coins > 0) {
-      layer.add(label(this, GAME_W / 2, GAME_H / 2 + 76, `+${coins} coins`, 24, C.primaryDark));
+      layer.add(label(this, GAME_W / 2, GAME_H / 2 + 88, `+${coins} coins`, 24, C.primaryDark));
       this.coinFlyIn(Math.min(coins, 8), 900 + stars * 220);
     }
     const nxt = daily ? undefined : nextLevel(this.level.id);
-    layer.add(button(this, GAME_W / 2, GAME_H / 2 + 225, 'Copy bridge code', () => void this.copyCode(), { width: 280, height: 50, fontSize: 22, color: C.grey, shade: C.greyDark }));
+    const canStress = !daily && stressLevel(this.level) !== null;
+    const copyX = canStress ? GAME_W / 2 - 140 : GAME_W / 2;
+    layer.add(button(this, copyX, GAME_H / 2 + 225, 'Copy bridge code', () => void this.copyCode(), { width: 260, height: 50, fontSize: 22, color: C.grey, shade: C.greyDark }));
+    if (canStress) {
+      layer.add(
+        button(this, GAME_W / 2 + 140, GAME_H / 2 + 225, '💪 Stress test', () => this.scene.start('play', { levelId: this.level.id, stress: true }), {
+          width: 260,
+          height: 50,
+          fontSize: 22,
+          color: C.primary,
+          shade: C.primaryDark,
+        }),
+      );
+    }
     layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 145, 'Improve', () => this.stopSim(), { width: 220, height: 70, color: C.blue, shade: C.blueDark }));
     layer.add(
       button(this, GAME_W / 2 + 140, GAME_H / 2 + 145, nxt ? 'Next ▶' : daily ? 'Done' : 'Levels', async () => {
@@ -956,7 +998,7 @@ export class PlayScene extends Phaser.Scene {
   /** Coins fly from the result text up to the top-right corner. */
   private coinFlyIn(count: number, delay: number): void {
     for (let i = 0; i < count; i++) {
-      const coin = this.add.image(GAME_W / 2, GAME_H / 2 + 76, 'coin').setDepth(12).setScale(0).setAlpha(0);
+      const coin = this.add.image(GAME_W / 2, GAME_H / 2 + 88, 'coin').setDepth(12).setScale(0).setAlpha(0);
       this.tweens.add({
         targets: coin,
         x: GAME_W - 60,
@@ -973,6 +1015,26 @@ export class PlayScene extends Phaser.Scene {
         },
       });
     }
+  }
+
+  /** Result of a stress test: held or broke. Nothing is saved. */
+  private showStressResult(won: boolean, broken: number): void {
+    const layer = this.resultPanel(380);
+    const vehicle = VEHICLES[this.level.vehicle].name;
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 120, won ? 'It held! 💪' : 'It broke!', 56, C.ink));
+    const text = won ? `Your bridge held the ${vehicle}.` : `The ${vehicle} was too heavy.`;
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 45, text, 26, C.greyDark));
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 5, `Beams broken: ${broken}`, 22, C.greyDark));
+    layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 90, 'Try again', () => this.stopSim(), { width: 240, height: 70, color: C.blue, shade: C.blueDark }));
+    layer.add(
+      button(this, GAME_W / 2 + 140, GAME_H / 2 + 90, 'Back to level', () => this.scene.start('play', { levelId: this.level.id }), {
+        width: 240,
+        height: 70,
+        fontSize: 26,
+        color: C.good,
+        shade: C.goodDark,
+      }),
+    );
   }
 
   private showLoss(reason: string): void {

@@ -72,9 +72,11 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [ ] Achievements for later worlds (World 5) and for the daily bridge streak
 - [x] Daily Bridge (`src/core/daily.ts`): a level a day from the date (local time), picked from 13 tested variants with a random name; streak counter, one free streak-saver per week (keeps the streak after one missed day), 20 coins for the first win of the day. Button on world select; daily wins do not count as world stars
 - [ ] Daily Bridge: more variants (drawbridge, low dock, pirate rocks) and a calendar of past days
-- [ ] "Cheaper than X% of players" (local estimate first, online later)
-- [ ] Stress Test mode after a level is solved
-- [ ] Stats screen
+- [x] "Cheaper than about X% of players" on the win panel (`cheaperThanPercent` in `src/core/stats.ts`: a local guess from the level budgets; 3-star budget = 85%, 2-star = 50%, full budget = 5%)
+- [ ] "Cheaper than X% of players" from real online data (needs a backend; later)
+- [x] Stress Test mode (`src/core/stress.ts`): a "Stress test" button on the win panel runs the same bridge with the next heavier vehicle (car to truck, truck to train). Nothing is saved; edits in the test do not change the saved bridge
+- [ ] Stress Test: an achievement for holding the heavier vehicle on 10 levels, and a "held" mark on the level select
+- [x] Stats screen (`statRows` in `src/core/stats.ts`, `StatsScene`, Stats button on the menu): levels, stars, worlds, attempts, wins, win rate, fails, broken beams, hints, cost, coins, achievements, daily streak
 
 ## M5 Creativity
 - [ ] Sandbox mode

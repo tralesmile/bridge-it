@@ -6,6 +6,7 @@ import { WorldSelectScene } from './game/scenes/WorldSelectScene';
 import { MenuScene } from './game/scenes/MenuScene';
 import { PlayScene } from './game/scenes/PlayScene';
 import { ShopScene } from './game/scenes/ShopScene';
+import { StatsScene } from './game/scenes/StatsScene';
 import { TrophyScene } from './game/scenes/TrophyScene';
 import { C, GAME_H, GAME_W } from './game/theme';
 
@@ -30,7 +31,7 @@ const game = new Phaser.Game({
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   input: { activePointers: 3 },
   render: { antialias: true, roundPixels: false },
-  scene: [BootScene, MenuScene, WorldSelectScene, LevelSelectScene, PlayScene, ShopScene, TrophyScene],
+  scene: [BootScene, MenuScene, WorldSelectScene, LevelSelectScene, PlayScene, ShopScene, TrophyScene, StatsScene],
 });
 
 // Exposed for automated browser tests only.

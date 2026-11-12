@@ -7,6 +7,7 @@
     "build": "tsc && vite build",
     "build:crazygames": "tsc && vite build --mode crazygames && node scripts/size-check.mjs dist-crazygames",
     "build:poki": "tsc && vite build --mode poki && node scripts/size-check.mjs dist-poki",
+    "build:app": "tsc && vite build --mode app && node scripts/size-check.mjs dist-app",
     "flavours": "npm run build:crazygames && npm run build:poki && node scripts/flavour-check.mjs",
     "preview": "vite preview",
     "test": "vitest run",
@@ -14,12 +15,13 @@
     "check": "tsc && vitest run && vite build && node scripts/size-check.mjs",
     "e2e": "node scripts/e2e.mjs",
     "report": "node scripts/difficulty-report.mjs",
-    "app:sync": "npm run build && cap sync && node scripts/app-check.mjs",
+    "app:sync": "npm run build:app && cap sync && node scripts/app-check.mjs",
     "app:android": "npm run app:sync && cd android && ./gradlew assembleDebug",
     "app:icons": "node scripts/app-icons.mjs"
   },
   "license": "ISC",
   "dependencies": {
+    "@capacitor-community/admob": "8.2.1",
     "@capacitor/android": "^8.6.0",
     "@capacitor/app": "^8.1.2",
     "@capacitor/core": "^8.6.0",

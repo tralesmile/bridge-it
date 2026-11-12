@@ -1,6 +1,6 @@
 // Checks the build flavours: the plain build loads no external script, and each portal build
-// loads only its own SDK. Run after `npm run build`, `npm run build:crazygames` and `npm run build:poki`.
-import { existsSync, readFileSync } from 'node:fs';
+// loads only its own SDK, and none of them carries the AdMob code (app build only). Run after `npm run build`, `npm run build:crazygames` and `npm run build:poki`.
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 
 const EXPECT = {
   dist: [],
@@ -19,5 +19,10 @@ for (const [dir, want] of Object.entries(EXPECT)) {
   const ok = external.length === want.length && want.every((u) => external.includes(u));
   console.log(`${ok ? 'PASS' : 'FAIL'} ${dir}: external ${JSON.stringify(external)}`);
   if (!ok) bad++;
+  // AdMob belongs only in the app build (dist-app); web and portal builds must not carry its code.
+  const js = readdirSync(`${dir}/assets`).filter((f) => f.endsWith('.js')).map((f) => readFileSync(`${dir}/assets/${f}`, 'utf8'));
+  const admob = js.some((code) => code.includes('AdMob'));
+  console.log(`${admob ? 'FAIL' : 'PASS'} ${dir}: no AdMob code`);
+  if (admob) bad++;
 }
 process.exit(bad ? 1 : 0);

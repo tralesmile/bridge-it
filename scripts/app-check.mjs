@@ -27,6 +27,17 @@ const plist = read('ios/App/App/Info.plist');
 const orientations = [...plist.matchAll(/<string>(UIInterfaceOrientation\w+)<\/string>/g)].map((m) => m[1]);
 check(orientations.length > 0 && orientations.every((o) => o.includes('Landscape')), 'iOS app is landscape only');
 
+// AdMob: the app crashes at start without an app id, and iOS needs the tracking prompt text.
+const ADMOB_APP_ID = /^ca-app-pub-\d{16}~\d{10}$/;
+const androidAdId = /com\.google\.android\.gms\.ads\.APPLICATION_ID"\s+android:value="([^"]+)"/.exec(manifest)?.[1];
+check(ADMOB_APP_ID.test(androidAdId ?? ''), `Android has an AdMob app id (${androidAdId})`);
+const iosAdId = /<key>GADApplicationIdentifier<\/key>\s*<string>([^<]+)<\/string>/.exec(plist)?.[1];
+check(ADMOB_APP_ID.test(iosAdId ?? ''), `iOS has an AdMob app id (${iosAdId})`);
+check(/<key>NSUserTrackingUsageDescription<\/key>\s*<string>[^<]{10,}<\/string>/.test(plist), 'iOS has the tracking prompt text');
+check(plist.includes('cstr6suwn9.skadnetwork'), 'iOS lists Google\'s SKAdNetwork id');
+const TEST_IDS = ['ca-app-pub-3940256099942544~3347511713', 'ca-app-pub-3940256099942544~1458002511'];
+if ([androidAdId, iosAdId].some((id) => TEST_IDS.includes(id))) console.log('NOTE AdMob uses Google\'s test app ids (fine until the owner has an AdMob account)');
+
 // The copied game: index.html plus its scripts, no external URLs in script or link tags.
 for (const dir of ['android/app/src/main/assets/public', 'ios/App/App/public']) {
   const html = read(join(dir, 'index.html'));
@@ -35,6 +46,8 @@ for (const dir of ['android/app/src/main/assets/public', 'ios/App/App/public']) 
   check(external.length === 0, `${dir} loads nothing from the network ${external.join(' ')}`);
   const assets = existsSync(join(dir, 'assets')) ? readdirSync(join(dir, 'assets')) : [];
   check(assets.some((f) => f.endsWith('.js')), `${dir} has the game scripts`);
+  const scripts = assets.filter((f) => f.endsWith('.js')).map((f) => read(join(dir, 'assets', f))).join('');
+  check(scripts.includes('AdMob'), `${dir} is the app build with AdMob (npm run build:app), not the web build`);
 }
 
 process.exit(failures.length ? 1 : 0);

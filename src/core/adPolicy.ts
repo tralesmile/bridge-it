@@ -18,8 +18,8 @@ export function breakAllowed(clock: AdClock, now: number): boolean {
   return clock.lastBreak === null || now - clock.lastBreak >= BETWEEN_BREAKS_MS;
 }
 
-/** Platform names a build can be made for (`npm run build -- --mode <name>`). */
-export const PLATFORMS = ['local', 'crazygames', 'poki'] as const;
+/** Platform names a build can be made for (`vite build --mode <name>`; `app` is the Android and iOS build). */
+export const PLATFORMS = ['local', 'crazygames', 'poki', 'app'] as const;
 export type PlatformName = (typeof PLATFORMS)[number];
 
 export const platformName = (mode: string | undefined): PlatformName => (PLATFORMS as readonly string[]).includes(mode ?? '') ? (mode as PlatformName) : 'local';

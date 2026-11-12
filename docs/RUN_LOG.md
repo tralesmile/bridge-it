@@ -2,6 +2,26 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-12 — Run 37
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- AdMob adapter (`AdMobPlatform` in `src/game/platform.ts`) with `@capacitor-community/admob` 8.2.1. Start: initialize, UMP consent info, iOS tracking prompt (once), consent form when required, then preload one interstitial and one rewarded ad. Breaks use the interstitial (our 5-minute and 3-minute rules still apply); hints use the rewarded ad. Sound pauses while an ad plays. Each network step gives up after 8 s, so a phone with no network still reaches the menu.
+- A hint is free when no ad can be shown (consent refused, offline, no fill, failed to show). Only closing a rewarded ad early gives no hint. Refusing ad consent never locks a feature.
+- "Privacy choices" button in Settings when the consent form applies (EU and UK), so the player can change their choice.
+- App build flavour: `npm run build:app` (`--mode app`, output `dist-app`, now the Capacitor `webDir`); `npm run app:sync` uses it. The AdMob code is only in this build: `npm run flavours` now fails if web or portal builds contain it, `app-check` fails if the apps do not.
+- Android manifest and iOS Info.plist: Google's test AdMob app ids (the app crashes at start without one), tracking prompt text, Google's SKAdNetwork id. `app-check` checks them and prints a note while test ids are used.
+- 8 unit tests with a fake plugin: EU consent order, refused consent, iOS-only tracking prompt, watched / closed / failed rewarded ads, no plugin, no fill, no listener left behind.
+
+**Verified**
+- `npm run check` green (545 tests, 8 new for AdMob), `npm run e2e` exit 0 with no FAIL (85 checks), `npm run flavours` PASS (no AdMob code in web or portal builds), `node scripts/app-check.mjs` PASS after `build:app` and `cap sync`. Probe screenshot of Settings with Privacy choices checked, and the button calls the form. Not verified: a real phone or the CI APK build with the plugin (check the `android` job after this push).
+
+**Lessons**
+- Check a new plugin version's dependencies before installing (`npm view <pkg>@<ver> --json`, look at `dependencies`). `@capacitor-community/admob` 8.3.0 (2 weeks old) added a brand-new runtime dependency `@webview-native-ui/engine` from one maintainer; 8.2.1 does not have it, so we pinned 8.2.1 (`--save-exact`).
+- The AdMob rewarded `showRewardVideoAd()` promise only settles when the reward is earned; a player who closes the ad early leaves it pending. Wait for the Dismissed / FailedToShow events instead, and register listeners before calling show.
+- A `typeof __PLATFORM__ === 'string' && __PLATFORM__ === 'app'` guard around a dynamic `import()` keeps a plugin out of the other builds completely (vite drops the dead branch). Grep the built JS to prove it.
+- A probe on the vite dev server can `await import('/src/game/platform.ts')` in the page and patch the live module to show a screen that only appears in the app (Settings with Privacy choices).
+- Next: RevenueCat purchases (remove ads, supporter pack, restore), or World 5 (faster vehicle mechanic probe).
+
 ## 2026-11-12 — Run 36
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

@@ -20,6 +20,10 @@ export interface Platform {
   rewardedAd(): Promise<boolean>;
   /** A break between levels. Resolves when the game may continue. Skipped in the first 5 minutes. */
   commercialBreak(): Promise<void>;
+  /** True when the player must be able to change their ad consent (EU and UK, in the app). */
+  hasPrivacyOptions(): boolean;
+  /** Opens the ad consent form again (Settings, "Privacy choices"). */
+  privacyOptions(): Promise<void>;
 }
 
 /** Called while an ad plays, so the game can mute itself. */
@@ -40,6 +44,10 @@ abstract class BasePlatform implements Platform {
 
   async init(): Promise<void> {}
   loadingDone(): void {}
+  hasPrivacyOptions(): boolean {
+    return false;
+  }
+  async privacyOptions(): Promise<void> {}
   protected sdkStart(): void {}
   protected sdkStop(): void {}
   protected abstract showBreak(): Promise<void>;
@@ -206,8 +214,201 @@ export class PokiPlatform extends BasePlatform {
   }
 }
 
+/**
+ * The parts of @capacitor-community/admob we use. Our own copy of the types, so tests can pass a fake
+ * and this file never loads the plugin on the web.
+ */
+export interface AdMobApi {
+  initialize(options?: { maxAdContentRating?: string; initializeForTesting?: boolean }): Promise<void>;
+  requestConsentInfo(): Promise<AdMobConsent>;
+  showConsentForm(): Promise<AdMobConsent>;
+  showPrivacyOptionsForm(): Promise<void>;
+  trackingAuthorizationStatus(): Promise<{ status: 'authorized' | 'denied' | 'notDetermined' | 'restricted' }>;
+  requestTrackingAuthorization(): Promise<void>;
+  prepareInterstitial(options: { adId: string; isTesting?: boolean }): Promise<unknown>;
+  showInterstitial(): Promise<void>;
+  prepareRewardVideoAd(options: { adId: string; isTesting?: boolean }): Promise<unknown>;
+  showRewardVideoAd(): Promise<unknown>;
+  addListener(event: string, fn: (...args: unknown[]) => void): Promise<{ remove(): Promise<void> }>;
+}
+
+export interface AdMobConsent {
+  status: 'NOT_REQUIRED' | 'OBTAINED' | 'REQUIRED' | 'UNKNOWN';
+  isConsentFormAvailable?: boolean;
+  canRequestAds: boolean;
+  privacyOptionsRequirementStatus: 'NOT_REQUIRED' | 'REQUIRED' | 'UNKNOWN';
+}
+
+export interface AdUnits {
+  interstitial: string;
+  rewarded: string;
+  /** Google's test ids: always true until the owner has an AdMob account. */
+  testing: boolean;
+}
+
+/**
+ * Google's public test ad units (they never pay and are safe to click). The owner's real ids replace
+ * these after the AdMob account exists (docs/NEEDS_FROM_OWNER.md); the app ids are in the
+ * Android manifest and the iOS Info.plist.
+ */
+export const ADMOB_UNITS: Record<'android' | 'ios', AdUnits> = {
+  android: { interstitial: 'ca-app-pub-3940256099942544/1033173712', rewarded: 'ca-app-pub-3940256099942544/5224354917', testing: true },
+  ios: { interstitial: 'ca-app-pub-3940256099942544/4411468910', rewarded: 'ca-app-pub-3940256099942544/1712485313', testing: true },
+};
+
+/** Waits for a promise, but gives up after `ms` (a phone with no network must still reach the menu). */
+const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T | undefined> =>
+  Promise.race([p, new Promise<undefined>((r) => setTimeout(() => r(undefined), ms))]);
+
+/** How long to wait for a full screen ad to close before the game goes on anyway. */
+export const AD_GIVE_UP_MS = 90_000;
+/** A reward event can come just after the close event; wait this long for it. */
+const REWARD_GRACE_MS = 400;
+
+/**
+ * Android and iOS app: Google AdMob with the UMP consent form (EU and UK) and, on iOS, the
+ * App Tracking Transparency prompt. Our break rule (src/core/adPolicy.ts) still applies.
+ * A missing plugin, no network or no ad fill never breaks the game: the player just gets no ad
+ * (and a rewarded ad's reward for free).
+ */
+export class AdMobPlatform extends BasePlatform {
+  readonly name = 'app' as const;
+  private ads: AdMobApi | null = null;
+  private privacyRequired = false;
+  private interstitialReady = false;
+  private rewardReady = false;
+
+  constructor(
+    hooks: AdHooks,
+    private readonly load: () => Promise<AdMobApi | undefined>,
+    private readonly os: 'android' | 'ios',
+    private readonly units: AdUnits = ADMOB_UNITS[os],
+  ) {
+    super(hooks);
+  }
+
+  override async init(): Promise<void> {
+    try {
+      const ads = await withTimeout(this.load(), 5000);
+      if (!ads) return;
+      await withTimeout(ads.initialize({ maxAdContentRating: 'General', initializeForTesting: this.units.testing }), 8000);
+      let consent = await withTimeout(ads.requestConsentInfo(), 8000);
+      if (!consent) return; // no network: try again next start
+      // iOS: ask about tracking once. A "no" is fine, ads are then not personalised.
+      if (this.os === 'ios') {
+        const tracking = await ads.trackingAuthorizationStatus();
+        if (tracking.status === 'notDetermined') await ads.requestTrackingAuthorization();
+      }
+      if (consent.status === 'REQUIRED' && consent.isConsentFormAvailable) consent = await ads.showConsentForm();
+      this.privacyRequired = consent.privacyOptionsRequirementStatus === 'REQUIRED';
+      if (!consent.canRequestAds) return;
+      this.ads = ads;
+      void this.prepare();
+    } catch {
+      this.ads = null;
+    }
+  }
+
+  override hasPrivacyOptions(): boolean {
+    return this.privacyRequired;
+  }
+
+  override async privacyOptions(): Promise<void> {
+    const ads = this.ads ?? (await this.load().catch(() => undefined));
+    await ads?.showPrivacyOptionsForm().catch(() => undefined);
+  }
+
+  /** Loads the next ads in the background, so a break or reward shows at once. */
+  private async prepare(): Promise<void> {
+    const ads = this.ads;
+    if (!ads) return;
+    const opts = (adId: string) => ({ adId, isTesting: this.units.testing });
+    if (!this.interstitialReady) {
+      this.interstitialReady = await ads.prepareInterstitial(opts(this.units.interstitial)).then(() => true, () => false);
+    }
+    if (!this.rewardReady) {
+      this.rewardReady = await ads.prepareRewardVideoAd(opts(this.units.rewarded)).then(() => true, () => false);
+    }
+  }
+
+  /**
+   * Shows one full screen ad and resolves when it closes: 'watched', 'closed' (a rewarded ad closed
+   * before the reward) or 'none' (no consent, no network, no ad to show, or it failed).
+   */
+  private async fullScreen(kind: 'interstitial' | 'reward'): Promise<'watched' | 'closed' | 'none'> {
+    const ads = this.ads;
+    if (!ads) return 'none';
+    const ready = kind === 'interstitial' ? this.interstitialReady : this.rewardReady;
+    if (!ready) {
+      void this.prepare();
+      return 'none';
+    }
+    if (kind === 'interstitial') this.interstitialReady = false;
+    else this.rewardReady = false;
+    const prefix = kind === 'interstitial' ? 'interstitialAd' : 'onRewardedVideoAd';
+    let earned = false;
+    let failed = false;
+    let done: () => void = () => {};
+    const closed = new Promise<void>((resolve) => (done = resolve));
+    const giveUp = setTimeout(() => {
+      failed = true;
+      done();
+    }, AD_GIVE_UP_MS);
+    const handles: Array<{ remove(): Promise<void> }> = [];
+    const fail = () => {
+      failed = true;
+      done();
+    };
+    try {
+      // Listen before showing, so a fast close is never missed.
+      const listen = async (event: string, fn: () => void) => {
+        handles.push(await ads.addListener(event, fn));
+      };
+      await listen(`${prefix}Dismissed`, () => done());
+      await listen(`${prefix}FailedToShow`, fail);
+      if (kind === 'reward') await listen('onRewardedVideoAdReward', () => (earned = true));
+      this.hooks.pause(true);
+      if (kind === 'interstitial') await ads.showInterstitial();
+      // This promise only settles when the reward is earned, so do not wait for it.
+      else void ads.showRewardVideoAd().then(() => (earned = true), fail);
+      await closed;
+      if (kind === 'interstitial') return failed ? 'none' : 'watched';
+      if (!earned && !failed) await new Promise((r) => setTimeout(r, REWARD_GRACE_MS));
+      return earned ? 'watched' : failed ? 'none' : 'closed';
+    } catch {
+      return 'none';
+    } finally {
+      clearTimeout(giveUp);
+      this.hooks.pause(false);
+      for (const h of handles) void h.remove().catch(() => undefined);
+      void this.prepare();
+    }
+  }
+
+  protected async showBreak(): Promise<void> {
+    await this.fullScreen('interstitial');
+  }
+
+  /**
+   * The reward is given when the ad was watched, and also when there is no ad to show (consent
+   * refused, offline, no fill): a hint must never depend on saying yes to ads. Only closing the ad
+   * early gives no reward.
+   */
+  async rewardedAd(): Promise<boolean> {
+    return (await this.fullScreen('reward')) !== 'closed';
+  }
+}
+
+/** The plugin code is only bundled into the app build (`--mode app`); other builds never load it. */
+const loadAdMob = (): Promise<AdMobApi | undefined> =>
+  typeof __PLATFORM__ === 'string' && __PLATFORM__ === 'app' ? import('@capacitor-community/admob').then((m) => m.AdMob as unknown as AdMobApi) : Promise.resolve(undefined);
+
 export function createPlatform(name: PlatformName, hooks: AdHooks, win: Record<string, unknown> = globalThis as unknown as Record<string, unknown>): Platform {
   if (name === 'crazygames') return new CrazyGamesPlatform(hooks, () => (win.CrazyGames as { SDK?: CrazySdk } | undefined)?.SDK);
+  if (name === 'app') {
+    const os = (win.Capacitor as { getPlatform?(): string } | undefined)?.getPlatform?.() === 'ios' ? 'ios' : 'android';
+    return new AdMobPlatform(hooks, loadAdMob, os);
+  }
   if (name === 'poki') return new PokiPlatform(hooks, () => win.PokiSDK as PokiSdk | undefined);
   return new LocalPlatform(hooks);
 }

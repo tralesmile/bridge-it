@@ -25,6 +25,11 @@
 
         </activity>
 
+        <!-- AdMob app id. This is Google's public TEST id; the owner's real id replaces it (docs/NEEDS_FROM_OWNER.md). -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

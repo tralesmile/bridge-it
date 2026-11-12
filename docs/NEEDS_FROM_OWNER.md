@@ -20,7 +20,10 @@ Things only you can do. Each scheduled run adds to this list; nothing here block
 - [ ] Google Play developer account: $25 once; verify identity and an Android phone.
 - [ ] Recruit 12 testers for the 14-day closed test (friends, family).
 - [ ] Apple Developer Program: $99 a year.
-- [ ] AdMob account, and confirm AdMob, Google Play and Apple can pay a bank account in North Macedonia.
+- [ ] AdMob account, and confirm AdMob, Google Play and Apple can pay a bank account in North Macedonia. Then send Claude: the Android and iOS AdMob app ids, and one interstitial and one rewarded ad unit id for each (the app uses Google's test ids until then). In AdMob, set up the GDPR consent message (Privacy & messaging) for the EU and UK, and the IDFA message for iOS.
+- [ ] When filling in Google Play "Data safety" and Apple "App privacy": the app shows Google AdMob ads, which use the advertising id (Android) and, only if the player allows it, the IDFA (iOS). Claude will write the full answers before submission.
+- [ ] Decide who the game is for: everyone, or children too. If children are a main audience, Google Play's Families rules and Apple's Kids rules change which ads are allowed. Today ads are limited to the "General" rating, and the game is not marked as made for children.
+- [ ] AdMob asks for an `app-ads.txt` file on the developer website listed in the stores. You need a simple website (a free GitHub Pages site is fine); Claude can write the file once you have the AdMob publisher id.
 - [ ] Codemagic account (free) linked to the GitHub repo. The build steps are already in `codemagic.yaml`. In Codemagic add: an App Store Connect API key named `bridge-it-asc` (after the Apple account), and an Android upload keystore named `bridge-it-upload` (Codemagic can make one; keep a backup, a lost key is hard to replace).
 - [ ] Ask a local accountant about registering (sole proprietor or DOO) and VAT on foreign digital sales.
 

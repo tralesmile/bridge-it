@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { sfx } from './audio';
 import { closeOnBack } from './back';
+import { platform } from './platform';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { save } from './save';
 import { C, FONT, hex } from './theme';
@@ -142,7 +143,12 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
     }, { width: 130, height: 58, fontSize: 26, ...colors() });
     layer.add(b);
   });
-  layer.add(button(scene, W / 2, H / 2 + 230, 'Close', () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
+  // App in the EU and UK: the player must be able to change their ad consent at any time.
+  const privacy = platform.hasPrivacyOptions();
+  if (privacy) {
+    layer.add(button(scene, W / 2 - 125, H / 2 + 230, 'Privacy choices', () => void platform.privacyOptions(), { width: 250, height: 66, fontSize: 24, color: C.greyDark, shade: C.ink }));
+  }
+  layer.add(button(scene, privacy ? W / 2 + 140 : W / 2, H / 2 + 230, 'Close', () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
   closeOnBack(layer, () => layer.destroy());
 }
 

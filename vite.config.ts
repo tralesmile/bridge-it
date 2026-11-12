@@ -1,7 +1,8 @@
 import { defineConfig, type Plugin } from 'vite';
 
 /**
- * Build flavours: `vite build --mode crazygames` or `--mode poki` (npm run build:crazygames / build:poki).
+ * Build flavours: `vite build --mode crazygames`, `--mode poki` or `--mode app` (npm run build:crazygames /
+ * build:poki / build:app). The app flavour (Android and iOS) uses AdMob and goes to `dist-app`.
  * Each flavour picks its platform adapter (VITE_PLATFORM) and adds only that portal's SDK script.
  * The plain build (own website) loads nothing from the network.
  */
@@ -15,12 +16,14 @@ const portalSdk = (mode: string): Plugin => ({
   transformIndexHtml: () => (SDK[mode] ? [{ tag: 'script', attrs: { src: SDK[mode] }, injectTo: 'head-prepend' }] : []),
 });
 
+const FLAVOURS = [...Object.keys(SDK), 'app'];
+
 export default defineConfig(({ mode }) => ({
   base: './',
-  define: { __PLATFORM__: JSON.stringify(SDK[mode] ? mode : 'local') },
+  define: { __PLATFORM__: JSON.stringify(FLAVOURS.includes(mode) ? mode : 'local') },
   plugins: [portalSdk(mode)],
   build: {
-    outDir: SDK[mode] ? `dist-${mode}` : 'dist',
+    outDir: FLAVOURS.includes(mode) ? `dist-${mode}` : 'dist',
     target: 'es2020',
     assetsInlineLimit: 0,
     chunkSizeWarningLimit: 2000,

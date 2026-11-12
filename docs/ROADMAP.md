@@ -98,7 +98,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Loading screen (HTML bar shown while the script downloads, fades out when the menu starts)
 
 ## M7 Mobile apps
-- [x] Capacitor 8 Android and iOS projects (`android/`, `ios/`, `capacitor.config.ts`, app id `com.tralesmile.bridgeit`, landscape only). `npm run app:sync` builds and copies the game, `scripts/app-check.mjs` checks ids, orientation and no network scripts. CI job `android` builds a debug APK (no Android SDK in the cloud runs)
+- [x] Capacitor 8 Android and iOS projects (`android/`, `ios/`, `capacitor.config.ts`, app id `com.tralesmile.bridgeit`, landscape only). `npm run app:sync` builds and copies the game, `scripts/app-check.mjs` checks ids, orientation and no network scripts. CI job `android` builds a debug APK (first run green on 2026-11-12, about 2 minutes; no Android SDK in the cloud runs)
 - [ ] App build flavour (`--mode app`, `__PLATFORM__ = 'app'`) once the AdMob adapter exists
 - [x] App icon (square, round, adaptive layer) and splash screens drawn in code: `npm run app:icons` (`scripts/app-icons.mjs`, canvas 2D in Chrome) writes every Android density and the iOS icon and splash. PNGs are RGB with no alpha (App Store rule), only the round icon keeps see-through corners
 - [ ] Look at the icon on a real phone home screen (owner) and in the Play Console preview

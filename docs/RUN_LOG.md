@@ -16,7 +16,7 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 - e2e: code dialog copy fallback, typing in it, Paste loads the bridge, bad code keeps the bridge; Escape on stats, in settings and in a level.
 
 **Verified**
-- `npm run check` green (537 tests), `npm run e2e` exit 0 with no FAIL (85 checks), `npm run flavours` PASS, `node scripts/app-check.mjs` PASS; screenshots checked (code dialog on desktop and phone, icon and splash previews). The APK build itself is only checked by CI (no Android SDK in the cloud run: dl.google.com is blocked).
+- `npm run check` green (537 tests), `npm run e2e` exit 0 with no FAIL (85 checks), `npm run flavours` PASS, `node scripts/app-check.mjs` PASS; screenshots checked (code dialog on desktop and phone, icon and splash previews). The debug APK build passed on GitHub Actions (job `android`, CI run 47); the cloud run cannot build it (dl.google.com is blocked).
 
 **Lessons**
 - `dl.google.com` is blocked in the cloud runs, so Android builds can only be verified on GitHub Actions (ubuntu runners have the Android SDK). Check the `android` job with the GitHub tools after pushing.

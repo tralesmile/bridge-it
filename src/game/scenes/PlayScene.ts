@@ -16,7 +16,7 @@ import { sfx } from '../audio';
 import { addBackground } from '../background';
 import { platform } from '../platform';
 import { save } from '../save';
-import { C, FONT, GAME_H, GAME_W, PX_PER_M, hex, mix } from '../theme';
+import { C, FONT, GAME_H, GAME_W, PX_PER_M, hex, mix, shadeOf } from '../theme';
 import { closeOnBack, onBack } from '../back';
 import { haptic } from '../native';
 import { codeDialogOpen, showCodeDialog } from '../codeDialog';
@@ -281,7 +281,7 @@ export class PlayScene extends Phaser.Scene {
       lifespan: 1100,
       rotate: { min: 0, max: 360 },
       gravityY: 800,
-      tint: [hex(C.wood), hex(C.woodLight)],
+      tint: [hex(equipped(save.shop, 'frame').colors[0]), hex(equipped(save.shop, 'frame').colors[1])],
       emitting: false,
     });
     this.puffs = this.add.particles(0, 0, 'puff', {
@@ -385,10 +385,11 @@ export class PlayScene extends Phaser.Scene {
 
     // Bottom tool bar.
     const tools: Tool[] = [...this.level.materials, 'erase'];
+    const frame = equipped(save.shop, 'frame').colors;
     const colors: Record<Tool, [string, string]> = {
       road: [equipped(save.shop, 'deck').colors[0], equipped(save.shop, 'deck').colors[2]],
-      wood: [C.wood, '#9a6431'],
-      steel: [C.steel, '#5f7390'],
+      wood: [frame[0], shadeOf(frame[0])],
+      steel: [frame[2], shadeOf(frame[2])],
       rope: [C.rope, '#7d6642'],
       piston: [C.piston, '#2a7a6f'],
       spring: [C.spring, '#b03b72'],
@@ -663,11 +664,12 @@ export class PlayScene extends Phaser.Scene {
       const [color, light] = equipped(save.shop, 'deck').colors;
       return { width: 14, color, light };
     }
-    if (material === 'steel') return { width: 9, color: C.steel, light: C.steelLight };
+    const frame = equipped(save.shop, 'frame').colors;
+    if (material === 'steel') return { width: 9, color: frame[2], light: frame[3] };
     if (material === 'rope') return { width: 5, color: C.rope, light: C.ropeLight };
     if (material === 'piston') return { width: 11, color: C.piston, light: C.pistonLight };
     if (material === 'spring') return { width: 5, color: C.spring, light: C.springLight };
-    return { width: 9, color: C.wood, light: C.woodLight };
+    return { width: 9, color: frame[0], light: frame[1] };
   }
 
   private strokeBeam(g: Phaser.GameObjects.Graphics, a: Point, b: Point, material: MaterialId, stress = 0, alpha = 1): void {

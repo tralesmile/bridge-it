@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-12 — Run 38
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- Shop: wood and steel colours. New shop kind `frame` with 5 beam skins (Natural free, Birch 60, Cherry 80, Painted 100, Chrome 150), each with wood, wood light, steel and steel light colours. Beams, tool buttons and wood chips in the play scene use the skin. Old saves with no `frame` get Natural. The shop screen is 3 rows with smaller cards and a small truss picture for skins.
+- Unit test: every skin keeps wood warm (more red than blue) and steel cool (more blue than red), so the two materials never look alike; old saves fall back to Natural. e2e buys a skin and checks the level draws wood with it.
+
+**Verified**
+- `npm run check` green (546 tests), `npm run e2e` exit 0 with no FAIL; screenshots checked (shop with 3 rows, Hay Truck with Birch beams).
+
+**Lessons**
+- A light skin colour makes white button text hard to read (first Birch was too pale on the Wood tool button). Look at the tool bar in a probe screenshot, not only the shop card.
+- Next: new vehicle for the shop (ice-cream van; it is also the World 5 jump idea, so build it with real physics tests), or RevenueCat purchases.
+
 ## 2026-11-12 — Run 37
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

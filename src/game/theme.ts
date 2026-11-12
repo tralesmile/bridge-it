@@ -52,6 +52,9 @@ export function mix(a: string, b: string, t: number): number {
   return (lerp(16) << 16) | (lerp(8) << 8) | lerp(0);
 }
 
+/** A darker '#rrggbb' of a colour (for button shades). */
+export const shadeOf = (c: string): string => `#${mix(c, '#000000', 0.25).toString(16).padStart(6, '0')}`;
+
 /** World metres to screen pixels. */
 export const PX_PER_M = 48;
 export const GAME_W = 1280;

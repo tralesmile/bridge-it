@@ -49,8 +49,22 @@ describe('shop', () => {
   });
 
   test('equipped falls back to the default for a bad save', () => {
-    expect(equipped({ owned: [], equipped: { paint: 'paint-gold', deck: 'junk' } }, 'paint').id).toBe('paint-classic');
-    expect(equipped({ owned: [], equipped: { paint: 'deck-brick', deck: 'junk' } }, 'deck').id).toBe('deck-classic');
-    expect(equipped({ owned: ['paint-gold'], equipped: { paint: 'paint-gold', deck: 'deck-classic' } }, 'paint').id).toBe('paint-gold');
+    expect(equipped({ owned: [], equipped: { paint: 'paint-gold', deck: 'junk', frame: 'junk' } }, 'paint').id).toBe('paint-classic');
+    expect(equipped({ owned: [], equipped: { paint: 'deck-brick', deck: 'junk', frame: 'junk' } }, 'deck').id).toBe('deck-classic');
+    expect(equipped({ owned: ['paint-gold'], equipped: { paint: 'paint-gold', deck: 'deck-classic', frame: 'frame-classic' } }, 'paint').id).toBe('paint-gold');
+  });
+
+  test('beam skins keep wood warm and steel cool, and old saves get the natural skin', () => {
+    const rgb = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+    for (const item of SHOP_ITEMS.filter((i) => i.kind === 'frame')) {
+      expect(item.colors).toHaveLength(4);
+      const [wr, , wb] = rgb(item.colors[0]);
+      const [sr, , sb] = rgb(item.colors[2]);
+      expect(wr - wb).toBeGreaterThan(40); // wood: more red than blue
+      expect(sb - sr).toBeGreaterThan(15); // steel: more blue than red
+    }
+    expect(equipped({ owned: [], equipped: { paint: 'paint-classic', deck: 'deck-classic' } as ShopState['equipped'] }, 'frame').id).toBe('frame-classic');
+    const r = buy(start, 'frame-birch');
+    expect(r.ok && r.state.equipped.frame).toBe('frame-birch');
   });
 });

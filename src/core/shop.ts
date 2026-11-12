@@ -3,15 +3,18 @@
  * No real money, no random rewards: every item shows its price and you get exactly that item.
  */
 
-export type ShopKind = 'paint' | 'deck';
+export type ShopKind = 'paint' | 'deck' | 'frame';
 
 export interface ShopItem {
   id: string;
   kind: ShopKind;
   name: string;
   price: number;
-  /** paint: body main, light and dark colours. deck: road colour, line colour, edge colour. */
-  colors: [string, string, string];
+  /**
+   * paint: body main, light and dark colours. deck: road colour, line colour, edge colour.
+   * frame: wood, wood light, steel, steel light (wood stays warm and steel stays cool, so the two always look different).
+   */
+  colors: string[];
 }
 
 export const SHOP_ITEMS: ShopItem[] = [
@@ -30,9 +33,15 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'deck-forest', kind: 'deck', name: 'Forest', price: 80, colors: ['#3f7a4a', '#d8f5a2', '#24502d'] },
   { id: 'deck-ocean', kind: 'deck', name: 'Ocean', price: 100, colors: ['#2f5f9e', '#9fe3ff', '#1d3d6b'] },
   { id: 'deck-candy', kind: 'deck', name: 'Candy', price: 150, colors: ['#d94f8c', '#ffffff', '#9c2c5e'] },
+  // Beam skins for wood and steel (colour only).
+  { id: 'frame-classic', kind: 'frame', name: 'Natural', price: 0, colors: ['#c98a4b', '#e6ad6f', '#8ea3c0', '#c6d4e8'] },
+  { id: 'frame-birch', kind: 'frame', name: 'Birch', price: 60, colors: ['#d2a866', '#f1d9a8', '#7f93b3', '#bccbe2'] },
+  { id: 'frame-cherry', kind: 'frame', name: 'Cherry', price: 80, colors: ['#a5523a', '#d3805f', '#9aa6b8', '#d5dce6'] },
+  { id: 'frame-painted', kind: 'frame', name: 'Painted', price: 100, colors: ['#e0703a', '#ffa772', '#3f8fd6', '#95c8f5'] },
+  { id: 'frame-chrome', kind: 'frame', name: 'Chrome', price: 150, colors: ['#b8834f', '#dcac78', '#b9c3cf', '#f4f8fc'] },
 ];
 
-export const DEFAULT_EQUIPPED: Record<ShopKind, string> = { paint: 'paint-classic', deck: 'deck-classic' };
+export const DEFAULT_EQUIPPED: Record<ShopKind, string> = { paint: 'paint-classic', deck: 'deck-classic', frame: 'frame-classic' };
 
 export interface ShopState {
   coins: number;

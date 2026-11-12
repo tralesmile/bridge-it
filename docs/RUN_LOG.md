@@ -11,12 +11,12 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 - `npm run flavours` fails if web or portal builds carry RevenueCat code; `app-check` checks the apps have it and prints a note while there are no keys. `cap sync` added the plugin to Android gradle and iOS SPM.
 
 **Verified**
-- `npm run check` green (560 tests, 13 new), `npm run flavours` PASS, `npm run app:sync` PASS, `npm run e2e` exit 0 with no FAIL. Probe screenshots (dev server, store patched to look available): Support window, pending text, owned card, Settings with the new button. Not verified: a real store purchase (needs the owner's accounts).
+- `npm run check` green (560 tests, 13 new), `npm run flavours` PASS, `npm run app:sync` PASS, `npm run e2e` exit 0 with no FAIL. Probe screenshots (dev server, store patched to look available): Support window, pending text, owned card, Settings with the new button. The debug APK with the RevenueCat plugin built on GitHub Actions (CI run 53, job `android`). Not verified: a real store purchase (needs the owner's accounts).
 
 **Lessons**
 - A module-level singleton object (`store`) can be patched method by method from a probe (`store.available = () => true`), which is easier than adding test hooks to the game.
 - Listeners added by a window must be removed when it closes (`onChange` returns an unsubscribe; `layer.once('destroy', stop)`), or every reopen adds one more.
-- Next: CI Android build with the new plugin (check the `android` job), then World 5 probe with a faster vehicle, or Sandbox mode.
+- Next: World 5 probe with a faster vehicle, or Sandbox mode.
 
 ## 2026-11-12 — Run 39
 **Done**

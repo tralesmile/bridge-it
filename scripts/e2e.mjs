@@ -291,9 +291,9 @@ async function run(viewport, name) {
   check(await active('shop'), `${name}: Shop button opens the shop`);
   await page.screenshot({ path: `${OUT}/${name}-9s-shop.png` });
   await click(265, 256); // Sky paint, 40 coins
-  await click(490, 445); // Brick road, 60 coins
+  await click(258, 445); // Brick road, 60 coins
   await click(490, 634); // Birch beams, 60 coins
-  await click(640, 445); // Forest road, 80 coins: too expensive now
+  await click(406, 445); // Forest road, 80 coins: too expensive now
   const bought = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}'));
   check(bought.coins === 0 && bought.owned?.join() === 'paint-sky,deck-brick,frame-birch' && bought.equipped?.paint === 'paint-sky' && bought.equipped?.deck === 'deck-brick' && bought.equipped?.frame === 'frame-birch',
     `${name}: buying saves coins, items and what is in use (${JSON.stringify({ c: bought.coins, o: bought.owned, e: bought.equipped })})`);
@@ -305,6 +305,21 @@ async function run(viewport, name) {
   const woodTool = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').beamStyle('wood').color);
   check(woodTool === '#d2a866', `${name}: the level uses the bought beam skin (${woodTool})`);
   await page.screenshot({ path: `${OUT}/${name}-9s-painted-car.png` });
+  // Car shapes: with 120 more coins buy the Ice Cream van (third card of the middle row's right group); the car level uses it with the paint on.
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); s.coins = 120; localStorage.setItem('bridgeit.save', JSON.stringify(s)); });
+  await page.reload();
+  await page.waitForFunction(() => globalThis.__bridgeit?.scene?.isActive('menu'), null, { timeout: 15000 });
+  await page.evaluate(() => globalThis.__bridgeit.scene.getScene('menu').scene.start('shop'));
+  await sleep(500);
+  await click(1170, 445); // Ice Cream, 120 coins
+  const van = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}'));
+  check(van.coins === 0 && van.equipped?.ride === 'ride-icecream' && van.owned?.includes('ride-icecream'), `${name}: buying a car shape saves it (${JSON.stringify({ c: van.coins, e: van.equipped })})`);
+  await page.screenshot({ path: `${OUT}/${name}-9s-shop-van.png` });
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('shop').scene.start('play', { levelId: 'w1-3' }); });
+  await sleep(700);
+  const vanTex = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').chassisSprite.texture.key);
+  check(vanTex === 'icecream-paint-sky', `${name}: the car level uses the bought shape with its paint (${vanTex})`);
+  await page.screenshot({ path: `${OUT}/${name}-9s-van.png` });
 
   // Achievements: earlier wins and the purchase are saved; the Trophies screen lists them.
   const ach = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').achievements || []);

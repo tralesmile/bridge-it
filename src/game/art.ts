@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { SHOP_ITEMS } from '../core/shop';
+import { SHOP_ITEMS, itemById } from '../core/shop';
 import { C, WORLD_BACKGROUNDS } from './theme';
 
 /**
@@ -261,11 +261,114 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.fill();
   };
 
+  /** Shared lower body for the car shapes: shadow, painted gradient box, headlight and rim highlight. */
+  const drawLowerBody = (ctx: Ctx, main: string, dark: string, top: number) => {
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    roundRect(ctx, 12, 50, 150, 34, 16);
+    ctx.fill();
+    const g = ctx.createLinearGradient(0, top, 0, 80);
+    g.addColorStop(0, main);
+    g.addColorStop(1, dark);
+    ctx.fillStyle = g;
+    roundRect(ctx, 6, top, 160, 78 - top, 18);
+    ctx.fill();
+  };
+
+  const drawCamper = (ctx: Ctx, [main, , dark]: readonly string[], [cream, board]: readonly string[]) => {
+    // Roof rack with a surfboard.
+    ctx.fillStyle = '#2b2140';
+    roundRect(ctx, 30, 6, 108, 5, 2);
+    ctx.fill();
+    ctx.fillStyle = board;
+    roundRect(ctx, 24, 0, 120, 7, 3.5);
+    ctx.fill();
+    drawLowerBody(ctx, main, dark, 10);
+    // Cream top half and a round nose.
+    ctx.fillStyle = cream;
+    roundRect(ctx, 6, 10, 160, 34, 18);
+    ctx.fill();
+    ctx.fillRect(6, 30, 160, 14);
+    // Chrome belt line and a door handle.
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillRect(10, 50, 152, 3);
+    ctx.fillStyle = '#2b2140';
+    roundRect(ctx, 120, 56, 12, 4, 2);
+    ctx.fill();
+    // Windows: back, middle (the cow sits here) and windscreen.
+    ctx.fillStyle = '#bfe8ff';
+    roundRect(ctx, 16, 16, 30, 24, 8);
+    ctx.fill();
+    roundRect(ctx, 56, 16, 58, 28, 10);
+    ctx.fill();
+    roundRect(ctx, 124, 16, 34, 24, 10);
+    ctx.fill();
+    ctx.fillStyle = '#fff4b0';
+    roundRect(ctx, 152, 52, 12, 10, 4);
+    ctx.fill();
+  };
+
+  const drawIceCream = (ctx: Ctx, [main, light, dark]: readonly string[], [cream, scoop]: readonly string[]) => {
+    // Big cone on the roof.
+    ctx.fillStyle = '#e3a857';
+    ctx.beginPath();
+    ctx.moveTo(140, 22);
+    ctx.lineTo(132, 9);
+    ctx.lineTo(148, 9);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = scoop;
+    ctx.beginPath();
+    ctx.arc(140, 7, 7, 0, Math.PI * 2);
+    ctx.fill();
+    drawLowerBody(ctx, main, dark, 20);
+    // Cream box with a serving window (the cow sells from it) and a striped awning.
+    ctx.fillStyle = cream;
+    roundRect(ctx, 6, 20, 160, 26, 14);
+    ctx.fill();
+    ctx.fillRect(6, 34, 160, 12);
+    ctx.fillStyle = '#bfe8ff';
+    roundRect(ctx, 56, 22, 58, 24, 8);
+    ctx.fill();
+    roundRect(ctx, 128, 24, 30, 20, 8);
+    ctx.fill();
+    for (let i = 0; i < 6; i++) {
+      ctx.fillStyle = i % 2 === 0 ? light : '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(50 + i * 12, 14);
+      ctx.lineTo(62 + i * 12, 14);
+      ctx.lineTo(62 + i * 12, 22);
+      ctx.arc(56 + i * 12, 22, 6, 0, Math.PI);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.fillStyle = dark;
+    roundRect(ctx, 48, 12, 76, 4, 2);
+    ctx.fill();
+    // A painted cone on the side.
+    ctx.fillStyle = '#e3a857';
+    ctx.beginPath();
+    ctx.moveTo(30, 72);
+    ctx.lineTo(23, 58);
+    ctx.lineTo(37, 58);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = scoop;
+    ctx.beginPath();
+    ctx.arc(30, 55, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fff4b0';
+    roundRect(ctx, 152, 52, 12, 10, 4);
+    ctx.fill();
+  };
+
   // Each vehicle once per shop paint: 'car' is the classic look, 'car-paint-sky' the Sky paint, and so on.
   for (const paint of SHOP_ITEMS.filter((i) => i.kind === 'paint')) {
     const classic = paint.id === 'paint-classic';
     const sfx = classic ? '' : `-${paint.id}`;
     canvas(scene, `car${sfx}`, 172, 96, (ctx) => drawCar(ctx, paint.colors));
+    // Car body shapes from the shop use the same 172 x 96 box, so wheels and the cow sit in the same places.
+    canvas(scene, `camper${sfx}`, 172, 96, (ctx) => drawCamper(ctx, paint.colors, itemById('ride-camper')!.colors));
+    canvas(scene, `icecream${sfx}`, 172, 96, (ctx) => drawIceCream(ctx, paint.colors, itemById('ride-icecream')!.colors));
     canvas(scene, `truck${sfx}`, 260, 120, (ctx) => drawTruck(ctx, classic ? ['#3c8dff'] : paint.colors));
     canvas(scene, `train${sfx}`, 340, 120, (ctx) => drawTrain(ctx, classic ? ['#e8503a'] : paint.colors));
   }

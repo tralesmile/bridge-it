@@ -2,6 +2,22 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-12 — Run 39
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- Shop: car shapes (new kind `ride`): Moo Car (free), Camper (90, roof rack and surfboard) and Ice Cream van (120, striped awning, cone on the roof; the cow sells from the window). Looks only: the small car keeps its size, weight and wheels, so physics and level tests do not change. The shape takes the paint, and truck and train keep their own shape.
+- `vehicleTextureKey` in `src/core/shop.ts` picks the texture from shape and paint (menu car, play scene, shop cards all use it). New textures share the car's 172 x 96 box, so wheels and the cow head sit in the same places.
+- Shop screen: the middle row now holds two groups, Road colour and Car shape (car levels). Paint cards show the shape in use; shape cards show the paint in use.
+- Unit test: shape textures, old saves get the Moo Car, paint on top, a shape you do not own falls back. e2e buys the Ice Cream van and checks the level uses `icecream-paint-sky`.
+
+**Verified**
+- `npm run check` green (547 tests), `npm run e2e` exit 0 with no FAIL (91 checks); screenshots checked on desktop and phone (shop with the new group, Ice Cream van and Camper in a level).
+
+**Lessons**
+- A cosmetic "new vehicle" is cheap and safe when it keeps the physics body; a real new vehicle (faster van for World 5 jumps) changes levels and needs its own physics tests. Keep the two apart.
+- A shape detail that looks fine in the shop card can read as a face part at play size (the Camper's V nose sat right under the cow). Check the play screenshot, not only the card.
+- Next: RevenueCat purchases (remove ads, supporter pack, restore), or a World 5 probe with a faster vehicle.
+
 ## 2026-11-12 — Run 38
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

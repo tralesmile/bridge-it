@@ -1,6 +1,6 @@
 import { onBack } from '../back';
 import Phaser from 'phaser';
-import { SHOP_ITEMS, equipped, isOwned, type ShopItem } from '../../core/shop';
+import { RIDE_TEXTURE, SHOP_ITEMS, equipped, isOwned, type ShopItem } from '../../core/shop';
 import { sfx } from '../audio';
 import { addBackground } from '../background';
 import { save } from '../save';
@@ -9,9 +9,10 @@ import { announceAchievements, button, label, panel } from '../ui';
 
 const CARD_W = 136;
 const CARD_H = 150;
-const GAP = 14;
+const GAP = 12;
+const GROUP_GAP = 36;
 
-/** Coin shop: paint jobs for the vehicles, road colours and wood and steel colours. Cosmetic only. */
+/** Coin shop: paint jobs for the vehicles, road colours, car shapes and wood and steel colours. Cosmetic only. */
 export class ShopScene extends Phaser.Scene {
   private toast?: Phaser.GameObjects.Text;
 
@@ -30,8 +31,16 @@ export class ShopScene extends Phaser.Scene {
 
     label(this, GAME_W / 2, 118, 'Paint for your car, truck and train', 24, C.ink);
     this.row(SHOP_ITEMS.filter((i) => i.kind === 'paint'), 212);
-    label(this, GAME_W / 2, 307, 'Road colour', 24, C.ink);
-    this.row(SHOP_ITEMS.filter((i) => i.kind === 'deck'), 401);
+    // Road colours and car shapes share the middle row, each with its own title.
+    const middle = [SHOP_ITEMS.filter((i) => i.kind === 'deck'), SHOP_ITEMS.filter((i) => i.kind === 'ride')];
+    const groupW = middle.map((g) => g.length * CARD_W + (g.length - 1) * GAP);
+    const totalW = groupW[0] + groupW[1] + GROUP_GAP;
+    let left = GAME_W / 2 - totalW / 2;
+    ['Road colour', 'Car shape (car levels)'].forEach((title, i) => {
+      label(this, left + groupW[i] / 2, 307, title, 24, C.ink);
+      this.row(middle[i], 401, left + groupW[i] / 2);
+      left += groupW[i] + GROUP_GAP;
+    });
     label(this, GAME_W / 2, 496, 'Wood and steel colour', 24, C.ink);
     this.row(SHOP_ITEMS.filter((i) => i.kind === 'frame'), 590);
     label(this, GAME_W / 2, 684, 'Earn coins with new stars. Looks only: the bridge works the same.', 20, C.greyDark);
@@ -40,9 +49,9 @@ export class ShopScene extends Phaser.Scene {
     announceAchievements(this);
   }
 
-  private row(items: ShopItem[], y: number): void {
+  private row(items: ShopItem[], y: number, cx = GAME_W / 2): void {
     const total = items.length * CARD_W + (items.length - 1) * GAP;
-    items.forEach((item, i) => this.card(item, GAME_W / 2 - total / 2 + CARD_W / 2 + i * (CARD_W + GAP), y));
+    items.forEach((item, i) => this.card(item, cx - total / 2 + CARD_W / 2 + i * (CARD_W + GAP), y));
   }
 
   private card(item: ShopItem, x: number, y: number): void {
@@ -56,8 +65,11 @@ export class ShopScene extends Phaser.Scene {
       g.lineStyle(5, hex(C.good), 1);
       g.strokeRoundedRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 18);
     }
-    if (item.kind === 'paint') {
-      const key = item.id === 'paint-classic' ? 'car' : `car-${item.id}`;
+    if (item.kind === 'paint' || item.kind === 'ride') {
+      // Paint cards show the car shape in use; shape cards show the paint in use.
+      const ride = RIDE_TEXTURE[item.kind === 'ride' ? item.id : equipped(shop, 'ride').id] ?? 'car';
+      const paint = item.kind === 'paint' ? item.id : equipped(shop, 'paint').id;
+      const key = paint === 'paint-classic' ? ride : `${ride}-${paint}`;
       const k = 0.58;
       for (const dx of [-47, 47]) this.add.image(x + dx * k, y - 38 + 28 * k, 'wheel').setScale(0.72 * k);
       this.add.image(x, y - 38, key).setScale(k);

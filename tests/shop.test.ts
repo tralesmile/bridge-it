@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { ALL_LEVELS } from '../src/core/levels';
-import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, coinsAvailable, equip, equipped, isOwned, type ShopState } from '../src/core/shop';
+import { DEFAULT_EQUIPPED, RIDE_TEXTURE, SHOP_ITEMS, buy, vehicleTextureKey, coinsAvailable, equip, equipped, isOwned, type ShopState } from '../src/core/shop';
 
 const start: ShopState = { coins: 100, owned: [], equipped: { ...DEFAULT_EQUIPPED } };
 
@@ -49,9 +49,9 @@ describe('shop', () => {
   });
 
   test('equipped falls back to the default for a bad save', () => {
-    expect(equipped({ owned: [], equipped: { paint: 'paint-gold', deck: 'junk', frame: 'junk' } }, 'paint').id).toBe('paint-classic');
-    expect(equipped({ owned: [], equipped: { paint: 'deck-brick', deck: 'junk', frame: 'junk' } }, 'deck').id).toBe('deck-classic');
-    expect(equipped({ owned: ['paint-gold'], equipped: { paint: 'paint-gold', deck: 'deck-classic', frame: 'frame-classic' } }, 'paint').id).toBe('paint-gold');
+    expect(equipped({ owned: [], equipped: { paint: 'paint-gold', deck: 'junk', frame: 'junk', ride: 'junk' } }, 'paint').id).toBe('paint-classic');
+    expect(equipped({ owned: [], equipped: { paint: 'deck-brick', deck: 'junk', frame: 'junk', ride: 'junk' } }, 'deck').id).toBe('deck-classic');
+    expect(equipped({ owned: ['paint-gold'], equipped: { paint: 'paint-gold', deck: 'deck-classic', frame: 'frame-classic', ride: 'ride-classic' } }, 'paint').id).toBe('paint-gold');
   });
 
   test('beam skins keep wood warm and steel cool, and old saves get the natural skin', () => {
@@ -66,5 +66,23 @@ describe('shop', () => {
     expect(equipped({ owned: [], equipped: { paint: 'paint-classic', deck: 'deck-classic' } as ShopState['equipped'] }, 'frame').id).toBe('frame-classic');
     const r = buy(start, 'frame-birch');
     expect(r.ok && r.state.equipped.frame).toBe('frame-birch');
+  });
+
+  test('car body shapes: one texture each, old saves get the Moo Car, paint goes on top, other vehicles keep their shape', () => {
+    for (const item of SHOP_ITEMS.filter((i) => i.kind === 'ride')) expect(RIDE_TEXTURE[item.id]).toBeTruthy();
+    const old = { owned: [], equipped: { paint: 'paint-classic', deck: 'deck-classic', frame: 'frame-classic' } as ShopState['equipped'] };
+    expect(equipped(old, 'ride').id).toBe('ride-classic');
+    expect(vehicleTextureKey(old, 'car')).toBe('car');
+    const r = buy({ ...start, coins: 200 }, 'ride-icecream');
+    if (!r.ok) throw new Error('buy failed');
+    expect(r.state.equipped.ride).toBe('ride-icecream');
+    expect(vehicleTextureKey(r.state, 'car')).toBe('icecream');
+    expect(vehicleTextureKey(r.state, 'truck')).toBe('truck');
+    const p = buy(r.state, 'paint-sky');
+    if (!p.ok) throw new Error('buy failed');
+    expect(vehicleTextureKey(p.state, 'car')).toBe('icecream-paint-sky');
+    expect(vehicleTextureKey(p.state, 'train')).toBe('train-paint-sky');
+    // A body you do not own (edited save) falls back to the Moo Car.
+    expect(vehicleTextureKey({ owned: [], equipped: { ...DEFAULT_EQUIPPED, ride: 'ride-camper' } }, 'car')).toBe('car');
   });
 });

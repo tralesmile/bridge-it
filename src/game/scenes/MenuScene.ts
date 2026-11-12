@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { ALL_LEVELS } from '../../core/levels';
-import { equipped } from '../../core/shop';
+import { vehicleTextureKey } from '../../core/shop';
 import { addBackground } from '../background';
 import { save } from '../save';
 import { C, FONT, GAME_W } from '../theme';
@@ -23,8 +23,7 @@ export class MenuScene extends Phaser.Scene {
 
     label(this, GAME_W / 2, 310, 'Build it. Break it. Laugh. Try again.', 30, C.ink);
 
-    const paint = equipped(save.shop, 'paint').id;
-    const carImage = this.add.image(0, 0, paint === 'paint-classic' ? 'car' : `car-${paint}`);
+    const carImage = this.add.image(0, 0, vehicleTextureKey(save.shop, 'car'));
     // Cow head sits in the cabin (texture centre is 86,48; head is at 88,34).
     const cow = this.add.image(2, -14, 'cow-calm');
     const wheels = [-47, 47].map((dx) => this.add.image(dx, 28, 'wheel').setScale(0.72));

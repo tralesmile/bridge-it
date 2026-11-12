@@ -3,7 +3,7 @@
  * No real money, no random rewards: every item shows its price and you get exactly that item.
  */
 
-export type ShopKind = 'paint' | 'deck' | 'frame';
+export type ShopKind = 'paint' | 'deck' | 'frame' | 'ride';
 
 export interface ShopItem {
   id: string;
@@ -13,6 +13,7 @@ export interface ShopItem {
   /**
    * paint: body main, light and dark colours. deck: road colour, line colour, edge colour.
    * frame: wood, wood light, steel, steel light (wood stays warm and steel stays cool, so the two always look different).
+   * ride: the small car's body shape (car levels only); colours are its trim. Same size and weight, so physics never change.
    */
   colors: string[];
 }
@@ -39,9 +40,26 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'frame-cherry', kind: 'frame', name: 'Cherry', price: 80, colors: ['#a5523a', '#d3805f', '#9aa6b8', '#d5dce6'] },
   { id: 'frame-painted', kind: 'frame', name: 'Painted', price: 100, colors: ['#e0703a', '#ffa772', '#3f8fd6', '#95c8f5'] },
   { id: 'frame-chrome', kind: 'frame', name: 'Chrome', price: 150, colors: ['#b8834f', '#dcac78', '#b9c3cf', '#f4f8fc'] },
+  // Body shapes for the small car (it takes the paint too). Looks only: the car is just as big and heavy.
+  { id: 'ride-classic', kind: 'ride', name: 'Moo Car', price: 0, colors: ['#bfe8ff', '#fff4b0'] },
+  { id: 'ride-camper', kind: 'ride', name: 'Camper', price: 90, colors: ['#fff6e8', '#7fd3ff'] },
+  { id: 'ride-icecream', kind: 'ride', name: 'Ice Cream', price: 120, colors: ['#fff6e8', '#ff6fb5'] },
 ];
 
-export const DEFAULT_EQUIPPED: Record<ShopKind, string> = { paint: 'paint-classic', deck: 'deck-classic', frame: 'frame-classic' };
+export const DEFAULT_EQUIPPED: Record<ShopKind, string> = { paint: 'paint-classic', deck: 'deck-classic', frame: 'frame-classic', ride: 'ride-classic' };
+
+/** Texture base key for each car body shape. */
+export const RIDE_TEXTURE: Record<string, string> = { 'ride-classic': 'car', 'ride-camper': 'camper', 'ride-icecream': 'icecream' };
+
+/**
+ * Texture key for a vehicle with the shop items in use: 'car', 'car-paint-sky', 'icecream-paint-gold', 'truck-paint-mint'.
+ * Body shapes only change the small car.
+ */
+export function vehicleTextureKey(state: Pick<ShopState, 'equipped' | 'owned'>, vehicle: 'car' | 'truck' | 'train'): string {
+  const base = vehicle === 'car' ? RIDE_TEXTURE[equipped(state, 'ride').id] ?? 'car' : vehicle;
+  const paint = equipped(state, 'paint').id;
+  return paint === 'paint-classic' ? base : `${base}-${paint}`;
+}
 
 export interface ShopState {
   coins: number;

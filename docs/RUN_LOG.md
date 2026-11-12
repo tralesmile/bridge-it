@@ -2,6 +2,29 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-12 — Run 36
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- Bridge codes: an in-game HTML dialog (`src/game/codeDialog.ts`) replaces window.prompt for Paste code and for the copy fallback (portals in iframes and app web views can block prompt). Keys typed in it never reach the game (Space does not start the attempt, Ctrl+Z does not undo).
+- M7 Capacitor 8: `android/` and `ios/` projects, `capacitor.config.ts` (app id `com.tralesmile.bridgeit`, owner to confirm), landscape only on both. `npm run app:sync` builds and copies the game; `scripts/app-check.mjs` checks the ids, orientation and that the copied game loads nothing from the network. New CI job `android` builds a debug APK and uploads it.
+- Back step (`src/game/back.ts`): Escape on the web and the Android back button close the newest window (settings, pause, code dialog) first, then the scene goes back; in a running attempt Back stops it; on the menu the app minimizes.
+- `src/game/native.ts`: haptics on placing a beam, on breaks and on a splash (follows the Screen shake switch, at most one buzz per 90 ms). The plugin code is a separate chunk loaded only inside the app.
+- Safe areas: the game box sits inside the notch insets (0 in normal browsers).
+- App icon and splash drawn in code: `npm run app:icons` renders every Android density, the adaptive layer, and the iOS icon and splash, as RGB PNGs (no alpha) except the round icon.
+- `codemagic.yaml` for iOS (TestFlight) and Android (.aab) builds; Android release signing turns on only with Codemagic's keystore variables. Not run yet.
+- `probe/` is now in `.gitignore` (it was only in a local exclude before, so a fresh clone showed it as untracked).
+- e2e: code dialog copy fallback, typing in it, Paste loads the bridge, bad code keeps the bridge; Escape on stats, in settings and in a level.
+
+**Verified**
+- `npm run check` green (537 tests), `npm run e2e` exit 0 with no FAIL (85 checks), `npm run flavours` PASS, `node scripts/app-check.mjs` PASS; screenshots checked (code dialog on desktop and phone, icon and splash previews). The APK build itself is only checked by CI (no Android SDK in the cloud run: dl.google.com is blocked).
+
+**Lessons**
+- `dl.google.com` is blocked in the cloud runs, so Android builds can only be verified on GitHub Actions (ubuntu runners have the Android SDK). Check the `android` job with the GitHub tools after pushing.
+- Canvas `toDataURL` PNGs always have an alpha channel; App Store icons must not. Encode RGB PNGs yourself with `zlib.deflateSync` and `zlib.crc32` (Node 22).
+- Launchers crop adaptive icon foregrounds: draw the layer full bleed with the art in the middle 66%, not a circle on black.
+- A key listener on the dialog root with `stopPropagation` keeps Phaser's window key handlers (Space = GO) quiet while typing.
+- Next: AdMob adapter (`@capacitor-community/admob` 8.3.0 fits Capacitor 8; use Google's test app id until the owner has one, because the app crashes at start without an AdMob app id in the manifest), with the app build flavour; then World 5.
+
 ## 2026-11-12 — Run 35
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

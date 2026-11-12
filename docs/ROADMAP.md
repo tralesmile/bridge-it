@@ -92,16 +92,21 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Poki SDK adapter: init, gameLoadingFinished, gameplay start/stop, commercialBreak, rewardedBreak. Tested with a fake SDK
 - [ ] Test both portal builds in the real portal tools (CrazyGames preview, Poki Inspector); needs the owner's accounts
 - [ ] CrazyGames data module for the save (cloud save when logged in) and Poki share link for bridge codes
-- [ ] Portal builds: hide the in-game Paste code prompt if a portal blocks window.prompt; check the rotate card inside portal iframes
+- [x] Bridge codes use an in-game HTML dialog (`src/game/codeDialog.ts`) instead of window.prompt, which portals and app web views may block. Keys typed in it do not reach the game. Copy falls back to the same dialog (code selected) when the clipboard is blocked. Tested in e2e
+- [ ] Check the rotate card inside portal iframes (needs the real portal preview tools)
 - [x] Size check in CI (`scripts/size-check.mjs`, part of `npm run check`; dist is 1.6 MB)
 - [x] Loading screen (HTML bar shown while the script downloads, fades out when the menu starts)
 
 ## M7 Mobile apps
-- [ ] Capacitor 8 Android and iOS projects
+- [x] Capacitor 8 Android and iOS projects (`android/`, `ios/`, `capacitor.config.ts`, app id `com.tralesmile.bridgeit`, landscape only). `npm run app:sync` builds and copies the game, `scripts/app-check.mjs` checks ids, orientation and no network scripts. CI job `android` builds a debug APK (no Android SDK in the cloud runs)
+- [ ] App build flavour (`--mode app`, `__PLATFORM__ = 'app'`) once the AdMob adapter exists
+- [x] App icon (square, round, adaptive layer) and splash screens drawn in code: `npm run app:icons` (`scripts/app-icons.mjs`, canvas 2D in Chrome) writes every Android density and the iOS icon and splash. PNGs are RGB with no alpha (App Store rule), only the round icon keeps see-through corners
+- [ ] Look at the icon on a real phone home screen (owner) and in the Play Console preview
 - [ ] AdMob rewarded and interstitial with consent form and ATT prompt
 - [ ] RevenueCat purchases: remove ads, supporter pack; restore purchases
-- [ ] Safe areas, Android back button, haptics, splash screen and icons
-- [ ] Codemagic config for iOS builds without a Mac
+- [x] Safe areas (the game box stays inside the notch insets), back step for Escape and the Android back button (`src/game/back.ts`: open windows close first, then the scene goes back; on the menu the app minimizes), haptics on placing beams, breaks and splashes (`src/game/native.ts`, follows the Screen shake switch; plugin code only loads in the app)
+- [x] Codemagic config (`codemagic.yaml`): `ios-release` builds the .ipa on a cloud Mac and sends it to TestFlight; `android-release` builds a signed .aab (the signing block in `android/app/build.gradle` only turns on with Codemagic's keystore variables). Not run yet: needs the owner's accounts
+- [ ] First real Codemagic run (after the owner connects the accounts); fix whatever it reports
 
 ## M8 Quality and reach
 - [ ] Localization system and 8 languages

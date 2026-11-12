@@ -1,3 +1,4 @@
+import { onBack } from '../back';
 import Phaser from 'phaser';
 import { calendarDays, dateKey, liveStreak } from '../../core/daily';
 import { addBackground } from '../background';
@@ -18,6 +19,7 @@ export class DailyScene extends Phaser.Scene {
     addBackground(this);
     panel(this, GAME_W / 2, 400, 1100, 560);
     button(this, 110, 60, '◀ Back', () => this.scene.start('worlds'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    onBack(this, () => this.scene.start('worlds'));
     label(this, GAME_W / 2, 60, 'Daily calendar', 52, C.white).setStroke(C.ink, 10);
 
     const today = dateKey(new Date());

@@ -10,6 +10,7 @@ import { DailyScene } from './game/scenes/DailyScene';
 import { StatsScene } from './game/scenes/StatsScene';
 import { TrophyScene } from './game/scenes/TrophyScene';
 import { C, GAME_H, GAME_W } from './game/theme';
+import { setupBackKeys } from './game/native';
 
 async function loadFont(): Promise<void> {
   try {
@@ -37,6 +38,7 @@ const game = new Phaser.Game({
 
 // Exposed for automated browser tests only.
 (globalThis as unknown as { __bridgeit?: Phaser.Game }).__bridgeit = game;
+setupBackKeys(game);
 }
 
 void loadFont().then(start);

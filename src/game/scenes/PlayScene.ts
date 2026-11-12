@@ -17,6 +17,9 @@ import { addBackground } from '../background';
 import { platform } from '../platform';
 import { save } from '../save';
 import { C, FONT, GAME_H, GAME_W, PX_PER_M, hex, mix } from '../theme';
+import { closeOnBack, onBack } from '../back';
+import { haptic } from '../native';
+import { codeDialogOpen, showCodeDialog } from '../codeDialog';
 import { announceAchievements, button, label, panel, type Button } from '../ui';
 
 type Tool = MaterialId | 'erase';
@@ -135,6 +138,8 @@ export class PlayScene extends Phaser.Scene {
 
   create(): void {
     addBackground(this, this.level.world);
+    // Back: stop a running attempt first, otherwise leave the level.
+    onBack(this, () => (this.mode === 'sim' ? this.stopSim() : this.leave()));
     this.world = this.add.graphics();
     this.hintG = this.add.graphics();
     this.beamsG = this.add.graphics();
@@ -325,6 +330,10 @@ export class PlayScene extends Phaser.Scene {
       }, { width: 260, height: 76, color: C.good, shade: C.goodDark }),
     );
     this.pauseLayer = layer;
+    closeOnBack(layer, () => {
+      layer.destroy();
+      this.pauseLayer = undefined;
+    });
   }
 
   private setMood(sim: Simulation): void {
@@ -356,7 +365,7 @@ export class PlayScene extends Phaser.Scene {
 
   private createHud(): void {
     button(this, 90, 50, '◀', () => this.leave(), { width: 76, height: 56, fontSize: 30, color: C.blue, shade: C.blueDark });
-    this.pasteButton = button(this, 215, 50, 'Paste code', () => this.pasteCode(), { width: 170, height: 56, fontSize: 22, color: C.grey, shade: C.greyDark });
+    this.pasteButton = button(this, 215, 50, 'Paste code', () => void this.pasteCode(), { width: 170, height: 56, fontSize: 22, color: C.grey, shade: C.greyDark });
     this.buildUi.push(this.pasteButton);
     const name = isDailyId(this.level.id) ? `Daily: ${this.level.name}` : `${this.level.index}. ${this.level.name}`;
     const title = label(this, GAME_W / 2, 40, this.stress ? `Stress test: ${this.level.name}` : name, 34, C.white);
@@ -486,6 +495,7 @@ export class PlayScene extends Phaser.Scene {
       if (result.ok) {
         this.placeStreak++;
         sfx.place(this.placeStreak);
+        haptic('light');
         this.afterChange();
       } else {
         this.placeStreak = 0;
@@ -497,9 +507,11 @@ export class PlayScene extends Phaser.Scene {
     this.input.on(Phaser.Input.Events.POINTER_UP_OUTSIDE, finish);
     this.input.on(Phaser.Input.Events.GAME_OUT, () => this.cancelDrag());
     this.input.keyboard?.on('keydown-Z', (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey) this.undo();
+      if ((e.ctrlKey || e.metaKey) && !codeDialogOpen()) this.undo();
     });
-    this.input.keyboard?.on('keydown-SPACE', () => this.toggleSim());
+    this.input.keyboard?.on('keydown-SPACE', () => {
+      if (!codeDialogOpen()) this.toggleSim();
+    });
   }
 
   private cancelDrag(): void {
@@ -562,10 +574,10 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
-  private pasteCode(): void {
-    if (this.mode !== 'build') return;
-    const text = window.prompt('Paste a bridge code here:');
-    if (!text) return;
+  private async pasteCode(): Promise<void> {
+    if (this.mode !== 'build' || codeDialogOpen()) return;
+    const text = await showCodeDialog({ title: 'Paste a bridge code here:' });
+    if (!text || this.mode !== 'build') return;
     const result = decodeBridge(text);
     if (!result.ok) {
       sfx.error();
@@ -589,7 +601,8 @@ export class PlayScene extends Phaser.Scene {
       await navigator.clipboard.writeText(code);
       this.showToast('Code copied! Send it to a friend.', 2400);
     } catch {
-      window.prompt('Copy this code:', code);
+      // No clipboard (blocked in some portal iframes): show the code to copy by hand.
+      await showCodeDialog({ title: 'Copy this code:', value: code, readOnly: true });
     }
   }
 
@@ -844,6 +857,7 @@ export class PlayScene extends Phaser.Scene {
       const s = this.toScreen({ x: sim.vehicle.x, y: WATER_Y });
       this.puffs.explode(16, s.x, s.y);
       sfx.splash();
+      haptic('heavy');
     }
     if (sim.status !== 'running' || sim.time >= MAX_TIME) this.finish(sim);
   }
@@ -862,6 +876,7 @@ export class PlayScene extends Phaser.Scene {
       if (e.material === 'wood') this.chips.explode(14, s.x, s.y);
       else this.sparks.explode(18, s.x, s.y);
       sfx.snap(e.material);
+      haptic('heavy');
       if (save.data.settings.shake && !save.data.settings.reducedMotion) this.cameras.main.shake(180, 0.006);
       if (this.breaksSeen === 1) {
         // Slow motion on the first break: the funny moment people share.

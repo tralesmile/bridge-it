@@ -1,3 +1,4 @@
+import { onBack } from '../back';
 import Phaser from 'phaser';
 import { dateKey, liveStreak, saverFree } from '../../core/daily';
 import { ALL_LEVELS, WORLDS } from '../../core/levels';
@@ -103,6 +104,7 @@ export class WorldSelectScene extends Phaser.Scene {
     panel(this, GAME_W / 2, 395, 1000, 580);
     label(this, GAME_W / 2, 160, 'Choose a world', 48, C.ink);
     button(this, 110, 60, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    onBack(this, () => this.scene.start('menu'));
 
     // Daily Bridge: a new level every day, with a streak.
     const today = dateKey(new Date());

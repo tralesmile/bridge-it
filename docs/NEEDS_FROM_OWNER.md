@@ -15,11 +15,13 @@ Things only you can do. Each scheduled run adds to this list; nothing here block
 - [ ] Decide the public name (Bridge It! may clash with existing apps; Claude will check store search before launch).
 
 ## Before mobile launch (around milestone M7)
+- [ ] Confirm the app id `com.tralesmile.bridgeit` (used for Google Play and the App Store; it cannot change after the first upload). Say if you want another one, for example with your own domain.
+- [ ] When you can: download the debug APK from the GitHub Actions run (artifact `bridge-it-debug-apk`), install it on an Android phone, and say if it starts and plays well.
 - [ ] Google Play developer account: $25 once; verify identity and an Android phone.
 - [ ] Recruit 12 testers for the 14-day closed test (friends, family).
 - [ ] Apple Developer Program: $99 a year.
 - [ ] AdMob account, and confirm AdMob, Google Play and Apple can pay a bank account in North Macedonia.
-- [ ] Codemagic account (free) linked to the GitHub repo.
+- [ ] Codemagic account (free) linked to the GitHub repo. The build steps are already in `codemagic.yaml`. In Codemagic add: an App Store Connect API key named `bridge-it-asc` (after the Apple account), and an Android upload keystore named `bridge-it-upload` (Codemagic can make one; keep a backup, a lost key is hard to replace).
 - [ ] Ask a local accountant about registering (sole proprietor or DOO) and VAT on foreign digital sales.
 
 ## Marketing (from milestone M2)

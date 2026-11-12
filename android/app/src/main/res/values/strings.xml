@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Bridge It!</string>
+    <string name="title_activity_main">Bridge It!</string>
+    <string name="package_name">com.tralesmile.bridgeit</string>
+    <string name="custom_url_scheme">com.tralesmile.bridgeit</string>
+</resources>

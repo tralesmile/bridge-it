@@ -121,6 +121,31 @@ async function run(viewport, name) {
   await click(640, 440);
   const back = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').mode);
   check(back === 'build', `${name}: Fix it returns to building (mode ${back})`);
+  // Bridge codes use an in-game dialog, not window.prompt (portals and app web views may block it).
+  await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new Error('blocked')) } }));
+  const playBeams = () => page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').design.list.length);
+  await page.evaluate(() => { void globalThis.__bridgeit.scene.getScene('play').copyCode(); });
+  await sleep(300);
+  const code = await page.locator('#code-dialog textarea').inputValue().catch(() => '');
+  check(code.startsWith('BI1.w1-3.'), `${name}: no clipboard shows the code in a dialog (${code})`);
+  await page.click('#code-dialog button.ok');
+  await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.design.clear(); s.redraw(); });
+  await click(215, 50);
+  await page.keyboard.type('Z z ');
+  const typedMode = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').mode);
+  check(typedMode === 'build', `${name}: Space typed in the code box does not start the attempt (${typedMode})`);
+  await page.locator('#code-dialog textarea').fill(code);
+  await page.screenshot({ path: `${OUT}/${name}-6b-paste-code.png` });
+  await page.keyboard.press('Enter');
+  await sleep(300);
+  const pasted = await playBeams();
+  const dialogGone = (await page.locator('#code-dialog').count()) === 0;
+  check(pasted === 2 && dialogGone, `${name}: Paste code loads the bridge (${pasted} beams, dialog closed ${dialogGone})`);
+  await click(215, 50);
+  await page.locator('#code-dialog textarea').fill('BI1.nope');
+  await page.click('#code-dialog button.ok');
+  await sleep(300);
+  check((await playBeams()) === 2, `${name}: a bad code keeps the bridge`);
   // Level 9 has an uneven cliff and a wide gap: look at it with the hint on.
   await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w1-9' }));
   await sleep(600);
@@ -297,6 +322,17 @@ async function run(viewport, name) {
   check(statTexts.includes('Attempts (GO)') && statTexts.includes(String(attempts)) && !statTexts.some((t) => /NaN|undefined/.test(t)),
     `${name}: stats screen lists ${attempts} attempts`);
   await page.screenshot({ path: `${OUT}/${name}-9u-stats.png` });
+  // Escape (and the Android back button) goes back one step: windows close first.
+  await page.keyboard.press('Escape'); await sleep(300);
+  check(await active('menu'), `${name}: Escape on the stats screen goes back to the menu`);
+  await click(1180, 60);
+  await page.keyboard.press('Escape'); await sleep(300);
+  await click(640, 430);
+  check(await active('worlds'), `${name}: Escape closes the settings window`);
+  await page.evaluate(() => globalThis.__bridgeit.scene.getScene('worlds').scene.start('play', { levelId: 'w1-2' }));
+  await sleep(500);
+  await page.keyboard.press('Escape'); await sleep(400);
+  check(await active('levels'), `${name}: Escape in a level goes back to level select`);
   await page.close();
 }
 

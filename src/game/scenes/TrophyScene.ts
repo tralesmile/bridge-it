@@ -1,3 +1,4 @@
+import { onBack } from '../back';
 import Phaser from 'phaser';
 import { ACHIEVEMENTS } from '../../core/achievements';
 import { ALL_LEVELS } from '../../core/levels';
@@ -21,6 +22,7 @@ export class TrophyScene extends Phaser.Scene {
     addBackground(this);
     panel(this, GAME_W / 2, 400, 1240, 600);
     button(this, 110, 60, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    onBack(this, () => this.scene.start('menu'));
     label(this, GAME_W / 2, 60, 'Achievements', 52, C.white).setStroke(C.ink, 10);
     const earned = new Set(save.data.achievements);
     label(this, GAME_W - 130, 60, `🏆 ${earned.size} / ${ACHIEVEMENTS.length}`, 30, C.white).setStroke(C.ink, 8);

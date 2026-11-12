@@ -23,3 +23,22 @@ jobs:
         with:
           name: e2e-shots
           path: e2e-shots
+  android:
+    # Builds a debug APK so the Capacitor Android project stays buildable (the runner has the Android SDK).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
+      - run: npm run app:android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bridge-it-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk

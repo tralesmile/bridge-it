@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { sfx } from './audio';
+import { closeOnBack } from './back';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { save } from './save';
 import { C, FONT, hex } from './theme';
@@ -142,6 +143,7 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
     layer.add(b);
   });
   layer.add(button(scene, W / 2, H / 2 + 230, 'Close', () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
+  closeOnBack(layer, () => layer.destroy());
 }
 
 /**

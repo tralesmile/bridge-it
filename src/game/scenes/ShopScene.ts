@@ -1,3 +1,4 @@
+import { onBack } from '../back';
 import Phaser from 'phaser';
 import { SHOP_ITEMS, equipped, isOwned, type ShopItem } from '../../core/shop';
 import { sfx } from '../audio';
@@ -22,6 +23,7 @@ export class ShopScene extends Phaser.Scene {
     addBackground(this);
     panel(this, GAME_W / 2, 400, 1240, 600);
     button(this, 110, 60, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    onBack(this, () => this.scene.start('menu'));
     label(this, GAME_W / 2, 60, 'Shop', 52, C.white).setStroke(C.ink, 10);
     this.add.image(GAME_W - 190, 60, 'coin').setScale(1.1);
     label(this, GAME_W - 165, 60, `${save.data.coins}`, 34, C.white).setOrigin(0, 0.5).setStroke(C.ink, 8);

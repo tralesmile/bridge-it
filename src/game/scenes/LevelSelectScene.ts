@@ -1,3 +1,4 @@
+import { onBack } from '../back';
 import Phaser from 'phaser';
 import { ALL_LEVELS, WORLDS } from '../../core/levels';
 import { LEVELS_PER_PAGE, isUnlocked, pageCount, pageOfIndex } from '../../core/scoring';
@@ -17,6 +18,7 @@ export class LevelSelectScene extends Phaser.Scene {
     panel(this, GAME_W / 2, 395, 1000, 580);
     label(this, GAME_W / 2, 160, world.name, 48, C.ink);
     button(this, 110, 60, '◀ Back', () => this.scene.start('worlds'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    onBack(this, () => this.scene.start('worlds'));
 
     const ids = ALL_LEVELS.map((l) => l.id);
     const cols = 5;

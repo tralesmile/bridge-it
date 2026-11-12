@@ -13,14 +13,23 @@
     "typecheck": "tsc",
     "check": "tsc && vitest run && vite build && node scripts/size-check.mjs",
     "e2e": "node scripts/e2e.mjs",
-    "report": "node scripts/difficulty-report.mjs"
+    "report": "node scripts/difficulty-report.mjs",
+    "app:sync": "npm run build && cap sync && node scripts/app-check.mjs",
+    "app:android": "npm run app:sync && cd android && ./gradlew assembleDebug",
+    "app:icons": "node scripts/app-icons.mjs"
   },
   "license": "ISC",
   "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.6.0",
     "phaser": "^4.2.1",
     "planck": "^1.5.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
     "@fontsource-variable/fredoka": "^5.3.0",
     "playwright": "^1.63.0",
     "typescript": "^7.0.2",

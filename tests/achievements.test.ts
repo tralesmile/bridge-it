@@ -7,9 +7,9 @@ const empty: AchievementInput = { stars: {}, bestCost: {}, owned: [], stats: { .
 const byId = (id: string) => ACHIEVEMENTS.find((a) => a.id === id)!;
 
 describe('achievements', () => {
-  test('there are 20 with unique ids, and none is done on a new save', () => {
-    expect(ACHIEVEMENTS).toHaveLength(20);
-    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(20);
+  test('there are 24 with unique ids, and none is done on a new save', () => {
+    expect(ACHIEVEMENTS).toHaveLength(24);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(24);
     expect(newAchievements(empty, [])).toEqual([]);
     for (const a of ACHIEVEMENTS) expect(a.text.length).toBeLessThan(50);
   });
@@ -17,8 +17,8 @@ describe('achievements', () => {
   test('every achievement can be done with a full save', () => {
     const stars = Object.fromEntries(ALL_LEVELS.map((l) => [l.id, 3]));
     const bestCost = Object.fromEntries(ALL_LEVELS.map((l) => [l.id, 1]));
-    const full: AchievementInput = { stars, bestCost, owned: SHOP_ITEMS.filter((s) => s.price > 0).map((s) => s.id), stats: { attempts: 50, fails: 1, broken: 100, hints: 1 }, levels: ALL_LEVELS };
-    expect(newAchievements(full, [])).toHaveLength(20);
+    const full: AchievementInput = { stars, bestCost, owned: SHOP_ITEMS.filter((s) => s.price > 0).map((s) => s.id), stats: { attempts: 50, fails: 1, broken: 100, hints: 1 }, levels: ALL_LEVELS, held: ALL_LEVELS.slice(0, 10).map((l) => l.id), dailyBest: 7 };
+    expect(newAchievements(full, [])).toHaveLength(24);
   });
 
   test('first win, world done and perfect world', () => {
@@ -43,5 +43,17 @@ describe('achievements', () => {
     const l = ALL_LEVELS[0];
     expect(isDone(byId('cheap'), { ...empty, bestCost: { [l.id]: l.budget / 2 } })).toBe(true);
     expect(isDone(byId('cheap'), { ...empty, bestCost: { [l.id]: l.budget / 2 + 1 } })).toBe(false);
+  });
+
+  test('stress test and daily streak', () => {
+    const ids = ALL_LEVELS.slice(0, 10).map((l) => l.id);
+    expect(newAchievements({ ...empty, held: ids.slice(0, 1) }, [])).toEqual(['stress-1']);
+    expect(byId('stress-10').progress({ ...empty, held: ids.slice(0, 4) })).toEqual([4, 10]);
+    expect(isDone(byId('stress-10'), { ...empty, held: ids })).toBe(true);
+    // Unknown ids (old or removed levels) do not count.
+    expect(byId('stress-1').progress({ ...empty, held: ['nope'] })).toEqual([0, 1]);
+    expect(newAchievements({ ...empty, dailyBest: 3 }, [])).toEqual(['daily-1']);
+    expect(byId('daily-7').progress({ ...empty, dailyBest: 3 })).toEqual([3, 7]);
+    expect(isDone(byId('daily-7'), { ...empty, dailyBest: 9 })).toBe(true);
   });
 });

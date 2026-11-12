@@ -109,6 +109,8 @@ describe('save data', () => {
     expect(s.settings.sound).toBe(false);
     expect(s.settings.reducedMotion).toBe(true);
     expect(s.settings.shake).toBe(false);
+    expect(s.held).toEqual([]);
+    expect(sanitize({ held: ['w1-1', 'w1-1', 'nope', 7] }).held).toEqual(['w1-1']);
   });
 
   test('keeps only known shop items and falls back for bad equipped ids', () => {

@@ -3,7 +3,7 @@ import { ALL_LEVELS, WORLDS } from '../../core/levels';
 import { LEVELS_PER_PAGE, isUnlocked, pageCount, pageOfIndex } from '../../core/scoring';
 import { addBackground } from '../background';
 import { save } from '../save';
-import { C, GAME_W } from '../theme';
+import { C, GAME_W, hex } from '../theme';
 import { button, label, panel } from '../ui';
 
 export class LevelSelectScene extends Phaser.Scene {
@@ -52,6 +52,13 @@ export class LevelSelectScene extends Phaser.Scene {
       label(this, x, y + 62, level.name, 18, C.ink);
       const stars = save.data.stars[level.id] ?? 0;
       for (let s = 0; s < 3; s++) this.add.image(x - 30 + s * 30, y - 60, s < stars ? 'star' : 'star-empty').setScale(0.4);
+      // Passed the stress test: a small badge on the corner of the button.
+      if (save.data.held.includes(level.id)) {
+        const badge = this.add.graphics();
+        badge.fillStyle(hex(C.gold), 1).fillCircle(x + 58, y - 36, 18);
+        badge.lineStyle(3, hex(C.ink), 0.6).strokeCircle(x + 58, y - 36, 18);
+        label(this, x + 58, y - 35, '💪', 18, C.ink);
+      }
     });
   }
 }

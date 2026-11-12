@@ -69,13 +69,14 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Coin shop, cosmetic only (`src/core/shop.ts`, `ShopScene`): 8 paint jobs for every vehicle and 5 road colours, fixed prices in coins (coins come only from new stars; all items cost 1160 of 1800 possible coins). Shop button and coin count on the menu
 - [ ] Shop: more coin uses (new vehicles such as an ice-cream van; wood and steel skins)
 - [x] Achievements: 20 (`src/core/achievements.ts`, progress from the save; play counters in `save.stats`), gold banner when one is earned (one banner when more than 2 at once), Trophies screen with progress bars
-- [ ] Achievements for later worlds (World 5) and for the daily bridge streak
+- [x] Achievements for the daily bridge (Daily Builder, Week of Bridges: best streak 7) and the stress test (Built Tough, Over-Engineered: 10 levels held); 24 in all, Trophies grid is 5 x 5
+- [ ] Achievements for World 5 (when it exists)
 - [x] Daily Bridge (`src/core/daily.ts`): a level a day from the date (local time), picked from 13 tested variants with a random name; streak counter, one free streak-saver per week (keeps the streak after one missed day), 20 coins for the first win of the day. Button on world select; daily wins do not count as world stars
 - [ ] Daily Bridge: more variants (drawbridge, low dock, pirate rocks) and a calendar of past days
 - [x] "Cheaper than about X% of players" on the win panel (`cheaperThanPercent` in `src/core/stats.ts`: a local guess from the level budgets; 3-star budget = 85%, 2-star = 50%, full budget = 5%)
 - [ ] "Cheaper than X% of players" from real online data (needs a backend; later)
 - [x] Stress Test mode (`src/core/stress.ts`): a "Stress test" button on the win panel runs the same bridge with the next heavier vehicle (car to truck, truck to train). Nothing is saved; edits in the test do not change the saved bridge
-- [ ] Stress Test: an achievement for holding the heavier vehicle on 10 levels, and a "held" mark on the level select
+- [x] Stress Test: `save.held` keeps levels whose stress test held (the only save write in a stress test); gold 💪 badge on the level select button; 2 achievements
 - [x] Stats screen (`statRows` in `src/core/stats.ts`, `StatsScene`, Stats button on the menu): levels, stars, worlds, attempts, wins, win rate, fails, broken beams, hints, cost, coins, achievements, daily streak
 
 ## M5 Creativity

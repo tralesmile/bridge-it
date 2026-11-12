@@ -98,7 +98,11 @@ async function run(viewport, name) {
   await sleep(1000);
   await page.screenshot({ path: `${OUT}/${name}-5b-stress-result.png` });
   const after = await page.evaluate(() => localStorage.getItem('bridgeit.save'));
-  check(before === after, `${name}: a stress test changes nothing in the save`);
+  // Only the "held" mark may change (when the truck crossed).
+  const strip = (t) => { const o = JSON.parse(t || '{}'); delete o.held; delete o.achievements; return JSON.stringify(o); };
+  check(strip(before) === strip(after), `${name}: a stress test changes nothing in the save but the held mark`);
+  const held = await page.evaluate(() => { const p = globalThis.__bridgeit.scene.getScene('play'); return { held: JSON.parse(localStorage.getItem('bridgeit.save')).held, ok: p.lastStressWon }; });
+  check(held.held.includes('w1-1') === held.ok, `${name}: held mark saved only when the stress test held (${JSON.stringify(held)})`);
   await click(780, 450);
   const backFromStress = await page.evaluate(() => { const p = globalThis.__bridgeit.scene.getScene('play'); return `${p.stress} ${p.level.vehicle} ${p.mode}`; });
   check(backFromStress === 'false car build', `${name}: Back to level returns to the normal level (${backFromStress})`);

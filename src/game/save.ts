@@ -21,10 +21,12 @@ export interface SaveData {
   achievements: string[];
   stats: PlayStats;
   daily: DailyState;
+  /** Level ids whose stress test held (the heavier vehicle crossed). */
+  held: string[];
   settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY }, held: [], settings: { sound: true, music: true, reducedMotion: false, shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {
@@ -86,6 +88,8 @@ export function sanitize(raw: unknown): SaveData {
       saverWeek: okNum(d.saverWeek) ? Math.floor(d.saverWeek) : null,
     };
   }
+  const levelIds = new Set(ALL_LEVELS.map((l) => l.id));
+  if (Array.isArray(r.held)) base.held = [...new Set(r.held.filter((id): id is string => typeof id === 'string' && levelIds.has(id)))];
   if (r.designs && typeof r.designs === 'object') {
     for (const [k, v] of Object.entries(r.designs)) {
       if (Array.isArray(v)) {
@@ -161,6 +165,13 @@ class SaveStore {
     this.persist();
   }
 
+  /** Marks a level whose stress test held. Nothing else in the save changes. */
+  recordHeld(levelId: string): void {
+    if (this.data.held.includes(levelId)) return;
+    this.data.held.push(levelId);
+    this.persist();
+  }
+
   recordHint(): void {
     this.data.stats.hints += 1;
     this.persist();
@@ -169,7 +180,10 @@ class SaveStore {
   /** Saves and returns achievements earned since the last check. */
   checkAchievements(): string[] {
     const d = this.data;
-    const fresh = newAchievements({ stars: d.stars, bestCost: d.bestCost, owned: d.owned, stats: d.stats, levels: ALL_LEVELS }, d.achievements);
+    const fresh = newAchievements(
+      { stars: d.stars, bestCost: d.bestCost, owned: d.owned, stats: d.stats, levels: ALL_LEVELS, held: d.held, dailyBest: d.daily.best },
+      d.achievements,
+    );
     if (fresh.length) {
       d.achievements = [...d.achievements, ...fresh];
       this.persist();

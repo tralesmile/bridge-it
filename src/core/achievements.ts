@@ -1,5 +1,5 @@
 /**
- * Achievements: 20 goals checked from the save data. Pure, so it can be unit-tested.
+ * Achievements: 24 goals checked from the save data. Pure, so it can be unit-tested.
  * An achievement stays unlocked once earned (the save keeps the list).
  */
 import { SHOP_ITEMS } from './shop';
@@ -22,6 +22,10 @@ export interface AchievementInput {
   owned: string[];
   stats: PlayStats;
   levels: LevelDef[];
+  /** Level ids whose stress test held (optional for old callers). */
+  held?: string[];
+  /** Best daily bridge streak. */
+  dailyBest?: number;
 }
 
 export interface Achievement {
@@ -62,6 +66,7 @@ function perfectWorld(world: number, name: string): Achievement {
 
 const WORLD_NAMES: [number, string][] = [[1, 'Farm Valley'], [2, 'Canyon Rails'], [3, 'Pirate Bay'], [4, 'River Town']];
 const paints = SHOP_ITEMS.filter((s) => s.kind === 'paint' && s.price > 0).map((s) => s.id);
+const heldCount = (i: AchievementInput) => count(i.levels, (l) => (i.held ?? []).includes(l.id));
 const wonWith = (i: AchievementInput, vehicle: string) => count(i.levels, (l) => l.vehicle === vehicle && (i.stars[l.id] ?? 0) > 0);
 
 export const ACHIEVEMENTS: Achievement[] = [
@@ -78,6 +83,10 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'attempts-50', name: 'Never Give Up', text: 'Press GO 50 times.', progress: (i) => [Math.min(50, i.stats.attempts), 50] },
   { id: 'broken-100', name: 'Demolition Crew', text: 'Break 100 beams.', progress: (i) => [Math.min(100, i.stats.broken), 100] },
   { id: 'shop', name: 'New Look', text: 'Buy something in the shop.', progress: (i) => [Math.min(1, i.owned.length), 1] },
+  { id: 'stress-1', name: 'Built Tough', text: 'Pass a stress test.', progress: (i) => [Math.min(1, heldCount(i)), 1] },
+  { id: 'stress-10', name: 'Over-Engineered', text: 'Pass the stress test on 10 levels.', progress: (i) => [Math.min(10, heldCount(i)), 10] },
+  { id: 'daily-1', name: 'Daily Builder', text: 'Win a Daily Bridge.', progress: (i) => [Math.min(1, i.dailyBest ?? 0), 1] },
+  { id: 'daily-7', name: 'Week of Bridges', text: 'Reach a 7 day Daily Bridge streak.', progress: (i) => [Math.min(7, i.dailyBest ?? 0), 7] },
   { id: 'all-paints', name: 'Paint Box', text: 'Own every paint.', progress: (i) => [count(paints, (p) => i.owned.includes(p)), paints.length] },
 ];
 

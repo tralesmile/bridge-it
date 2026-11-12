@@ -80,6 +80,8 @@ export class PlayScene extends Phaser.Scene {
   lastCheaper: number | null = null;
   /** Stress Test run: nothing is saved and no stars, coins or fails are counted. */
   stress = false;
+  /** Result of the last stress test (read by the browser test). */
+  lastStressWon = false;
 
   private dragFrom: Point | null = null;
   private dragTo: Point | null = null;
@@ -876,6 +878,12 @@ export class PlayScene extends Phaser.Scene {
     if (this.stress) {
       if (won) sfx.win(1);
       else sfx.lose();
+      this.lastStressWon = won;
+      // Only the "held" mark is saved from a stress test (for the level select and achievements).
+      if (won) {
+        save.recordHeld(this.level.id);
+        announceAchievements(this, 1400);
+      }
       this.time.delayedCall(won ? 350 : 700, () => this.showStressResult(won, sim.brokenCount));
       return;
     }

@@ -13,7 +13,7 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 - 8 unit tests with a fake plugin: EU consent order, refused consent, iOS-only tracking prompt, watched / closed / failed rewarded ads, no plugin, no fill, no listener left behind.
 
 **Verified**
-- `npm run check` green (545 tests, 8 new for AdMob), `npm run e2e` exit 0 with no FAIL (85 checks), `npm run flavours` PASS (no AdMob code in web or portal builds), `node scripts/app-check.mjs` PASS after `build:app` and `cap sync`. Probe screenshot of Settings with Privacy choices checked, and the button calls the form. Not verified: a real phone or the CI APK build with the plugin (check the `android` job after this push).
+- `npm run check` green (545 tests, 8 new for AdMob), `npm run e2e` exit 0 with no FAIL (85 checks), `npm run flavours` PASS (no AdMob code in web or portal builds), `node scripts/app-check.mjs` PASS after `build:app` and `cap sync`. Probe screenshot of Settings with Privacy choices checked, and the button calls the form. The debug APK with the AdMob plugin built on GitHub Actions (CI run 49, job `android`, 2 minutes). Not verified: a real phone.
 
 **Lessons**
 - Check a new plugin version's dependencies before installing (`npm view <pkg>@<ver> --json`, look at `dependencies`). `@capacitor-community/admob` 8.3.0 (2 weeks old) added a brand-new runtime dependency `@webview-native-ui/engine` from one maintainer; 8.2.1 does not have it, so we pinned 8.2.1 (`--save-exact`).

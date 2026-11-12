@@ -110,6 +110,7 @@ export class WorldSelectScene extends Phaser.Scene {
     button(this, GAME_W - 150, 60, done ? 'Daily ✓' : 'Daily Bridge', () => this.scene.start('play', { levelId: `daily-${today}` }), {
       width: 240, height: 56, fontSize: 24, color: done ? C.good : C.gold, shade: done ? C.goodDark : '#d99a14', textColor: done ? C.white : C.ink,
     });
+    button(this, GAME_W - 312, 60, '📅', () => this.scene.start('daily'), { width: 64, height: 56, fontSize: 26, color: C.gold, shade: '#d99a14', textColor: C.ink });
     const streak = liveStreak(save.data.daily, today);
     const saver = saverFree(save.data.daily, today) ? ' · saver ready' : '';
     label(this, GAME_W - 150, 112, streak > 0 ? `🔥 ${streak} day streak${saver}` : 'Win it every day!', 18, C.ink);

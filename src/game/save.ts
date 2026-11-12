@@ -1,5 +1,5 @@
 import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type PlayStats } from '../core/achievements';
-import { DAILY_COINS, EMPTY_DAILY, isDailyId, recordDailyWin, type DailyState } from '../core/daily';
+import { DAILY_COINS, EMPTY_DAILY, canPlayDay, dateKey, isDailyId, recordCalendarWin, type DailyState } from '../core/daily';
 import { ALL_LEVELS } from '../core/levels';
 import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, type ShopKind, type ShopState } from '../core/shop';
 import type { Beam } from '../core/types';
@@ -26,7 +26,7 @@ export interface SaveData {
   settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY }, held: [], settings: { sound: true, music: true, reducedMotion: false, shake: true } });
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], settings: { sound: true, music: true, reducedMotion: false, shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {
@@ -86,6 +86,7 @@ export function sanitize(raw: unknown): SaveData {
       streak: okNum(d.streak) ? Math.floor(d.streak) : 0,
       best: okNum(d.best) ? Math.floor(d.best) : 0,
       saverWeek: okNum(d.saverWeek) ? Math.floor(d.saverWeek) : null,
+      played: Array.isArray(d.played) ? [...new Set(d.played.filter(okKey))].sort().slice(-31) : [],
     };
   }
   const levelIds = new Set(ALL_LEVELS.map((l) => l.id));
@@ -214,14 +215,18 @@ class SaveStore {
     this.applyShop(equip(this.shop, id));
   }
 
-  /** Records a daily bridge win for the date key. Coins only for the first win of the day. */
-  recordDaily(today: string): { coins: number; streak: number; usedSaver: boolean } {
-    const r = recordDailyWin(this.data.daily, today);
+  /**
+   * Records a daily bridge win for the date key. Only today counts for the streak and coins
+   * (first win of the day); a past day from the calendar just gets its tick.
+   */
+  recordDaily(key: string, today = dateKey(new Date())): { coins: number; streak: number; usedSaver: boolean; past: boolean } {
+    if (key !== today && !canPlayDay(key, today)) return { coins: 0, streak: this.data.daily.streak, usedSaver: false, past: true };
+    const r = recordCalendarWin(this.data.daily, key, today);
     this.data.daily = r.state;
     const coins = r.firstToday ? DAILY_COINS : 0;
     this.data.coins += coins;
     this.persist();
-    return { coins, streak: r.state.streak, usedSaver: r.usedSaver };
+    return { coins, streak: r.state.streak, usedSaver: r.usedSaver, past: r.past };
   }
 
   saveDesign(levelId: string, beams: Beam[]): void {

@@ -112,7 +112,7 @@ const CANYON: LevelSpec[] = [
 ];
 
 /** World 3 Pirate Bay: slopes down to low docks, masts for ropes, deep rocks and heavy trucks. */
-const beam = (a: string, b: string, material: MaterialId): Beam => ({ a, b, material });
+export const beam = (a: string, b: string, material: MaterialId): Beam => ({ a, b, material });
 /** Three ropes from a mast top at (x, h) down to the deck at x-2, x and x+2. */
 export const fanRopes = (x: number, h: number): Beam[] => [x - 2, x, x + 2].map((d) => beam(`${x},${h}`, `${d},0`, 'rope'));
 
@@ -143,7 +143,7 @@ const PIRATE: LevelSpec[] = [
  * cliff and a piston swings it down; its road end locks onto the far side (or a pier).
  */
 /** A 4 m drawbridge leaf standing on the hinge at (x, 0), with its truss on the land side (dir 1 = on the left cliff, swings right). */
-const leaf = (x: number, dir: 1 | -1, brace: MaterialId = 'wood'): Beam[] => {
+export const leaf = (x: number, dir: 1 | -1, brace: MaterialId = 'wood'): Beam[] => {
   const p = (dx: number, y: number): string => `${x + dir * dx},${y}`;
   return [
     beam(p(0, 0), p(0, 2), 'road'), beam(p(0, 2), p(0, 4), 'road'),

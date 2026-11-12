@@ -891,7 +891,7 @@ export class PlayScene extends Phaser.Scene {
     if (won) {
       const stars = starsFor(this.level, cost);
       let coins: number;
-      let daily: { coins: number; streak: number; usedSaver: boolean } | undefined;
+      let daily: { coins: number; streak: number; usedSaver: boolean; past: boolean } | undefined;
       if (isDailyId(this.level.id)) {
         // Daily wins go to the streak, not to world stars.
         daily = save.recordDaily(this.level.id.slice(DAILY_PREFIX.length));
@@ -927,7 +927,7 @@ export class PlayScene extends Phaser.Scene {
     else this.scene.start('levels', { world: this.level.world });
   }
 
-  private showWin(stars: number, cost: number, coins: number, daily?: { streak: number; usedSaver: boolean }): void {
+  private showWin(stars: number, cost: number, coins: number, daily?: { streak: number; usedSaver: boolean; past: boolean }): void {
     const layer = this.resultPanel(520);
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 170, 'Made it!', 56, C.ink));
     for (let i = 0; i < 3; i++) {
@@ -946,7 +946,7 @@ export class PlayScene extends Phaser.Scene {
     }
     this.confettiBurst(stars);
     const next = this.level.starBudgets[stars === 1 ? 0 : 1];
-    const streak = daily ? `🔥 Daily streak: ${daily.streak} day${daily.streak === 1 ? '' : 's'}${daily.usedSaver ? ' (saver used)' : ''}` : '';
+    const streak = daily?.past ? 'An old day: just for fun (no streak, no coins).' : daily ? `🔥 Daily streak: ${daily.streak} day${daily.streak === 1 ? '' : 's'}${daily.usedSaver ? ' (saver used)' : ''}` : '';
     const sub = daily ? streak : stars < 3 ? `Cost $${cost} · next star at $${next}` : `Cost $${cost} · perfect!`;
     layer.add(label(this, GAME_W / 2, GAME_H / 2 + 28, sub, 24, C.greyDark));
     if (!daily) {

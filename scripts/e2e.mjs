@@ -223,6 +223,34 @@ async function run(viewport, name) {
   check(daily.daily?.streak === 1 && daily.coins === coinsBefore + 20 && !Object.keys(daily.stars || {}).some((k) => k.startsWith('daily-')),
     `${name}: daily win saves the streak and 20 coins, not world stars (${JSON.stringify(daily.daily)}, coins ${coinsBefore} -> ${daily.coins})`);
 
+  // Daily calendar: 📅 on world select; an old day can be played but gives no coins and keeps the streak.
+  await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').scene.start('worlds'));
+  await sleep(500);
+  await click(968, 60);
+  check(await active('daily'), `${name}: 📅 button opens the daily calendar`);
+  await sleep(300);
+  await page.screenshot({ path: `${OUT}/${name}-9d-calendar.png` });
+  await click(196, 245);
+  const pastId = await page.evaluate(() => globalThis.__bridgeit.scene.isActive('play') && globalThis.__bridgeit.scene.getScene('play').level.id);
+  check(typeof pastId === 'string' && pastId !== dailyId && pastId.startsWith('daily-'), `${name}: a calendar day opens its own level (${pastId})`);
+  await page.evaluate(() => {
+    const p = globalThis.__bridgeit.scene.getScene('play');
+    const pt = (k) => { const [x, y] = k.split(',').map(Number); return { x, y }; };
+    for (const b of p.level.solution) p.design.add(pt(b.a), pt(b.b), b.material);
+    p.redraw();
+  });
+  await click(1160, 662);
+  await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').mode === 'result', null, { timeout: 30000 }).catch(() => {});
+  await sleep(1500);
+  await page.screenshot({ path: `${OUT}/${name}-9d-past-win.png` });
+  const past = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}'));
+  check(past.coins === daily.coins && past.daily.streak === 1 && past.daily.last === daily.daily.last && past.daily.played.includes(pastId.slice(6)),
+    `${name}: an old day gets a tick, no coins, same streak (${JSON.stringify(past.daily)}, coins ${past.coins})`);
+  // The level select shows the stress test badge on level 1 (held earlier).
+  await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').scene.start('levels', { world: 1 }));
+  await sleep(500);
+  await page.screenshot({ path: `${OUT}/${name}-9d-levels-held.png` });
+
   // Shop: with 100 coins, buy the Sky paint (second card), check the save, then see it in a level.
   await page.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}');

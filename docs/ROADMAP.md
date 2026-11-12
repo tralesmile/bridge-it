@@ -72,7 +72,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Achievements for the daily bridge (Daily Builder, Week of Bridges: best streak 7) and the stress test (Built Tough, Over-Engineered: 10 levels held); 24 in all, Trophies grid is 5 x 5
 - [ ] Achievements for World 5 (when it exists)
 - [x] Daily Bridge (`src/core/daily.ts`): a level a day from the date (local time), picked from 13 tested variants with a random name; streak counter, one free streak-saver per week (keeps the streak after one missed day), 20 coins for the first win of the day. Button on world select; daily wins do not count as world stars
-- [ ] Daily Bridge: more variants (drawbridge, low dock, pirate rocks) and a calendar of past days
+- [x] Daily Bridge: 20 variants (added low dock, plank rock, tide pools, three drawbridges) and a calendar (📅 on world select: today and the 13 days before; old days give a tick only, no streak and no coins)
 - [x] "Cheaper than about X% of players" on the win panel (`cheaperThanPercent` in `src/core/stats.ts`: a local guess from the level budgets; 3-star budget = 85%, 2-star = 50%, full budget = 5%)
 - [ ] "Cheaper than X% of players" from real online data (needs a backend; later)
 - [x] Stress Test mode (`src/core/stress.ts`): a "Stress test" button on the win panel runs the same bridge with the next heavier vehicle (car to truck, truck to train). Nothing is saved; edits in the test do not change the saved bridge

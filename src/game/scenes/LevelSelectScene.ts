@@ -55,9 +55,9 @@ export class LevelSelectScene extends Phaser.Scene {
       // Passed the stress test: a small badge on the corner of the button.
       if (save.data.held.includes(level.id)) {
         const badge = this.add.graphics();
-        badge.fillStyle(hex(C.gold), 1).fillCircle(x + 58, y - 36, 18);
-        badge.lineStyle(3, hex(C.ink), 0.6).strokeCircle(x + 58, y - 36, 18);
-        label(this, x + 58, y - 35, '💪', 18, C.ink);
+        badge.fillStyle(hex(C.blue), 1).fillCircle(x + 58, y - 36, 19);
+        badge.lineStyle(3, 0xffffff, 1).strokeCircle(x + 58, y - 36, 19);
+        label(this, x + 58, y - 35, '💪', 20, C.ink);
       }
     });
   }

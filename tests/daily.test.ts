@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { BridgeDesign } from '../src/core/bridge';
-import { DAILY_VARIANTS, EMPTY_DAILY, dailyLevel, dateKey, dayNumber, findLevel, liveStreak, recordDailyWin, saverFree, weekOf } from '../src/core/daily';
+import { CALENDAR_DAYS, DAILY_VARIANTS, EMPTY_DAILY, calendarDays, canPlayDay, keyOfDay, recordCalendarWin, dailyLevel, dateKey, dayNumber, findLevel, liveStreak, recordDailyWin, saverFree, weekOf } from '../src/core/daily';
 import { build } from '../src/core/levels';
 import { Simulation } from '../src/core/simulation';
 
@@ -92,5 +92,38 @@ describe('daily streak', () => {
     expect(liveStreak(s, '2026-11-11')).toBe(1); // saver still free
     expect(liveStreak(s, '2026-11-12')).toBe(0);
     expect(liveStreak(EMPTY_DAILY, '2026-11-12')).toBe(0);
+  });
+});
+
+describe('daily calendar', () => {
+  test('calendar days end today, oldest first, across a month end', () => {
+    const days = calendarDays('2026-12-03');
+    expect(days).toHaveLength(CALENDAR_DAYS);
+    expect(days[CALENDAR_DAYS - 1]).toBe('2026-12-03');
+    expect(days[CALENDAR_DAYS - 4]).toBe('2026-11-30');
+    expect(days[0]).toBe('2026-11-20');
+    for (let d = 0; d < 400; d += 37) expect(dayNumber(keyOfDay(20000 + d))).toBe(20000 + d);
+  });
+
+  test('only today and the last days can be played, not the future', () => {
+    expect(canPlayDay('2026-11-12', '2026-11-12')).toBe(true);
+    expect(canPlayDay('2026-11-01', '2026-11-12')).toBe(true);
+    expect(canPlayDay('2026-10-29', '2026-11-12')).toBe(false);
+    expect(canPlayDay('2026-11-13', '2026-11-12')).toBe(false);
+  });
+
+  test('a past day gets a tick but no streak and no coins', () => {
+    const today = recordCalendarWin(EMPTY_DAILY, '2026-11-12', '2026-11-12');
+    expect(today.firstToday).toBe(true);
+    expect(today.state.streak).toBe(1);
+    const past = recordCalendarWin(today.state, '2026-11-05', '2026-11-12');
+    expect(past.past).toBe(true);
+    expect(past.firstToday).toBe(false);
+    expect(past.state.streak).toBe(1);
+    expect(past.state.last).toBe('2026-11-12');
+    expect(past.state.played).toEqual(['2026-11-05', '2026-11-12']);
+    // Old ticks drop out of the list once they leave the calendar.
+    const later = recordCalendarWin(past.state, '2026-11-27', '2026-11-27');
+    expect(later.state.played).toEqual(['2026-11-27']);
   });
 });

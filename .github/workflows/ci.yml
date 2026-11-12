@@ -14,6 +14,8 @@ jobs:
           cache: npm
       - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
       - run: npm run check
+      # Portal builds: each loads only its own SDK; the plain build loads nothing external.
+      - run: npm run flavours
       # The browser test uses the Google Chrome that comes with the runner.
       - run: npm run e2e
       - uses: actions/upload-artifact@v4

@@ -16,7 +16,8 @@ You are the whole team (producer, designer, artist, engineer, QA, marketing) bui
 - Every level must have a stored `solution` that wins, and an empty bridge must lose (see `tests/levels.test.ts`).
 - Physics changes must keep every level test green; retune levels rather than delete tests.
 - Art is drawn in code (`src/game/art.ts`); no downloaded or AI-generated images, no paid assets.
-- First load stays under 8 MB (Poki limit). No external network requests from the game.
+- First load stays under 8 MB (Poki limit). No external network requests from the game; the only exception is the portal SDK script in that portal's build (`npm run flavours` checks this).
+- Ads go only through `src/game/platform.ts`; timing rules live in `src/core/adPolicy.ts` (no break in the first 5 minutes).
 - Follow EU-safe monetization: no loot boxes, no fake timers, real-money prices, no ads in the first 5 minutes or during an attempt.
 - Write plain, short user-facing text (players and the owner may not be native English speakers).
 
@@ -27,6 +28,7 @@ You are the whole team (producer, designer, artist, engineer, QA, marketing) bui
 ## Commands
 - `npm run dev` — local dev server
 - `npm run check` — type check, unit tests, production build
+- `npm run flavours` — build the CrazyGames and Poki versions (`dist-crazygames`, `dist-poki`) and check their SDK scripts
 - `npm run e2e` — browser test with Google Chrome (needs a build first; `npm run check` builds)
-  It takes about 4 minutes: run it in the background as `npm run e2e > <scratchpad>/e2e.txt 2>&1; echo exit $?`, then grep the file for FAIL (a pipe like `npm run e2e | grep` hides the exit code).
+  It takes about 12 minutes now: run it in the background as `npm run e2e > <scratchpad>/e2e.txt 2>&1; echo exit $?`, then grep the file for FAIL (a pipe like `npm run e2e | grep` hides the exit code).
 - Quick look at one new screen: a small Playwright script in the git-excluded `probe/` folder (vite preview on its own port, seed localStorage, click, screenshot) before writing the e2e check.

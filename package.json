@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:crazygames": "tsc && vite build --mode crazygames && node scripts/size-check.mjs dist-crazygames",
+    "build:poki": "tsc && vite build --mode poki && node scripts/size-check.mjs dist-poki",
+    "flavours": "npm run build:crazygames && npm run build:poki && node scripts/flavour-check.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc",

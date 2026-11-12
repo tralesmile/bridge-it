@@ -9,7 +9,8 @@ Things only you can do. Each scheduled run adds to this list; nothing here block
 - [x] CI on GitHub Actions checked: the last 5 runs are green (2026-11-09).
 
 ## Before web launch (around milestone M6)
-- [ ] Create a CrazyGames developer account (free).
+- [ ] Create a CrazyGames developer account (free). Then upload the folder made by `npm run build:crazygames` (`dist-crazygames`) to their preview tool and tell Claude what it reports.
+- [ ] On Poki for Developers, open the Poki Inspector with the `npm run build:poki` folder (`dist-poki`) and tell Claude what it reports.
 - [ ] Submit to Poki for Developers (free), or ask Claude for the pitch text.
 - [ ] Decide the public name (Bridge It! may clash with existing apps; Claude will check store search before launch).
 

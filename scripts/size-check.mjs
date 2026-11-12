@@ -1,4 +1,4 @@
-// Fails if the production build (dist/) is over the Poki limit of 8 MB.
+// Fails if a production build (dist/, or the folder given) is over the Poki limit of 8 MB.
 import { readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -12,9 +12,10 @@ function total(dir) {
   }
   return sum;
 }
-const size = total('dist');
+const dir = process.argv[2] ?? 'dist';
+const size = total(dir);
 const mb = (size / 1024 / 1024).toFixed(2);
-console.log(`dist size: ${mb} MB (limit 8 MB)`);
+console.log(`${dir} size: ${mb} MB (limit 8 MB)`);
 if (size > LIMIT) {
   console.error('FAIL: build is over 8 MB');
   process.exit(1);

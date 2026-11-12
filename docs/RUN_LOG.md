@@ -2,6 +2,25 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-12 — Run 35
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Stress Test: `save.held` lists levels whose stress test held (the only thing a stress test saves). Blue 💪 badge on the level select button. Achievements Built Tough (1 level) and Over-Engineered (10 levels).
+- Daily achievements: Daily Builder (win one) and Week of Bridges (best streak 7). 24 achievements; Trophies grid is now 5 x 5 with smaller cards.
+- Daily Bridge: 7 more variants (low dock, plank rock, tide pools, single leaf, twin leaves, lock gate), 20 in all, each tested. Calendar screen (📅 next to Daily Bridge on world select): today and the 13 days before. An old day can be played for a tick (`daily.played`), but gives no coins and does not touch the streak (`recordCalendarWin`).
+- M6 build flavours: `npm run build:crazygames` and `build:poki` make `dist-crazygames` and `dist-poki`. `vite.config.ts` adds only that portal's SDK script and sets `__PLATFORM__`; `createPlatform` picks the adapter. Adapters for CrazyGames SDK v3 and Poki SDK v2 (loading, gameplay start/stop without repeats, break and rewarded ads, sound paused during ads, no crash without the SDK). Our break rule in `src/core/adPolicy.ts`: none in the first 5 minutes, then at most one per 3 minutes. `npm run flavours` checks the scripts and runs in CI.
+- e2e: held mark saved only when the stress test held; calendar opens, an old day wins with no coins and the same streak; level select screenshot with the badge.
+
+**Verified**
+- `npm run check` green (534 tests), `npm run e2e` exit 0 with no FAIL, `npm run flavours` PASS; screenshots checked (trophies 5 x 5, calendar on phone, old-day win panel, held badge).
+
+**Lessons**
+- A gold emoji on a gold circle disappears; give small emoji badges a contrasting (blue) disc with a white ring. A one-off probe screenshot (`probe/held.mjs`) checks this in 10 seconds.
+- `recordDailyWin` with a date before `last` would have reset the streak; any "play an old day" feature must route past days around the streak code. Test it in core first.
+- TypeScript here has `noImplicitOverride`: subclass methods that replace a base method need `override`.
+- A run can finish its e2e while you write the next feature, but never run `npm run check` (which rebuilds `dist`) while an e2e is using `dist`; build flavours into their own folders instead.
+- Next: World 5 mechanic (faster vehicle), shop items (ice-cream van, wood/steel skins), M7 Capacitor projects.
+
 ## 2026-11-12 — Run 34
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

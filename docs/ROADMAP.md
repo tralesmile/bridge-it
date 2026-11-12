@@ -86,9 +86,13 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Share codes UI: "Copy bridge code" on the win panel, "Paste code" button on the play scene (uses window.prompt; not covered by e2e)
 
 ## M6 Web portals
-- [ ] Build flavours: web, crazygames, poki (each picks its platform adapter)
-- [ ] CrazyGames SDK v3 adapter (ads, gameplay events, data)
-- [ ] Poki SDK adapter
+- [x] Build flavours: `npm run build` (web, no external requests), `build:crazygames` (dist-crazygames), `build:poki` (dist-poki). `vite.config.ts` adds only that portal's SDK script and sets `__PLATFORM__`; `npm run flavours` builds both and checks the scripts (in CI)
+- [x] Ad timing rule (`src/core/adPolicy.ts`): no break in the first 5 minutes, at least 3 minutes between breaks, breaks only from the win panel; sound pauses during ads
+- [x] CrazyGames SDK v3 adapter: init, loading start/stop, gameplay start/stop (never twice), midgame and rewarded ads; a missing SDK (ad blocker) never breaks the game. Tested with a fake SDK
+- [x] Poki SDK adapter: init, gameLoadingFinished, gameplay start/stop, commercialBreak, rewardedBreak. Tested with a fake SDK
+- [ ] Test both portal builds in the real portal tools (CrazyGames preview, Poki Inspector); needs the owner's accounts
+- [ ] CrazyGames data module for the save (cloud save when logged in) and Poki share link for bridge codes
+- [ ] Portal builds: hide the in-game Paste code prompt if a portal blocks window.prompt; check the rotate card inside portal iframes
 - [x] Size check in CI (`scripts/size-check.mjs`, part of `npm run check`; dist is 1.6 MB)
 - [x] Loading screen (HTML bar shown while the script downloads, fades out when the menu starts)
 

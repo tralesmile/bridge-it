@@ -1,6 +1,7 @@
 // Checks the build flavours: the plain build loads no external script, and each portal build
-// loads only its own SDK, and none of them carries the AdMob code (app build only). Run after `npm run build`, `npm run build:crazygames` and `npm run build:poki`.
+// loads only its own SDK, and none of them carries the AdMob or RevenueCat code (app build only). Run after `npm run build`, `npm run build:crazygames` and `npm run build:poki`.
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
+const REVENUECAT_MARK = 'configure Purchases before';
 
 const EXPECT = {
   dist: [],
@@ -24,5 +25,9 @@ for (const [dir, want] of Object.entries(EXPECT)) {
   const admob = js.some((code) => code.includes('AdMob'));
   console.log(`${admob ? 'FAIL' : 'PASS'} ${dir}: no AdMob code`);
   if (admob) bad++;
+  // Same for the RevenueCat purchases plugin (this text is only in the plugin code).
+  const revenuecat = js.some((code) => code.includes(REVENUECAT_MARK));
+  console.log(`${revenuecat ? 'FAIL' : 'PASS'} ${dir}: no RevenueCat code`);
+  if (revenuecat) bad++;
 }
 process.exit(bad ? 1 : 0);

@@ -24,6 +24,8 @@ export interface Platform {
   hasPrivacyOptions(): boolean;
   /** Opens the ad consent form again (Settings, "Privacy choices"). */
   privacyOptions(): Promise<void>;
+  /** The player bought Remove ads (or it was refunded: false). */
+  setNoAds(on: boolean): void;
 }
 
 /** Called while an ad plays, so the game can mute itself. */
@@ -36,6 +38,7 @@ export interface AdHooks {
 abstract class BasePlatform implements Platform {
   abstract readonly name: PlatformName;
   protected playing = false;
+  protected noAds = false;
   protected readonly clock: AdClock;
 
   constructor(protected readonly hooks: AdHooks) {
@@ -51,7 +54,17 @@ abstract class BasePlatform implements Platform {
   protected sdkStart(): void {}
   protected sdkStop(): void {}
   protected abstract showBreak(): Promise<void>;
-  abstract rewardedAd(): Promise<boolean>;
+  protected abstract showRewarded(): Promise<boolean>;
+
+  /** Remove ads bought: no breaks, and rewards come without an ad. */
+  setNoAds(on: boolean): void {
+    this.noAds = on;
+  }
+
+  async rewardedAd(): Promise<boolean> {
+    if (this.noAds) return true;
+    return this.showRewarded();
+  }
 
   gameplayStart(): void {
     if (this.playing) return;
@@ -66,7 +79,7 @@ abstract class BasePlatform implements Platform {
   }
 
   async commercialBreak(): Promise<void> {
-    if (!breakAllowed(this.clock, this.hooks.now())) return;
+    if (this.noAds || !breakAllowed(this.clock, this.hooks.now())) return;
     this.clock.lastBreak = this.hooks.now();
     const was = this.playing;
     this.gameplayStop();
@@ -85,7 +98,7 @@ abstract class BasePlatform implements Platform {
 export class LocalPlatform extends BasePlatform {
   readonly name = 'local' as const;
   protected async showBreak(): Promise<void> {}
-  async rewardedAd(): Promise<boolean> {
+  protected async showRewarded(): Promise<boolean> {
     return true;
   }
 }
@@ -151,7 +164,7 @@ export class CrazyGamesPlatform extends BasePlatform {
     await this.ad('midgame');
   }
 
-  async rewardedAd(): Promise<boolean> {
+  protected async showRewarded(): Promise<boolean> {
     return this.ad('rewarded');
   }
 }
@@ -202,7 +215,7 @@ export class PokiPlatform extends BasePlatform {
     await this.sdk?.commercialBreak(() => this.hooks.pause(true));
   }
 
-  async rewardedAd(): Promise<boolean> {
+  protected async showRewarded(): Promise<boolean> {
     if (!this.sdk) return false;
     try {
       return await this.sdk.rewardedBreak(() => this.hooks.pause(true));
@@ -394,7 +407,7 @@ export class AdMobPlatform extends BasePlatform {
    * refused, offline, no fill): a hint must never depend on saying yes to ads. Only closing the ad
    * early gives no reward.
    */
-  async rewardedAd(): Promise<boolean> {
+  protected async showRewarded(): Promise<boolean> {
     return (await this.fullScreen('reward')) !== 'closed';
   }
 }

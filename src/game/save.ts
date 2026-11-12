@@ -2,6 +2,7 @@ import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type PlayStats } from '../c
 import { DAILY_COINS, EMPTY_DAILY, canPlayDay, dateKey, isDailyId, recordCalendarWin, type DailyState } from '../core/daily';
 import { ALL_LEVELS } from '../core/levels';
 import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, type ShopKind, type ShopState } from '../core/shop';
+import { EMPTY_PURCHASES, applyOwned, sanitizePurchases, type PurchaseState } from '../core/purchases';
 import type { Beam } from '../core/types';
 
 const KEY = 'bridgeit.save';
@@ -23,10 +24,12 @@ export interface SaveData {
   daily: DailyState;
   /** Level ids whose stress test held (the heavier vehicle crossed). */
   held: string[];
+  /** Real-money purchases as last seen from the store (the store's answer always wins). */
+  purchases: PurchaseState;
   settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], settings: { sound: true, music: true, reducedMotion: false, shake: true } });
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], purchases: { ...EMPTY_PURCHASES }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {
@@ -101,6 +104,7 @@ export function sanitize(raw: unknown): SaveData {
       }
     }
   }
+  base.purchases = sanitizePurchases(r.purchases);
   if (r.settings && typeof r.settings === 'object') {
     base.settings.sound = r.settings.sound !== false;
     base.settings.music = r.settings.music !== false;
@@ -171,6 +175,15 @@ class SaveStore {
     if (this.data.held.includes(levelId)) return;
     this.data.held.push(levelId);
     this.persist();
+  }
+
+  /** Fresh purchase data from the store. Returns the coins given now (supporter pack, once). */
+  applyPurchases(owned: { noAds: boolean; supporter: boolean }): number {
+    const { state, coins } = applyOwned(this.data.purchases, owned);
+    this.data.purchases = state;
+    this.data.coins += coins;
+    this.persist();
+    return coins;
   }
 
   recordHint(): void {

@@ -2,6 +2,22 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-12 — Run 40
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- RevenueCat purchases (`@revenuecat/purchases-capacitor` 13.8.0, pinned: 14.x is a brand-new major and 14.1.0 is only a week old; 13.8.0 has one dependency, RevenueCat's own `purchases-typescript-internal-esm`). `src/core/purchases.ts` (pure): products, entitlements (`supporter` also removes ads), supporter coins once, refunds keep coins, save sanitizing. `src/game/store.ts`: `RevenueCatStore` (configure, customer info listener, store prices, buy with cancel / pending / failed / already owned, restore) and `NoStore` for web and portals. The plugin loads only in the app build.
+- `Platform.setNoAds`: no breaks and rewarded hints without an ad. The saved state applies at boot (offline), the store's answer replaces it.
+- UI: Settings has a "Remove ads" button (app with a store only), which opens "Support Bridge It!" with two cards (store price or "Owned ✓"), status text (pending, failed, restored) and Restore purchases.
+- `npm run flavours` fails if web or portal builds carry RevenueCat code; `app-check` checks the apps have it and prints a note while there are no keys. `cap sync` added the plugin to Android gradle and iOS SPM.
+
+**Verified**
+- `npm run check` green (560 tests, 13 new), `npm run flavours` PASS, `npm run app:sync` PASS, `npm run e2e` exit 0 with no FAIL. Probe screenshots (dev server, store patched to look available): Support window, pending text, owned card, Settings with the new button. Not verified: a real store purchase (needs the owner's accounts).
+
+**Lessons**
+- A module-level singleton object (`store`) can be patched method by method from a probe (`store.available = () => true`), which is easier than adding test hooks to the game.
+- Listeners added by a window must be removed when it closes (`onChange` returns an unsubscribe; `layer.once('destroy', stop)`), or every reopen adds one more.
+- Next: CI Android build with the new plugin (check the `android` job), then World 5 probe with a faster vehicle, or Sandbox mode.
+
 ## 2026-11-12 — Run 39
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

@@ -4,6 +4,8 @@ import { closeOnBack } from './back';
 import { platform } from './platform';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { save } from './save';
+import { store, type BuyResult, type RestoreResult } from './store';
+import { PRODUCTS, owns } from '../core/purchases';
 import { C, FONT, hex } from './theme';
 
 export interface ButtonOptions {
@@ -128,8 +130,10 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
     { key: 'reducedMotion', text: 'Less motion' },
     { key: 'music', text: 'Music' },
   ];
+  // In the app with a store, rows move up to make room for the purchases button.
+  const shop = store.available();
   rows.forEach((row, i) => {
-    const y = H / 2 - 95 + i * 80;
+    const y = shop ? H / 2 - 140 + i * 68 : H / 2 - 95 + i * 80;
     layer.add(label(scene, W / 2 - 130, y, row.text, 30, C.ink).setOrigin(0, 0.5));
     const text = (): string => (save.data.settings[row.key] ? 'On' : 'Off');
     const colors = (): ButtonOptions => (save.data.settings[row.key] ? { color: C.good, shade: C.goodDark } : { color: C.greyDark, shade: C.ink });
@@ -143,12 +147,81 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
     }, { width: 130, height: 58, fontSize: 26, ...colors() });
     layer.add(b);
   });
+  if (shop) {
+    layer.add(button(scene, W / 2, H / 2 + 140, save.data.purchases.noAds ? 'Support the game' : 'Remove ads', () => openSupport(scene), { width: 330, height: 60, fontSize: 24, color: C.gold, shade: C.primaryDark, textColor: C.ink }));
+  }
   // App in the EU and UK: the player must be able to change their ad consent at any time.
   const privacy = platform.hasPrivacyOptions();
   if (privacy) {
     layer.add(button(scene, W / 2 - 125, H / 2 + 230, 'Privacy choices', () => void platform.privacyOptions(), { width: 250, height: 66, fontSize: 24, color: C.greyDark, shade: C.ink }));
   }
   layer.add(button(scene, privacy ? W / 2 + 140 : W / 2, H / 2 + 230, 'Close', () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
+  closeOnBack(layer, () => layer.destroy());
+}
+
+const BUY_TEXT: Record<BuyResult, string> = {
+  bought: 'Thank you for your support!',
+  cancelled: '',
+  pending: 'Payment pending. It unlocks when the payment goes through.',
+  failed: 'The purchase did not work. Please try again later.',
+};
+const RESTORE_TEXT: Record<RestoreResult, string> = {
+  restored: 'Purchases restored.',
+  nothing: 'No purchases found for this account.',
+  failed: 'Could not reach the store. Please try again later.',
+};
+
+/** Real-money purchases (app only): Remove ads, Supporter pack, Restore purchases. */
+export function openSupport(scene: Phaser.Scene): void {
+  const W = 1280;
+  const H = 720;
+  const layer = scene.add.container(0, 0).setDepth(55);
+  const shade = scene.add.rectangle(0, 0, W, H, hex(C.ink), 0.45).setOrigin(0).setInteractive();
+  layer.add([shade, panel(scene, W / 2, H / 2, 840, 580)]);
+  layer.add(label(scene, W / 2, H / 2 - 230, 'Support Bridge It!', 44, C.ink));
+  const status = label(scene, W / 2, H / 2 + 150, '', 22, C.ink);
+  const buys: Array<() => void> = [];
+  PRODUCTS.forEach((p, i) => {
+    const x = W / 2 + (i === 0 ? -200 : 200);
+    const y = H / 2 - 30;
+    const card = scene.add.graphics();
+    card.fillStyle(0xffffff, 0.75);
+    card.fillRoundedRect(x - 180, y - 130, 360, 260, 22);
+    layer.add([card, label(scene, x, y - 92, p.name, 32, C.ink)]);
+    p.lines.forEach((line, n) => layer.add(label(scene, x, y - 40 + n * 30, line, 21, C.ink)));
+    const b = button(scene, x, y + 80, '', async () => {
+      b.setEnabled(false);
+      status.setText('Opening the store...');
+      const result = await store.buy(p.id);
+      if (!layer.active) return;
+      status.setText(BUY_TEXT[result]);
+      for (const fn of buys) fn();
+    }, { width: 240, height: 62, fontSize: 26, color: C.good, shade: C.goodDark });
+    const show = () => {
+      const have = owns(save.data.purchases, p.id);
+      b.setLabel(have ? 'Owned ✓' : (store.price(p.id) ?? p.fallbackPrice));
+      b.setEnabled(!have);
+    };
+    show();
+    buys.push(show);
+    layer.add(b);
+  });
+  // A pending payment or a refund can arrive while the window is open.
+  const stop = store.onChange(() => {
+    for (const fn of buys) fn();
+  });
+  layer.once('destroy', stop);
+  const restore = button(scene, W / 2 - 150, H / 2 + 225, 'Restore purchases', async () => {
+    restore.setEnabled(false);
+    status.setText('Checking...');
+    const result = await store.restore();
+    if (!layer.active) return;
+    restore.setEnabled(true);
+    status.setText(RESTORE_TEXT[result]);
+    for (const fn of buys) fn();
+  }, { width: 280, height: 64, fontSize: 24, color: C.greyDark, shade: C.ink });
+  layer.add([status, restore]);
+  layer.add(button(scene, W / 2 + 170, H / 2 + 225, 'Close', () => layer.destroy(), { width: 220, height: 64, color: C.blue, shade: C.blueDark }));
   closeOnBack(layer, () => layer.destroy());
 }
 

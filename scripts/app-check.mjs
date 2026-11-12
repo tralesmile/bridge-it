@@ -48,6 +48,10 @@ for (const dir of ['android/app/src/main/assets/public', 'ios/App/App/public']) 
   check(assets.some((f) => f.endsWith('.js')), `${dir} has the game scripts`);
   const scripts = assets.filter((f) => f.endsWith('.js')).map((f) => read(join(dir, 'assets', f))).join('');
   check(scripts.includes('AdMob'), `${dir} is the app build with AdMob (npm run build:app), not the web build`);
+  check(scripts.includes('configure Purchases before'), `${dir} has the RevenueCat purchases plugin`);
 }
+
+// RevenueCat keys come from the owner's account; until then the purchase buttons stay hidden.
+if (/REVENUECAT_KEYS[^=]*=\s*\{\s*android:\s*''/.test(read('src/game/store.ts'))) console.log('NOTE No RevenueCat keys yet: purchase buttons are hidden (fine until the owner has a RevenueCat account)');
 
 process.exit(failures.length ? 1 : 0);

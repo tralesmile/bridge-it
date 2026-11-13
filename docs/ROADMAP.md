@@ -91,7 +91,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Level editor: stars on friends' levels (`save.friendStars`, newest first, at most 40, `addFriendStars` / `readFriendStars` in core). The result panel says "New best!" or "Your best: N ★"; the play title shows ★★☆ once crossed. No coins or stats
 - [x] Saved bridges of player levels are trimmed: `saveDesign` on a `custom-` id moves it to the end and drops the oldest ones that are not in My levels or `friendStars`, keeping the newest 20 (`staleCustomDesigns` in core)
 - [x] Level editor achievements: Level Maker (cross a level you made), Level Designer (5 of them), Good Friend (cross a friend's level). 29 achievements
-- [ ] Level editor: show 🚢 on My levels cards that have ship lanes; a "(copy)" name for Edit a copy
+- [x] Level editor: 🚢 on My levels cards that have ship lanes; Edit a copy names the level "Name (copy)", "Name (copy 2)", ... (`copyName` in core, cut to fit 20 characters; names may now use brackets)
 - [ ] Trophies grid fits 30 cards (6x5, 29 used): more achievements (World 5) need pages or smaller cards
 - [x] Share codes core: `encodeBridge` / `decodeBridge` in `src/core/share.ts` (format `BI1.<levelId>.<data>.<check>`, checked against level rules; tested on all solutions)
 - [x] Share codes UI: "Copy bridge code" on the win panel, "Paste code" button on the play scene (uses window.prompt; not covered by e2e)

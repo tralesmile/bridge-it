@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { leaf, roadDeck, rockLegs, warrenTruss } from '../src/core/levels';
 import {
-  CUSTOM_MAX_ANCHORS, DEFAULT_CUSTOM, anchorProblem, cleanName, freshName, customId, customLevel, customStars, decodeLevel, encodeLevel,
+  CUSTOM_MAX_ANCHORS, DEFAULT_CUSTOM, anchorProblem, cleanName, copyName, freshName, customId, customLevel, customStars, decodeLevel, encodeLevel,
   isCustomId, parseCustomId, specProblem, laneProblem, inLane, CUSTOM_GOAL, CUSTOM_MAX_LANES, type CustomSpec, FRIEND_STARS_MAX, addFriendStars, friendStarsOf, readFriendStars,
 } from '../src/core/custom';
 import { anyLevel } from '../src/core/sandbox';
@@ -56,6 +56,17 @@ describe('player levels', () => {
     expect(anchorProblem(rocky, { x: 6, y: -5 })).toBeNull();
   });
 
+  test('a copy of a friend\'s level gets a (copy) name that fits in 20 characters', () => {
+    expect(copyName('Rocky', [])).toBe('Rocky (copy)');
+    expect(copyName('Rocky', ['Rocky (copy)'])).toBe('Rocky (copy 2)');
+    expect(copyName('Rocky (copy)', ['Rocky (copy)'])).toBe('Rocky (copy 2)');
+    const long = copyName('Abcdefghij Klmnopqrst', []);
+    expect(long).toBe('Abcdefghij Kl (copy)');
+    expect(cleanName(long)).toBe(long);
+    const names = ['Abcdefghij Kl (copy)'];
+    for (let i = 2; i < 13; i++) { const n = copyName('Abcdefghij Klmnopqrst', names); expect(n.length).toBeLessThanOrEqual(20); expect(cleanName(n)).toBe(n); expect(names).not.toContain(n); names.push(n); }
+  });
+
   test('a new level gets a name no other level has', () => {
     expect(freshName([])).toBe('My Level');
     expect(freshName(['My Level'])).toBe('My Level 2');
@@ -66,6 +77,7 @@ describe('player levels', () => {
   test('names are cleaned and short', () => {
     expect(cleanName('  My   <b>Bridge</b>!  ')).toBe('My bBridgeb!');
     expect(cleanName('')).toBe(DEFAULT_CUSTOM.name);
+    expect(cleanName('Gap (hard)')).toBe('Gap (hard)');
     expect(cleanName('x'.repeat(40))).toHaveLength(20);
     expect(specProblem({ ...rocky, name: ' Rocky' })).not.toBeNull();
   });

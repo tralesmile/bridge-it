@@ -134,7 +134,7 @@ export class EditorScene extends Phaser.Scene {
       const cy = 160 + Math.floor(i / 3) * 106;
       const open = i === save.data.editor.current;
       const d = slot.draft;
-      const info = `${d.gap} m · ${VEHICLE_SHORT[d.vehicle]} · ${slot.best > 0 ? `✓ $${slot.best.toLocaleString('en-US')}` : 'not crossed'}`;
+      const info = `${d.gap} m${lanesOf(d).length > 0 ? ' 🚢' : ''} · ${VEHICLE_SHORT[d.vehicle]} · ${slot.best > 0 ? `✓ $${slot.best.toLocaleString('en-US')}` : 'not crossed'}`;
       const card = button(this, cx - 32, cy, `${d.name}
 ${info}`, () => {
         save.openEditorLevel(i);

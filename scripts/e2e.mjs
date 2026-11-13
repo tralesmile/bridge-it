@@ -497,10 +497,10 @@ async function run(viewport, name) {
   const mlCopy = await page.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('bridgeit.save'));
     const e = s.editor;
-    return { n: e.levels.length, cur: e.current, best: e.levels[e.current].best, cost: e.levels[e.current].draft.authorCost };
+    return { n: e.levels.length, cur: e.current, best: e.levels[e.current].best, cost: e.levels[e.current].draft.authorCost, copyName: e.levels[e.current].draft.name };
   });
   const mlDesign = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); return Object.values(s.designs).map((d) => d.length); });
-  check(await active('editor') && mlCopy.n === 2 && mlCopy.cur === 1 && mlCopy.best === 0 && mlCopy.cost === 0 && mlDesign.includes(mlBeams),
+  check(await active('editor') && mlCopy.n === 2 && mlCopy.cur === 1 && mlCopy.best === 0 && mlCopy.cost === 0 && mlCopy.copyName.endsWith(' (copy)') && mlDesign.includes(mlBeams),
     `${name}: Edit a copy adds the friend's level to My levels with your bridge, not crossed yet (${JSON.stringify(mlCopy)}, ${JSON.stringify(mlDesign)})`);
   await click(330, 50); // My levels
   await sleep(300);
@@ -574,6 +574,17 @@ async function run(viewport, name) {
   await page.screenshot({ path: `${OUT}/${name}-9x-editor-lane-won.png` });
   await click(780, 450); // Edit level
   check(await active('editor'), `${name}: back in the editor after the lane level`);
+  await click(330, 50); // My levels: the lane level's card shows a ship
+  await sleep(300);
+  const lnCards = await page.evaluate(() => {
+    const texts = [];
+    const walk = (o) => { if (o.type === 'Text') texts.push(o.text); (o.list ?? []).forEach(walk); };
+    walk(globalThis.__bridgeit.scene.getScene('editor').listLayer);
+    return texts.filter((t) => t.includes(' m')).map((t) => t.includes('🚢'));
+  });
+  check(lnCards.filter(Boolean).length === 1 && lnCards.length >= 3, `${name}: only the ship lane level's card shows 🚢 (${JSON.stringify(lnCards)})`);
+  await page.screenshot({ path: `${OUT}/${name}-9x-editor-mylevels-lane.png` });
+  await page.keyboard.press('Escape'); await sleep(300);
   await page.keyboard.press('Escape'); await sleep(300);
   check(await active('menu'), `${name}: Escape in the editor goes back to the menu`);
   await page.close();

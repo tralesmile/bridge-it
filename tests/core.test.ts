@@ -229,10 +229,14 @@ describe('My levels (editor list)', () => {
     const s = new SaveStore();
     s.data.designs[customId(friend)] = [{ a: '0,0', b: '1,0', material: 'road' }];
     expect(s.addEditorLevel(friend)).toBe(true);
-    expect(s.editorSlot).toEqual({ draft: { ...friend, authorCost: 0 }, best: 0 });
+    expect(s.editorSlot).toEqual({ draft: { ...friend, name: 'Rocky (copy)', authorCost: 0 }, best: 0 });
     expect(s.data.designs[s.draftId]).toEqual([{ a: '0,0', b: '1,0', material: 'road' }]);
-    // Two identical copies share a bridge; deleting one keeps it for the other.
+    // A second copy gets its own name and also starts with your bridge.
     s.addEditorLevel(friend);
+    expect(s.editorSlot.draft.name).toBe('Rocky (copy 2)');
+    expect(s.data.designs[s.draftId]).toHaveLength(1);
+    // Renamed to the same name, two copies share a bridge; deleting one keeps it for the other.
+    s.setDraft({ ...s.editorSlot.draft, name: 'Rocky (copy)' });
     expect(s.deleteEditorLevel(2)).toBe(true);
     expect(s.data.designs[s.draftId]).toBeDefined();
   });
@@ -241,6 +245,7 @@ describe('My levels (editor list)', () => {
     const s = new SaveStore();
     s.addEditorLevel(friend);
     s.addEditorLevel(friend);
+    s.setDraft({ ...s.editorSlot.draft, name: 'Rocky (copy)' });
     const id = s.draftId;
     s.data.designs[id] = [{ a: '0,0', b: '1,0', material: 'road' }];
     s.setDraft({ ...s.editorSlot.draft, gap: 11 });

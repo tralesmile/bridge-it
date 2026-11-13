@@ -2,7 +2,7 @@ import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type AchievementInput, type
 import { DAILY_COINS, EMPTY_DAILY, canPlayDay, dateKey, isDailyId, recordCalendarWin, type DailyState } from '../core/daily';
 import { ALL_LEVELS } from '../core/levels';
 import { parseSandboxId } from '../core/sandbox';
-import { DEFAULT_CUSTOM, MY_LEVELS_MAX, addFriendStars, isCustomId, staleCustomDesigns, cleanName, customId, freshName, friendStarsOf, parseCustomId, readFriendStars, specProblem, type CustomSpec, type FriendStars } from '../core/custom';
+import { DEFAULT_CUSTOM, MY_LEVELS_MAX, addFriendStars, isCustomId, staleCustomDesigns, copyName, customId, freshName, friendStarsOf, parseCustomId, readFriendStars, specProblem, type CustomSpec, type FriendStars } from '../core/custom';
 import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, grantSupporterItems, type ShopKind, type ShopState } from '../core/shop';
 import { EMPTY_PURCHASES, applyOwned, sanitizePurchases, type PurchaseState } from '../core/purchases';
 import type { Beam } from '../core/types';
@@ -291,7 +291,7 @@ export class SaveStore {
     const e = this.data.editor;
     if (e.levels.length >= MY_LEVELS_MAX) return false;
     const names = e.levels.map((l) => l.draft.name);
-    const slot = copyOf ? readSlot({ draft: { ...copyOf, name: cleanName(copyOf.name), authorCost: 0 }, best: 0 }) : freshSlot(freshName(names));
+    const slot = copyOf ? readSlot({ draft: { ...copyOf, name: copyName(copyOf.name, names), authorCost: 0 }, best: 0 }) : freshSlot(freshName(names));
     if (!slot) return false;
     e.levels.push(slot);
     e.current = e.levels.length - 1;

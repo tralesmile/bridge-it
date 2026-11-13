@@ -77,9 +77,9 @@ export const DEFAULT_CUSTOM: CustomSpec = {
 
 const isInt = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v);
 
-/** Letters (any language), digits, spaces and a few signs; at most 20 characters. */
+/** Letters (any language), digits, spaces and a few signs (' ! ? & - and brackets); at most 20 characters. */
 export function cleanName(name: string): string {
-  const kept = [...name.replace(/[^\p{L}\p{N} '!?&-]/gu, '').replace(/\s+/g, ' ').trim()].slice(0, CUSTOM_NAME_MAX).join('');
+  const kept = [...name.replace(/[^\p{L}\p{N} '!?&()-]/gu, '').replace(/\s+/g, ' ').trim()].slice(0, CUSTOM_NAME_MAX).join('');
   return kept.trim() || DEFAULT_CUSTOM.name;
 }
 
@@ -88,6 +88,20 @@ export function freshName(taken: readonly string[]): string {
   const used = new Set(taken);
   if (!used.has(DEFAULT_CUSTOM.name)) return DEFAULT_CUSTOM.name;
   for (let i = 2; ; i++) if (!used.has(`${DEFAULT_CUSTOM.name} ${i}`)) return `${DEFAULT_CUSTOM.name} ${i}`;
+}
+
+/**
+ * The name for a copy of a friend's level: "Big Gap (copy)", then "Big Gap (copy 2)", ...
+ * The friend's name is cut so the whole name stays inside 20 characters.
+ */
+export function copyName(name: string, taken: readonly string[]): string {
+  const base = cleanName(name).replace(/ \(copy(?: \d+)?\)$/, '');
+  const used = new Set(taken);
+  for (let i = 1; ; i++) {
+    const tag = i === 1 ? ' (copy)' : ` (copy ${i})`;
+    const out = cleanName([...base].slice(0, CUSTOM_NAME_MAX - tag.length).join('').trim() + tag);
+    if (!used.has(out)) return out;
+  }
 }
 
 /** The four anchors every level has on the cliff edges. */

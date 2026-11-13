@@ -2,6 +2,22 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-13 — Run 46
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- Level editor polish: My levels cards show 🚢 for levels with ship lanes; Edit a copy names the level "Name (copy)", then "(copy 2)", ... cut to fit 20 characters (`copyName` in core). Level names may now use brackets (old names and ids unchanged).
+- Trophies screen pages: 30 cards a page; with more, ◀ ▶ buttons and the arrow keys turn pages (`pageItems` in core). Today all 29 fit one page, so no buttons show.
+- Localization, first step (M8): `src/core/i18n.ts` with 8 languages (en, de, es, pt, fr, tr, ru, mk), `translate` with {names}, the browser language as the default. `t()` in the game, `settings.lang` in the save, a 🌐 Language row in Settings (each tap picks the next language and restarts the menu with Settings open). Menu, Settings and the Trophies title are translated; the rest is still English. Button labels now shrink to fit long words.
+
+**Verified**
+- `npm run check` green (597 tests; new: copy names, Trophies pages, every language has every key with the same {names}, short labels stay short, browser language pick). `npm run e2e` exit 0, no FAIL after each task (new: 🚢 only on the lane level card, the copy is "My Level (copy)", Trophies pages with 12 a page, the language button goes through all 8 and the menu follows, Settings do not open again on a later menu visit). Screenshots checked: My levels with the ship, Trophies page 3, Settings in de and ru, menu in mk.
+
+**Lessons**
+- Phaser keeps a scene's start data: `scene.start(key)` without data reuses the last data. A flag passed with `restart({ settings: true })` must be cleared (`this.sys.settings.data = {}`), or every later visit acts on it.
+- Fredoka has no Cyrillic; ru and mk fall back to the system font. Plan a font before moving many screens.
+- The settings rows moved, so e2e clicks at fixed spots moved too; keep the row formula in the e2e comment.
+- Next: move more screens to `t()` (world/level select and the play scene first), then the Cyrillic font.
+
 ## 2026-11-13 — Run 45
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

@@ -5,6 +5,7 @@ Things only you can do. Each scheduled run adds to this list; nothing here block
 ## Now
 - [x] Create the private GitHub repository `tralesmile/bridge-it` (done 2026-11-06).
 - [ ] Play the web build when you get a chance and say what feels fun or annoying.
+- [ ] The game now has a Language button in Settings (8 languages; only the menu and Settings are translated so far). Please read the Macedonian text and say what sounds wrong; if you know someone who speaks German, Spanish, Portuguese, French, Turkish or Russian, ask them to look too.
 
 - [x] CI on GitHub Actions checked: the last 5 runs are green (2026-11-09).
 

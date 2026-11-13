@@ -38,18 +38,49 @@ async function run(viewport, name) {
   // Settings: open, turn "Less motion" on, close, check it is saved.
   await click(1180, 60);
   await page.screenshot({ path: `${OUT}/${name}-1b-settings.png` });
-  await click(810, 425); // Less motion is the third row (y = 360 - 95 + 160)
+  await click(830, 360); // Less motion is the third row (y = 360 - 140 + 2 * 70)
   const still = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.reducedMotion);
-  await click(810, 425); // switch back
+  await click(830, 360); // switch back
   await click(640, 590);
   check(still === true, `${name}: settings switch saves (reducedMotion ${still})`);
-  // Music is the fourth row (y = 265 + 240). Turn it off and on again.
+  // Music is the fourth row (y = 430). Turn it off and on again.
   await click(1180, 60);
-  await click(810, 505);
+  await click(830, 430);
   const music = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.music);
-  await click(810, 505);
+  await click(830, 430);
   await click(640, 590);
   check(music === false, `${name}: music switch saves (music ${music})`);
+  // Language: the browser's English first; each tap on the language button picks the next one,
+  // the menu restarts in it with Settings open again. 8 taps come back to English.
+  const menuTexts = () => page.evaluate(() => {
+    const out = [];
+    const walk = (o) => { if (o.type === 'Text') out.push(o.text); (o.list ?? []).forEach(walk); };
+    globalThis.__bridgeit.scene.getScene('menu').children.list.forEach(walk);
+    return out;
+  });
+  const enTexts = await menuTexts();
+  await click(1180, 60);
+  const langs = [];
+  for (let i = 0; i < 8; i++) {
+    await click(810, 500);
+    await sleep(250);
+    const texts = await menuTexts();
+    const lang = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save')).settings.lang);
+    const open = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('menu').children.list.some((o) => o.depth === 50));
+    langs.push({ lang, play: texts.find((t) => /^\p{Lu}+$/u.test(t) && t.length > 3) ?? '', open });
+    if (name === 'desktop' && (lang === 'de' || lang === 'ru' || lang === 'mk')) await page.screenshot({ path: `${OUT}/${name}-1d-settings-${lang}.png` });
+  }
+  check(JSON.stringify(langs.map((l) => l.lang)) === '["de","es","pt","fr","tr","ru","mk","en"]' && langs[0].play === 'SPIELEN' && langs[6].play === 'ИГРАЈ' && langs[7].play === 'PLAY' && langs.every((l) => l.open),
+    `${name}: the language button goes through 8 languages and the menu text follows (${JSON.stringify(langs)})`);
+  check(enTexts.includes('PLAY') && enTexts.includes('Build it. Break it. Laugh. Try again.'), `${name}: the menu starts in English in an English browser`);
+  await click(640, 590);
+  await sleep(200);
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('menu').scene.start('trophies'); });
+  await sleep(200);
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('trophies').scene.start('menu'); });
+  await sleep(300);
+  const reopened = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('menu').children.list.some((o) => o.depth === 50));
+  check(!reopened, `${name}: going back to the menu later does not open Settings again`);
 
   await click(640, 430);
   check(await active('worlds'), `${name}: PLAY opens world select`);

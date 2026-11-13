@@ -4,6 +4,8 @@ import { closeOnBack } from './back';
 import { platform } from './platform';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { save } from './save';
+import { currentLang, t } from './i18n';
+import { LANG_NAMES, nextLang, type TextKey } from '../core/i18n';
 import { store, type BuyResult, type RestoreResult } from './store';
 import { PRODUCTS, owns } from '../core/purchases';
 import { C, FONT, hex } from './theme';
@@ -39,6 +41,12 @@ export function button(scene: Phaser.Scene, x: number, y: number, label: string,
     .text(0, -3, label, { fontFamily: FONT, fontSize: `${opts.fontSize ?? 28}px`, fontStyle: 'bold', color: opts.textColor ?? C.white, align: 'center' })
     .setOrigin(0.5);
   text.setShadow(0, 2, 'rgba(0,0,0,0.25)', 0);
+  // Long words (other languages) shrink to fit inside the button.
+  const fit = (): void => {
+    text.setScale(1);
+    if (text.width > w - 14) text.setScale((w - 14) / text.width);
+  };
+  fit();
   let enabled = true;
 
   const draw = (pressed: boolean) => {
@@ -83,6 +91,7 @@ export function button(scene: Phaser.Scene, x: number, y: number, label: string,
   };
   container.setLabel = (value: string) => {
     text.setText(value);
+    fit();
     return container;
   };
   container.setColors = (c: string, sh: string) => {
@@ -117,45 +126,68 @@ export function panel(scene: Phaser.Scene, x: number, y: number, w: number, h: n
 }
 
 /** Settings window with on/off switches. Shows on top of any scene; `onClose` runs when it closes. */
-export function openSettings(scene: Phaser.Scene, onChange: () => void = () => undefined): void {
+/**
+ * Settings window. `onLang` runs after the player picks another language (the menu restarts
+ * so its text changes, and opens this window again).
+ */
+export function openSettings(scene: Phaser.Scene, onChange: () => void = () => undefined, onLang?: () => void): void {
   const W = 1280;
   const H = 720;
   const layer = scene.add.container(0, 0).setDepth(50);
   const shade = scene.add.rectangle(0, 0, W, H, hex(C.ink), 0.45).setOrigin(0).setInteractive();
   layer.add([shade, panel(scene, W / 2, H / 2, 620, 600)]);
-  layer.add(label(scene, W / 2, H / 2 - 220, 'Settings', 48, C.ink));
-  const rows: Array<{ key: 'sound' | 'music' | 'reducedMotion' | 'shake'; text: string }> = [
-    { key: 'sound', text: 'Sound' },
-    { key: 'shake', text: 'Screen shake' },
-    { key: 'reducedMotion', text: 'Less motion' },
-    { key: 'music', text: 'Music' },
+  layer.add(label(scene, W / 2, H / 2 - 220, t('settings.title'), 48, C.ink).setName('settings-title'));
+  const rows: Array<{ key: 'sound' | 'music' | 'reducedMotion' | 'shake'; text: TextKey }> = [
+    { key: 'sound', text: 'settings.sound' },
+    { key: 'shake', text: 'settings.shake' },
+    { key: 'reducedMotion', text: 'settings.motion' },
+    { key: 'music', text: 'settings.music' },
   ];
   // In the app with a store, rows move up to make room for the purchases button.
   const shop = store.available();
+  const rowY = (i: number): number => (shop ? H / 2 - 160 + i * 62 : H / 2 - 140 + i * 70);
+  // Long words in some languages shrink to fit beside the buttons.
+  const rowLabel = (y: number, text: string): Phaser.GameObjects.Text => {
+    const l = label(scene, W / 2 - 270, y, text, 30, C.ink).setOrigin(0, 0.5);
+    if (l.width > 330) l.setScale(330 / l.width);
+    return l;
+  };
   rows.forEach((row, i) => {
-    const y = shop ? H / 2 - 140 + i * 68 : H / 2 - 95 + i * 80;
-    layer.add(label(scene, W / 2 - 130, y, row.text, 30, C.ink).setOrigin(0, 0.5));
-    const text = (): string => (save.data.settings[row.key] ? 'On' : 'Off');
+    const y = rowY(i);
+    layer.add(rowLabel(y, t(row.text)));
+    const text = (): string => t(save.data.settings[row.key] ? 'settings.on' : 'settings.off');
     const colors = (): ButtonOptions => (save.data.settings[row.key] ? { color: C.good, shade: C.goodDark } : { color: C.greyDark, shade: C.ink });
-    const b = button(scene, W / 2 + 170, y, text(), () => {
+    const b = button(scene, W / 2 + 190, y, text(), () => {
       save.data.settings[row.key] = !save.data.settings[row.key];
       save.persist();
       b.setLabel(text());
       b.setColors(colors().color ?? C.good, colors().shade ?? C.goodDark);
       sfx.unlock();
       onChange();
-    }, { width: 130, height: 58, fontSize: 26, ...colors() });
+    }, { width: 130, height: 54, fontSize: 24, ...colors() });
     layer.add(b);
   });
+  // Language: each tap moves to the next one. Only where the screen can show the new text at once.
+  if (onLang) {
+    const y = rowY(rows.length);
+    layer.add(rowLabel(y, `🌐 ${t('settings.language')}`));
+    layer.add(button(scene, W / 2 + 170, y, LANG_NAMES[currentLang()], () => {
+      save.data.settings.lang = nextLang(currentLang());
+      save.persist();
+      sfx.unlock();
+      layer.destroy();
+      onLang();
+    }, { width: 210, height: 54, fontSize: 22, color: C.blue, shade: C.blueDark }).setName('settings-lang'));
+  }
   if (shop) {
-    layer.add(button(scene, W / 2, H / 2 + 140, save.data.purchases.noAds ? 'Support the game' : 'Remove ads', () => openSupport(scene), { width: 330, height: 60, fontSize: 24, color: C.gold, shade: C.primaryDark, textColor: C.ink }));
+    layer.add(button(scene, W / 2, H / 2 + 150, t(save.data.purchases.noAds ? 'settings.support' : 'settings.removeAds'), () => openSupport(scene), { width: 330, height: 56, fontSize: 24, color: C.gold, shade: C.primaryDark, textColor: C.ink }));
   }
   // App in the EU and UK: the player must be able to change their ad consent at any time.
   const privacy = platform.hasPrivacyOptions();
   if (privacy) {
-    layer.add(button(scene, W / 2 - 125, H / 2 + 230, 'Privacy choices', () => void platform.privacyOptions(), { width: 250, height: 66, fontSize: 24, color: C.greyDark, shade: C.ink }));
+    layer.add(button(scene, W / 2 - 125, H / 2 + 230, t('settings.privacy'), () => void platform.privacyOptions(), { width: 250, height: 66, fontSize: 22, color: C.greyDark, shade: C.ink }));
   }
-  layer.add(button(scene, privacy ? W / 2 + 140 : W / 2, H / 2 + 230, 'Close', () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
+  layer.add(button(scene, privacy ? W / 2 + 140 : W / 2, H / 2 + 230, t('common.close'), () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
   closeOnBack(layer, () => layer.destroy());
 }
 

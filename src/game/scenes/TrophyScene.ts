@@ -2,6 +2,7 @@ import { onBack } from '../back';
 import Phaser from 'phaser';
 import { ACHIEVEMENTS, TROPHY_PAGE, pageItems } from '../../core/achievements';
 import { addBackground } from '../background';
+import { t } from '../i18n';
 import { save } from '../save';
 import { sfx } from '../audio';
 import { C, FONT, GAME_W, hex } from '../theme';
@@ -37,9 +38,9 @@ export class TrophyScene extends Phaser.Scene {
   create(): void {
     addBackground(this);
     panel(this, GAME_W / 2, 400, 1240, 600);
-    button(this, 110, 60, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    button(this, 110, 60, t('common.back'), () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
     onBack(this, () => this.scene.start('menu'));
-    label(this, GAME_W / 2, 60, 'Achievements', 52, C.white).setStroke(C.ink, 10);
+    label(this, GAME_W / 2, 60, t('trophies.title'), 52, C.white).setStroke(C.ink, 10);
     const earned = new Set(save.data.achievements);
     label(this, GAME_W - 130, 60, `🏆 ${earned.size} / ${ACHIEVEMENTS.length}`, 30, C.white).setStroke(C.ink, 8);
 
@@ -69,7 +70,7 @@ export class TrophyScene extends Phaser.Scene {
     this.cards = layer;
     const { page, pages, items } = pageItems(ACHIEVEMENTS, this.page, this.perPage);
     this.page = page;
-    this.pageText?.setText(`Page ${page + 1} / ${pages}`);
+    this.pageText?.setText(t('trophies.page', { page: page + 1, pages }));
     this.prevBtn?.setEnabled(page > 0);
     this.nextBtn?.setEnabled(page < pages - 1);
 

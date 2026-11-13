@@ -1,4 +1,5 @@
 import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type AchievementInput, type PlayStats } from '../core/achievements';
+import { isLang, type Lang } from '../core/i18n';
 import { DAILY_COINS, EMPTY_DAILY, canPlayDay, dateKey, isDailyId, recordCalendarWin, type DailyState } from '../core/daily';
 import { ALL_LEVELS } from '../core/levels';
 import { parseSandboxId } from '../core/sandbox';
@@ -60,7 +61,8 @@ export interface SaveData {
   friendStars: FriendStars[];
   /** Real-money purchases as last seen from the store (the store's answer always wins). */
   purchases: PurchaseState;
-  settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean };
+  /** `lang` is missing until the player picks one; the browser language is used until then. */
+  settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean; lang?: Lang };
 }
 
 const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], sandboxWins: [], editor: { levels: [freshSlot()], current: 0 }, friendStars: [], purchases: { ...EMPTY_PURCHASES }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
@@ -162,6 +164,7 @@ export function sanitize(raw: unknown): SaveData {
     base.settings.music = r.settings.music !== false;
     base.settings.reducedMotion = r.settings.reducedMotion === true;
     base.settings.shake = r.settings.shake !== false;
+    if (isLang(r.settings.lang)) base.settings.lang = r.settings.lang;
   }
   return base;
 }

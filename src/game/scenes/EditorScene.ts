@@ -113,7 +113,7 @@ export class EditorScene extends Phaser.Scene {
     layer.add(panel(this, GAME_W / 2, GAME_H / 2, 1120, 660));
     const levels = save.data.editor.levels;
     layer.add(label(this, GAME_W / 2, 82, `My levels (${levels.length}/${MY_LEVELS_MAX})`, 40, C.ink));
-    const note = label(this, GAME_W / 2, 590, 'Tap a level to open it.', 22, C.greyDark);
+    const note = label(this, GAME_W / 2, 590, 'Tap a level to open it. 🔗 copies the code of a crossed level.', 22, C.greyDark);
     layer.add(note);
     let armed = -1;
     levels.forEach((slot, i) => {
@@ -131,7 +131,13 @@ ${info}`, () => {
       }, { width: 266, height: 90, fontSize: 19, color: open ? C.good : C.blue, shade: open ? C.goodDark : C.blueDark });
       card.setSelected(open).setName(`editor-level-${i}`);
       layer.add(card);
-      const bin = button(this, cx + 135, cy, '🗑', () => {
+      const share = button(this, cx + 135, cy + 23, '🔗', () => {
+        armed = -1;
+        void this.copyCode(slot, (t) => note.setText(t).setColor(C.goodDark));
+      }, { width: 54, height: 44, fontSize: 20, color: C.blue, shade: C.blueDark });
+      share.setEnabled(slot.best > 0).setName(`editor-share-${i}`);
+      layer.add(share);
+      const bin = button(this, cx + 135, cy - 23, '🗑', () => {
         if (armed !== i) {
           armed = i;
           sfx.error();
@@ -141,7 +147,7 @@ ${info}`, () => {
         save.deleteEditorLevel(i);
         this.refresh();
         this.openList();
-      }, { width: 54, height: 90, fontSize: 22, color: C.grey, shade: C.greyDark });
+      }, { width: 54, height: 44, fontSize: 20, color: C.grey, shade: C.greyDark });
       bin.setEnabled(levels.length > 1).setName(`editor-delete-${i}`);
       layer.add(bin);
     });
@@ -299,13 +305,14 @@ ${info}`, () => {
     if (name !== this.draft.name) this.change({ name });
   }
 
-  private async copyCode(): Promise<void> {
-    const best = save.editorSlot.best;
-    if (best <= 0) return;
-    const code = encodeLevel({ ...this.draft, authorCost: best });
+  /** Copy the code of a crossed level (the open one, or a card in My levels). */
+  private async copyCode(slot = save.editorSlot, tell = (t: string) => this.showToast(t)): Promise<void> {
+    if (slot.best <= 0 || codeDialogOpen()) return;
+    const code = encodeLevel({ ...slot.draft, authorCost: slot.best });
     try {
       await navigator.clipboard.writeText(code);
-      this.showToast('Level code copied! Send it to a friend.');
+      sfx.place(0);
+      tell(`Code of "${slot.draft.name}" copied! Send it to a friend.`);
     } catch {
       await showCodeDialog({ title: 'Copy this level code:', value: code, readOnly: true });
     }

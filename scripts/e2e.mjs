@@ -506,13 +506,23 @@ async function run(viewport, name) {
   check(mlOpen.cur === 0 && mlOpen.best > 0 && !mlOpen.list, `${name}: tapping a level opens it (${JSON.stringify(mlOpen)})`);
   await click(330, 50);
   await sleep(300);
-  await click(640 + 350 + 135, 160); // bin of the 3rd level: first tap only asks
+  await click(640 + 350 + 135, 137); // bin of the 3rd level: first tap only asks
   await sleep(200);
   const mlAsk = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save')).editor.levels.length);
-  await click(640 + 350 + 135, 160);
+  await click(640 + 350 + 135, 137);
   await sleep(300);
   const mlDel = await page.evaluate(() => { const e = JSON.parse(localStorage.getItem('bridgeit.save')).editor; return { n: e.levels.length, cur: e.current, list: !!globalThis.__bridgeit.scene.getScene('editor').listLayer }; });
   check(mlAsk === 3 && mlDel.n === 2 && mlDel.cur === 0 && mlDel.list, `${name}: the bin deletes a level on the second tap (${mlAsk}, ${JSON.stringify(mlDel)})`);
+  // Share button on a card: copies a crossed level's code without opening it; off for a level not crossed.
+  await page.evaluate(() => { globalThis.__copied = []; Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: (t) => { globalThis.__copied.push(t); return Promise.resolve(); } } }); });
+  await click(640 - 350 + 135, 183); // share of level 1 (crossed)
+  await sleep(300);
+  await page.screenshot({ path: `${OUT}/${name}-9x-editor-share.png` });
+  await click(640 + 135, 183); // share of level 2 (not crossed)
+  await sleep(300);
+  const mlShare = await page.evaluate(() => ({ copied: globalThis.__copied, cur: JSON.parse(localStorage.getItem('bridgeit.save')).editor.current, list: !!globalThis.__bridgeit.scene.getScene('editor').listLayer }));
+  check(mlShare.copied.length === 1 && mlShare.copied[0] === levelCode && mlShare.cur === 0 && mlShare.list,
+    `${name}: the share button copies a crossed level's code and keeps the list open; off when not crossed (${JSON.stringify(mlShare)})`);
   await page.keyboard.press('Escape'); await sleep(300);
   const mlClosed = await page.evaluate(() => !globalThis.__bridgeit.scene.getScene('editor').listLayer);
   check(await active('editor') && mlClosed, `${name}: Escape closes My levels`);

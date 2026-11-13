@@ -1,5 +1,5 @@
 /**
- * Achievements: 26 goals checked from the save data. Pure, so it can be unit-tested.
+ * Achievements: 29 goals checked from the save data. Pure, so it can be unit-tested.
  * An achievement stays unlocked once earned (the save keeps the list).
  */
 import { parseSandboxId } from './sandbox';
@@ -29,6 +29,10 @@ export interface AchievementInput {
   dailyBest?: number;
   /** Sandbox setup ids that a vehicle crossed (optional for old callers). */
   sandboxWins?: string[];
+  /** How many of the player's own levels (My levels) they crossed. */
+  madeCrossed?: number;
+  /** How many friends' levels (from level codes) they crossed. */
+  friendsCrossed?: number;
 }
 
 export interface Achievement {
@@ -93,6 +97,9 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'daily-7', name: 'Week of Bridges', text: 'Reach a 7 day Daily Bridge streak.', progress: (i) => [Math.min(7, i.dailyBest ?? 0), 7] },
   { id: 'sandbox-5', name: 'Tinkerer', text: 'Win 5 different sandbox setups.', progress: (i) => [Math.min(5, sandboxSetups(i).length), 5] },
   { id: 'sandbox-train', name: 'Mad Engineer', text: 'Get the train over 24 m in the sandbox.', progress: (i) => [Math.min(1, count(sandboxSetups(i), (o) => o.vehicle === 'train' && o.gap === 24)), 1] },
+  { id: 'maker', name: 'Level Maker', text: 'Cross a level you made.', progress: (i) => [Math.min(1, i.madeCrossed ?? 0), 1] },
+  { id: 'maker-5', name: 'Level Designer', text: 'Cross 5 levels you made.', progress: (i) => [Math.min(5, i.madeCrossed ?? 0), 5] },
+  { id: 'friend-level', name: 'Good Friend', text: "Cross a friend's level.", progress: (i) => [Math.min(1, i.friendsCrossed ?? 0), 1] },
   { id: 'all-paints', name: 'Paint Box', text: 'Own every paint.', progress: (i) => [count(paints, (p) => i.owned.includes(p)), paints.length] },
 ];
 

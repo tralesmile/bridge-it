@@ -329,7 +329,7 @@ export class SaveStore {
   /** Everything the achievements read from the save. */
   get achievementInput(): AchievementInput {
     const d = this.data;
-    return { stars: d.stars, bestCost: d.bestCost, owned: d.owned, stats: d.stats, levels: ALL_LEVELS, held: d.held, dailyBest: d.daily.best, sandboxWins: d.sandboxWins };
+    return { stars: d.stars, bestCost: d.bestCost, owned: d.owned, stats: d.stats, levels: ALL_LEVELS, held: d.held, dailyBest: d.daily.best, sandboxWins: d.sandboxWins, madeCrossed: d.editor.levels.filter((l) => l.best > 0).length, friendsCrossed: d.friendStars.length };
   }
 
   /** Fresh purchase data from the store. Returns the coins given now (supporter pack, once). */

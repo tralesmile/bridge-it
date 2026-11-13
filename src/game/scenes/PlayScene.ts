@@ -941,6 +941,7 @@ export class PlayScene extends Phaser.Scene {
       if (won && this.isDraft) save.recordDraftWin(cost);
       // Friends' levels keep only the best stars (no coins or stats).
       const before = won && !this.isDraft ? save.recordFriendWin(this.level.id, starsFor(this.level, cost)) : 0;
+      if (won) announceAchievements(this, 1400);
       if (!won) {
         this.weakBeams = sim.beamStates.filter((s) => s.broken || s.stress > 0.8).map((s) => ({ a: pointOf(s.beam.a), b: pointOf(s.beam.b) }));
       }

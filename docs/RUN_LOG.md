@@ -2,6 +2,22 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-13 — Run 45
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- Level editor: ship lanes and the flag. A "🪨 Rocks / 🚢 Ship lanes" switch under the grid; in lane mode a tap adds a 4 m lane around the tap or removes the tapped one (up to 3; side by side for a wide canal). The first lane adds Piston to the materials; rocks inside a lane are refused ("Ships sail here"); a lane over rocks is refused. "Flag" stepper 2 to 8 m. Level id format version 2 only when a level has lanes or a moved flag, so every old level id, saved bridge and level code stays the same.
+- Saved bridges of player levels no longer grow without end: the newest 20 loose ones stay, plus My levels and starred friends' levels.
+- 3 editor achievements: Level Maker, Level Designer (5 own levels crossed), Good Friend. Checked after every player-level win.
+
+**Verified**
+- `npm run check` green (590 tests, 6 new: v1 ids unchanged, v2 round trip and level codes, lane rules, a drawbridge leaf wins a player lane level and an empty one loses, bridge trimming, editor achievements). `npm run e2e` exit 0, no FAIL after each task (new: lane added with piston, rock in lane refused, flag 5 m, test level has the lane, a drawbridge crosses it; Level Maker and Good Friend earned). Probe and e2e screenshots checked: editor with a lane and flag (desktop, phone), win on the lane level, Trophies with 29.
+
+**Lessons**
+- New optional fields in an id-encoded spec: write the new version only when a field differs from its default, so old ids never change (saved bridges and shared codes are keyed by the id). Test `customId(old + defaults) === customId(old)`.
+- Work out a pruning test by hand first: the level being saved is exempt, so the real cap is max + 1; my first expectation was off by one.
+- While the 12-minute e2e runs, prepare the next task as edit scripts in the scratchpad and apply them after the commit; it keeps commits per task without the copy-aside dance.
+- Next: Localization (M8), or the small editor polish tasks.
+
 ## 2026-11-13 — Run 44
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

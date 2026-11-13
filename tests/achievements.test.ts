@@ -7,9 +7,9 @@ const empty: AchievementInput = { stars: {}, bestCost: {}, owned: [], stats: { .
 const byId = (id: string) => ACHIEVEMENTS.find((a) => a.id === id)!;
 
 describe('achievements', () => {
-  test('there are 26 with unique ids, and none is done on a new save', () => {
-    expect(ACHIEVEMENTS).toHaveLength(26);
-    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(26);
+  test('there are 29 with unique ids, and none is done on a new save', () => {
+    expect(ACHIEVEMENTS).toHaveLength(29);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(29);
     expect(newAchievements(empty, [])).toEqual([]);
     for (const a of ACHIEVEMENTS) expect(a.text.length).toBeLessThan(50);
   });
@@ -17,8 +17,8 @@ describe('achievements', () => {
   test('every achievement can be done with a full save', () => {
     const stars = Object.fromEntries(ALL_LEVELS.map((l) => [l.id, 3]));
     const bestCost = Object.fromEntries(ALL_LEVELS.map((l) => [l.id, 1]));
-    const full: AchievementInput = { stars, bestCost, owned: SHOP_ITEMS.filter((s) => s.price > 0).map((s) => s.id), stats: { attempts: 50, fails: 1, broken: 100, hints: 1 }, levels: ALL_LEVELS, held: ALL_LEVELS.slice(0, 10).map((l) => l.id), dailyBest: 7, sandboxWins: ['sandbox-6-car-flat-none', 'sandbox-10-car-flat-none', 'sandbox-16-truck-lower-rocks', 'sandbox-24-truck-flat-both', 'sandbox-24-train-higher-posts'] };
-    expect(newAchievements(full, [])).toHaveLength(26);
+    const full: AchievementInput = { stars, bestCost, owned: SHOP_ITEMS.filter((s) => s.price > 0).map((s) => s.id), stats: { attempts: 50, fails: 1, broken: 100, hints: 1 }, levels: ALL_LEVELS, held: ALL_LEVELS.slice(0, 10).map((l) => l.id), dailyBest: 7, sandboxWins: ['sandbox-6-car-flat-none', 'sandbox-10-car-flat-none', 'sandbox-16-truck-lower-rocks', 'sandbox-24-truck-flat-both', 'sandbox-24-train-higher-posts'], madeCrossed: 5, friendsCrossed: 1 };
+    expect(newAchievements(full, [])).toHaveLength(29);
   });
 
   test('first win, world done and perfect world', () => {
@@ -55,6 +55,13 @@ describe('achievements', () => {
     expect(newAchievements({ ...empty, dailyBest: 3 }, [])).toEqual(['daily-1']);
     expect(byId('daily-7').progress({ ...empty, dailyBest: 3 })).toEqual([3, 7]);
     expect(isDone(byId('daily-7'), { ...empty, dailyBest: 9 })).toBe(true);
+  });
+
+  test('level editor: your own levels and a friend\'s level', () => {
+    expect(newAchievements({ ...empty, madeCrossed: 1 }, [])).toEqual(['maker']);
+    expect(byId('maker-5').progress({ ...empty, madeCrossed: 3 })).toEqual([3, 5]);
+    expect(isDone(byId('maker-5'), { ...empty, madeCrossed: 5 })).toBe(true);
+    expect(newAchievements({ ...empty, friendsCrossed: 2 }, [])).toEqual(['friend-level']);
   });
 
   test('sandbox: 5 different setups, and the train over 24 m', () => {

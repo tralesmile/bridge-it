@@ -89,8 +89,10 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Level editor: a 🔗 Share button per card in My levels (under the bin) copies a crossed level's code without opening it; off for levels not crossed yet. The main Copy button now names the level in its message
 - [x] Level editor: ship lanes and the flag distance. "🪨 Rocks / 🚢 Ship lanes" switch under the grid: in lane mode a tap adds a 4 m lane around the tap (or removes the one tapped); up to 3, side by side for a wide one; Piston is added to the materials with the first lane; rocks cannot go inside a lane. "Flag" stepper (2 to 8 m). Level ids format version 2 only when a level has lanes or a moved flag, so old level ids and codes stay the same
 - [x] Level editor: stars on friends' levels (`save.friendStars`, newest first, at most 40, `addFriendStars` / `readFriendStars` in core). The result panel says "New best!" or "Your best: N ★"; the play title shows ★★☆ once crossed. No coins or stats
-- [ ] Saved bridges for friends' levels (`save.designs` with `custom-` ids) are never removed; drop those that are not in My levels or `friendStars` when the save grows
-- [ ] Level editor: achievements (make a level, cross a friend's level)
+- [x] Saved bridges of player levels are trimmed: `saveDesign` on a `custom-` id moves it to the end and drops the oldest ones that are not in My levels or `friendStars`, keeping the newest 20 (`staleCustomDesigns` in core)
+- [x] Level editor achievements: Level Maker (cross a level you made), Level Designer (5 of them), Good Friend (cross a friend's level). 29 achievements
+- [ ] Level editor: show 🚢 on My levels cards that have ship lanes; a "(copy)" name for Edit a copy
+- [ ] Trophies grid fits 30 cards (6x5, 29 used): more achievements (World 5) need pages or smaller cards
 - [x] Share codes core: `encodeBridge` / `decodeBridge` in `src/core/share.ts` (format `BI1.<levelId>.<data>.<check>`, checked against level rules; tested on all solutions)
 - [x] Share codes UI: "Copy bridge code" on the win panel, "Paste code" button on the play scene (uses window.prompt; not covered by e2e)
 

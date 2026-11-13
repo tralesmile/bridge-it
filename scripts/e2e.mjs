@@ -482,7 +482,8 @@ async function run(viewport, name) {
   await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon !== null, null, { timeout: 30000 });
   await sleep(800);
   await page.screenshot({ path: `${OUT}/${name}-9x-editor-friend-won.png` });
-  const fsSave = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); return { list: s.friendStars, id: globalThis.__bridgeit.scene.getScene('play').level.id }; });
+  const fsSave = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); return { list: s.friendStars, id: globalThis.__bridgeit.scene.getScene('play').level.id, ach: s.achievements }; });
+  check(fsSave.ach.includes('maker') && fsSave.ach.includes('friend-level'), `${name}: Level Maker and Good Friend earned (${fsSave.ach.join(',')})`);
   check(fsSave.list.length === 1 && fsSave.list[0].id === fsSave.id && fsSave.list[0].stars >= 1, `${name}: a friend's level keeps its best stars (${JSON.stringify(fsSave.list.map((f) => f.stars))})`);
   await click(500, 450); // Build more
   await sleep(300);

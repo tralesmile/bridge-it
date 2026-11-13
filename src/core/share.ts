@@ -23,31 +23,34 @@ export function encodeBridge(levelId: string, beams: Beam[]): string {
   return `${body}.${checksum(body)}`;
 }
 
-export type DecodeResult = { ok: true; levelId: string; beams: Beam[] } | { ok: false; error: string };
+export type DecodeResult = { ok: true; levelId: string; beams: Beam[] } | { ok: false; error: string; code: DecodeError };
+
+/** Why a code did not load; the game shows a text for each (`code.<name>` in the language tables). */
+export type DecodeError = 'not-code' | 'typo' | 'no-level' | 'damaged' | 'material' | 'no-fit';
 
 /** Reads a share code and checks every beam against the level rules. */
 export function decodeBridge(code: string): DecodeResult {
   const text = code.trim();
   const parts = text.split('.');
-  if (parts.length !== 4 || parts[0] !== PREFIX) return { ok: false, error: 'This code is not a Bridge It! code.' };
+  if (parts.length !== 4 || parts[0] !== PREFIX) return { ok: false, error: 'This code is not a Bridge It! code.', code: 'not-code' };
   const check = parts[parts.length - 1];
   const body = parts.slice(0, -1).join('.');
-  if (checksum(body) !== check) return { ok: false, error: 'The code has a typo. Please check it.' };
+  if (checksum(body) !== check) return { ok: false, error: 'The code has a typo. Please check it.', code: 'typo' };
   const data = parts[2];
   const levelId = parts[1];
   const level = anyLevel(levelId);
-  if (!level) return { ok: false, error: 'This level does not exist.' };
+  if (!level) return { ok: false, error: 'This level does not exist.', code: 'no-level' };
   const bytes = fromB64(data);
-  if (!bytes || bytes.length % 5 !== 0) return { ok: false, error: 'The code is damaged.' };
+  if (!bytes || bytes.length % 5 !== 0) return { ok: false, error: 'The code is damaged.', code: 'damaged' };
   const design = new BridgeDesign(level);
   const beams: Beam[] = [];
   for (let i = 0; i < bytes.length; i += 5) {
     const material = MATERIAL_ORDER[bytes[i + 4]];
-    if (!material) return { ok: false, error: 'The code uses an unknown material.' };
+    if (!material) return { ok: false, error: 'The code uses an unknown material.', code: 'material' };
     const a = { x: bytes[i] - OFFSET, y: bytes[i + 1] - OFFSET };
     const b = { x: bytes[i + 2] - OFFSET, y: bytes[i + 3] - OFFSET };
     const result = design.add(a, b, material);
-    if (!result.ok) return { ok: false, error: `The bridge does not fit this level (${result.reason}).` };
+    if (!result.ok) return { ok: false, error: `The bridge does not fit this level (${result.reason}).`, code: 'no-fit' };
     beams.push({ a: keyOf(a), b: keyOf(b), material });
   }
   return { ok: true, levelId, beams };

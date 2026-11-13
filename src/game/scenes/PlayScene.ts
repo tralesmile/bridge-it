@@ -9,7 +9,6 @@ import { decodeBridge, encodeBridge } from '../../core/share';
 import { starsFor } from '../../core/scoring';
 import { cheaperThanPercent } from '../../core/stats';
 import { stressLevel } from '../../core/stress';
-import { VEHICLES } from '../../core/vehicles';
 import { equipped, vehicleTextureKey } from '../../core/shop';
 import { MAX_TIME, PISTON_START, PISTON_TIME, STEP, Simulation } from '../../core/simulation';
 import type { Point, ShipLane } from '../../core/types';
@@ -22,6 +21,8 @@ import { C, FONT, GAME_H, GAME_W, PX_PER_M, hex, mix, shadeOf } from '../theme';
 import { closeOnBack, onBack } from '../back';
 import { haptic } from '../native';
 import { codeDialogOpen, showCodeDialog } from '../codeDialog';
+import { t, vehicleName } from '../i18n';
+import type { TextKey } from '../../core/i18n';
 import { announceAchievements, button, label, panel, type Button } from '../ui';
 
 type Tool = MaterialId | 'erase';
@@ -31,18 +32,13 @@ const WATER_Y = -4.5;
 const MIN_PX_PER_M = 28;
 const HINT_AFTER_FAILS = 2;
 
-const LOSS_TITLE: Record<string, string> = { fell: 'Splash!', collapse: 'Splash!', stuck: 'Stuck!', flipped: 'Flipped!', timeout: 'Too slow!' };
+const LOSS_TITLE: Record<string, TextKey> = { fell: 'play.splash', collapse: 'play.splash', stuck: 'play.stuck', flipped: 'play.flipped', timeout: 'play.tooSlow' };
+const lossTitle = (reason: string): string => t(LOSS_TITLE[reason] ?? 'play.splash');
+/** Dollar amounts keep the same digits in every language ("$1,250"). */
+const money = (n: number): string => n.toLocaleString('en-US');
 
-const REASONS: Record<string, string> = {
-  'too-long': 'Too long for this material',
-  'out-of-area': 'Outside the building area',
-  'in-lane': 'Keep the ship lane clear',
-  'in-ground': 'Cannot build inside the ground',
-  'over-budget': 'Not enough money',
-  'material-locked': 'Not available here yet',
-  duplicate: 'Already built',
-  'same-point': '',
-};
+/** Toast when a beam cannot be placed (nothing for a tap on the same point). */
+const reasonText = (reason: Extract<AddResult, { ok: false }>['reason']): string => (reason === 'same-point' ? '' : t(`reason.${reason}`));
 
 export class PlayScene extends Phaser.Scene {
   private level!: LevelEntry;
@@ -165,8 +161,8 @@ export class PlayScene extends Phaser.Scene {
     this.createHud();
     this.redraw();
     this.bindInput();
-    const tip = this.stress ? `Stress test: can your bridge hold the ${VEHICLES[this.level.vehicle].name}?` : this.level.tip;
-    this.showToast(tip ?? `Level ${this.level.index}: ${this.level.name}`, 3500);
+    const tip = this.stress ? t('play.stressTip', { vehicle: vehicleName(this.level.vehicle) }) : this.level.tip;
+    this.showToast(tip ?? t('play.levelToast', { n: this.level.index, name: this.level.name }), 3500);
     // If the app is hidden during a drive, wait for a tap so the player does not miss the collapse.
     const onHidden = (): void => {
       if (this.mode === 'sim' && !this.pauseLayer) this.showPause();
@@ -264,7 +260,7 @@ export class PlayScene extends Phaser.Scene {
     const mid = left + (right - left) * 0.3;
     const s = this.ppm / PX_PER_M;
     // Label just above the boat, clear of the title and tip text at the top.
-    label(this, mid, waterY - 80 * s, 'Ship lane', 22, C.white).setAlpha(0.9);
+    label(this, mid, waterY - 80 * s, t('play.shipLane'), 22, C.white).setAlpha(0.9);
     // Sailboat on the water, in its own graphics so it can sail away.
     const boat = this.add.graphics({ x: mid, y: waterY });
     this.children.moveAbove(boat as never, this.world as never);
@@ -334,9 +330,9 @@ export class PlayScene extends Phaser.Scene {
   private showPause(): void {
     const layer = this.add.container(0, 0).setDepth(40);
     const shade = this.add.rectangle(0, 0, GAME_W, GAME_H, hex(C.ink), 0.45).setOrigin(0).setInteractive();
-    layer.add([shade, panel(this, GAME_W / 2, GAME_H / 2, 520, 260), label(this, GAME_W / 2, GAME_H / 2 - 50, 'Paused', 56, C.ink)]);
+    layer.add([shade, panel(this, GAME_W / 2, GAME_H / 2, 520, 260), label(this, GAME_W / 2, GAME_H / 2 - 50, t('play.paused'), 56, C.ink)]);
     layer.add(
-      button(this, GAME_W / 2, GAME_H / 2 + 50, 'Continue', () => {
+      button(this, GAME_W / 2, GAME_H / 2 + 50, t('play.continue'), () => {
         layer.destroy();
         this.pauseLayer = undefined;
       }, { width: 260, height: 76, color: C.good, shade: C.goodDark }),
@@ -377,13 +373,13 @@ export class PlayScene extends Phaser.Scene {
 
   private createHud(): void {
     button(this, 90, 50, '◀', () => this.leave(), { width: 76, height: 56, fontSize: 30, color: C.blue, shade: C.blueDark });
-    this.pasteButton = button(this, 215, 50, 'Paste code', () => void this.pasteCode(), { width: 170, height: 56, fontSize: 22, color: C.grey, shade: C.greyDark });
+    this.pasteButton = button(this, 215, 50, t('play.paste'), () => void this.pasteCode(), { width: 170, height: 56, fontSize: 22, color: C.grey, shade: C.greyDark });
     this.buildUi.push(this.pasteButton);
     const name = this.sandbox
-      ? `Sandbox · ${this.level.gapEnd - this.level.gapStart} m · ${VEHICLES[this.level.vehicle].name}`
-      : isDailyId(this.level.id) ? `Daily: ${this.level.name}`
-      : this.custom ? `${this.isDraft ? 'My level' : 'Player level'}: ${this.level.name}${this.isDraft ? '' : friendBest(this.level.id)}` : `${this.level.index}. ${this.level.name}`;
-    const title = label(this, GAME_W / 2, 40, this.stress ? `Stress test: ${this.level.name}` : name, 34, C.white);
+      ? t('play.titleSandbox', { gap: this.level.gapEnd - this.level.gapStart, vehicle: vehicleName(this.level.vehicle) })
+      : isDailyId(this.level.id) ? t('play.titleDaily', { name: this.level.name })
+      : this.custom ? (this.isDraft ? t('play.titleMine', { name: this.level.name }) : t('play.titlePlayer', { name: this.level.name }) + friendBest(this.level.id)) : `${this.level.index}. ${this.level.name}`;
+    const title = label(this, GAME_W / 2, 40, this.stress ? t('play.titleStress', { name: this.level.name }) : name, 34, C.white);
     title.setStroke(C.ink, 8);
 
     this.costBar = this.add.graphics();
@@ -414,25 +410,25 @@ export class PlayScene extends Phaser.Scene {
     const many = tools.length > 5;
     const step = many ? 126 : 170;
     const x0 = many ? 72 : 110;
-    tools.forEach((t, i) => {
-      const name = t === 'erase' ? 'Erase' : MATERIALS[t].name;
-      const b = button(this, x0 + i * step, GAME_H - 52, name, () => this.selectTool(t), {
+    tools.forEach((tool, i) => {
+      const name = tool === 'erase' ? t('play.erase') : t(`mat.${tool}`);
+      const b = button(this, x0 + i * step, GAME_H - 52, name, () => this.selectTool(tool), {
         width: many ? 116 : 150,
         height: 60,
         fontSize: many ? 21 : 24,
-        color: colors[t][0],
-        shade: colors[t][1],
+        color: colors[tool][0],
+        shade: colors[tool][1],
       });
-      this.toolButtons.set(t, b);
+      this.toolButtons.set(tool, b);
       this.buildUi.push(b);
     });
-    this.undoButton = button(this, x0 + tools.length * step - (many ? 6 : 0), GAME_H - 52, 'Undo', () => this.undo(), { width: many ? 104 : 130, height: 60, fontSize: many ? 21 : 24, color: C.grey, shade: C.greyDark });
+    this.undoButton = button(this, x0 + tools.length * step - (many ? 6 : 0), GAME_H - 52, t('play.undo'), () => this.undo(), { width: many ? 104 : 130, height: 60, fontSize: many ? 21 : 24, color: C.grey, shade: C.greyDark });
     this.buildUi.push(this.undoButton);
-    this.hintButton = button(this, GAME_W - 330, GAME_H - 52, '💡 Hint', () => void this.requestHint(), { width: 150, height: 60, fontSize: 24, color: C.gold, shade: '#d29b1b', textColor: C.ink });
+    this.hintButton = button(this, GAME_W - 330, GAME_H - 52, t('play.hint'), () => void this.requestHint(), { width: 150, height: 60, fontSize: 24, color: C.gold, shade: '#d29b1b', textColor: C.ink });
     this.hintButton.setVisible(this.hintAllowed());
     this.buildUi.push(this.hintButton);
 
-    this.goButton = button(this, GAME_W - 120, GAME_H - 56, 'GO!', () => this.toggleSim(), { width: 190, height: 76, fontSize: 38, color: C.good, shade: C.goodDark });
+    this.goButton = button(this, GAME_W - 120, GAME_H - 56, t('play.go'), () => this.toggleSim(), { width: 190, height: 76, fontSize: 38, color: C.good, shade: C.goodDark });
     this.selectTool(this.tool);
   }
 
@@ -447,10 +443,10 @@ export class PlayScene extends Phaser.Scene {
     this.undoButton.setEnabled(this.design.canUndo);
     if (this.sandbox) {
       // No money limit in the sandbox: just show what the bridge costs.
-      this.costText.setText(`Cost $${cost.toLocaleString('en-US')}`);
+      this.costText.setText(t('play.cost', { cost: money(cost) }));
       return;
     }
-    this.costText.setText(`$${cost.toLocaleString('en-US')} / $${budget.toLocaleString('en-US')}`);
+    this.costText.setText(`$${money(cost)} / $${money(budget)}`);
     const g = this.costBar;
     g.clear();
     const x = GAME_W - 360;
@@ -495,7 +491,7 @@ export class PlayScene extends Phaser.Scene {
       const start = this.nearestNode(w);
       if (!start) {
         sfx.error();
-        this.showToast('Start from a red anchor or a white joint');
+        this.showToast(t('play.startJoint'));
         return;
       }
       this.dragPointerId = p.id;
@@ -526,7 +522,7 @@ export class PlayScene extends Phaser.Scene {
       } else {
         this.placeStreak = 0;
         sfx.error();
-        this.showToast(REASONS[result.reason]);
+        this.showToast(reasonText(result.reason));
       }
     };
     this.input.on(Phaser.Input.Events.POINTER_UP, finish);
@@ -602,33 +598,33 @@ export class PlayScene extends Phaser.Scene {
 
   private async pasteCode(): Promise<void> {
     if (this.mode !== 'build' || codeDialogOpen()) return;
-    const text = await showCodeDialog({ title: 'Paste a bridge code here:' });
+    const text = await showCodeDialog({ title: t('play.pastePrompt') });
     if (!text || this.mode !== 'build') return;
     const result = decodeBridge(text);
     if (!result.ok) {
       sfx.error();
-      this.showToast(result.error, 2600);
+      this.showToast(t(`code.${result.code}`), 2600);
       return;
     }
     if (result.levelId !== this.level.id) {
       sfx.error();
-      this.showToast('This code is for a different level.', 2600);
+      this.showToast(t('play.otherLevel'), 2600);
       return;
     }
     this.design = new BridgeDesign(this.level, result.beams);
     sfx.place(0);
     this.afterChange();
-    this.showToast('Bridge loaded!');
+    this.showToast(t('play.loaded'));
   }
 
   private async copyCode(): Promise<void> {
     const code = encodeBridge(this.level.id, this.design.list);
     try {
       await navigator.clipboard.writeText(code);
-      this.showToast('Code copied! Send it to a friend.', 2400);
+      this.showToast(t('play.copied'), 2400);
     } catch {
       // No clipboard (blocked in some portal iframes): show the code to copy by hand.
-      await showCodeDialog({ title: 'Copy this code:', value: code, readOnly: true });
+      await showCodeDialog({ title: t('play.copyPrompt'), value: code, readOnly: true });
     }
   }
 
@@ -652,13 +648,13 @@ export class PlayScene extends Phaser.Scene {
     const ok = await platform.rewardedAd();
     platform.gameplayStart();
     if (!ok) {
-      this.showToast('No hint this time. Try again soon!');
+      this.showToast(t('play.noHint'));
       return;
     }
     this.showHint = true;
     save.recordHint();
     announceAchievements(this);
-    this.showToast('Follow the dotted ghost bridge');
+    this.showToast(t('play.followGhost'));
     this.redraw();
   }
 
@@ -827,7 +823,7 @@ export class PlayScene extends Phaser.Scene {
     this.placeStreak = 0;
     sfx.go();
     this.sailBoats();
-    this.goButton.setLabel('Edit');
+    this.goButton.setLabel(t('play.edit'));
     for (const o of this.buildUi) (o as unknown as Phaser.GameObjects.Components.Visible).setVisible(false);
     this.redraw();
   }
@@ -835,7 +831,7 @@ export class PlayScene extends Phaser.Scene {
   private stopSim(): void {
     this.sim = null;
     this.mode = 'build';
-    this.goButton.setLabel('GO!').setVisible(true);
+    this.goButton.setLabel(t('play.go')).setVisible(true);
     for (const o of this.buildUi) (o as unknown as Phaser.GameObjects.Components.Visible).setVisible(true);
     this.hintButton.setVisible(this.hintAllowed());
     this.resultLayer?.destroy();
@@ -1004,7 +1000,7 @@ export class PlayScene extends Phaser.Scene {
 
   private showWin(stars: number, cost: number, coins: number, daily?: { streak: number; usedSaver: boolean; past: boolean }): void {
     const layer = this.resultPanel(520);
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 170, 'Made it!', 56, C.ink));
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 170, t('play.madeIt'), 56, C.ink));
     for (let i = 0; i < 3; i++) {
       const star = this.add.image(GAME_W / 2 - 110 + i * 110, GAME_H / 2 - 50, i < stars ? 'star' : 'star-empty').setScale(0);
       layer.add(star);
@@ -1021,25 +1017,25 @@ export class PlayScene extends Phaser.Scene {
     }
     this.confettiBurst(stars);
     const next = this.level.starBudgets[stars === 1 ? 0 : 1];
-    const streak = daily?.past ? 'An old day: just for fun (no streak, no coins).' : daily ? `🔥 Daily streak: ${daily.streak} day${daily.streak === 1 ? '' : 's'}${daily.usedSaver ? ' (saver used)' : ''}` : '';
-    const sub = daily ? streak : stars < 3 ? `Cost $${cost} · next star at $${next}` : `Cost $${cost} · perfect!`;
+    const streak = daily?.past ? t('play.oldDay') : daily ? t(daily.usedSaver ? 'play.streakSaver' : 'play.streak', { n: daily.streak }) : '';
+    const sub = daily ? streak : stars < 3 ? t('play.nextStar', { cost: money(cost), next: money(next) }) : t('play.perfect', { cost: money(cost) });
     layer.add(label(this, GAME_W / 2, GAME_H / 2 + 28, sub, 24, C.greyDark));
     if (!daily) {
       const pct = cheaperThanPercent(this.level, cost);
       this.lastCheaper = pct;
-      layer.add(label(this, GAME_W / 2, GAME_H / 2 + 58, `Cheaper than about ${pct}% of players`, 20, C.greyDark));
+      layer.add(label(this, GAME_W / 2, GAME_H / 2 + 58, t('play.cheaper', { pct }), 20, C.greyDark));
     }
     if (coins > 0) {
-      layer.add(label(this, GAME_W / 2, GAME_H / 2 + 88, `+${coins} coins`, 24, C.primaryDark));
+      layer.add(label(this, GAME_W / 2, GAME_H / 2 + 88, t('play.coins', { n: coins }), 24, C.primaryDark));
       this.coinFlyIn(Math.min(coins, 8), 900 + stars * 220);
     }
     const nxt = daily ? undefined : nextLevel(this.level.id);
     const canStress = !daily && stressLevel(this.level) !== null;
     const copyX = canStress ? GAME_W / 2 - 140 : GAME_W / 2;
-    layer.add(button(this, copyX, GAME_H / 2 + 225, 'Copy bridge code', () => void this.copyCode(), { width: 260, height: 50, fontSize: 22, color: C.grey, shade: C.greyDark }));
+    layer.add(button(this, copyX, GAME_H / 2 + 225, t('play.copyCode'), () => void this.copyCode(), { width: 260, height: 50, fontSize: 22, color: C.grey, shade: C.greyDark }));
     if (canStress) {
       layer.add(
-        button(this, GAME_W / 2 + 140, GAME_H / 2 + 225, '💪 Stress test', () => this.scene.start('play', { levelId: this.level.id, stress: true }), {
+        button(this, GAME_W / 2 + 140, GAME_H / 2 + 225, t('play.stressTest'), () => this.scene.start('play', { levelId: this.level.id, stress: true }), {
           width: 260,
           height: 50,
           fontSize: 22,
@@ -1048,9 +1044,9 @@ export class PlayScene extends Phaser.Scene {
         }),
       );
     }
-    layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 145, 'Improve', () => this.stopSim(), { width: 220, height: 70, color: C.blue, shade: C.blueDark }));
+    layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 145, t('play.improve'), () => this.stopSim(), { width: 220, height: 70, color: C.blue, shade: C.blueDark }));
     layer.add(
-      button(this, GAME_W / 2 + 140, GAME_H / 2 + 145, nxt ? 'Next ▶' : daily ? 'Done' : 'Levels', async () => {
+      button(this, GAME_W / 2 + 140, GAME_H / 2 + 145, nxt ? t('play.next') : daily ? t('play.done') : t('play.levels'), async () => {
         await platform.commercialBreak();
         if (nxt) this.scene.start('play', { levelId: nxt.id });
         else this.leave();
@@ -1110,23 +1106,23 @@ export class PlayScene extends Phaser.Scene {
   private showCustomResult(won: boolean, reason: string, cost: number, before = 0): void {
     const friend = !this.isDraft;
     const layer = this.resultPanel(friend ? 500 : 420);
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 150, won ? 'Made it!' : LOSS_TITLE[reason] ?? 'Splash!', 56, C.ink));
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 150, won ? t('play.madeIt') : lossTitle(reason), 56, C.ink));
     const stars = won ? starsFor(this.level, cost) : 0;
     if (won) {
       for (let i = 0; i < 3; i++) layer.add(this.add.image(GAME_W / 2 - 90 + i * 90, GAME_H / 2 - 65, i < stars ? 'star' : 'star-empty').setScale(1.1));
     }
-    const best = !before ? '' : stars > before ? ' · New best!' : ` · Your best: ${before} ★`;
-    const text = !won ? 'Try again: change the bridge.'
-      : this.isDraft ? `Cost $${cost.toLocaleString('en-US')} · Now you can share the level code.` : `Cost $${cost.toLocaleString('en-US')}${best}`;
+    const best = !before ? '' : stars > before ? ` · ${t('play.newBest')}` : ` · ${t('play.yourBest', { n: before })}`;
+    const text = !won ? t('play.tryChange')
+      : this.isDraft ? `${t('play.cost', { cost: money(cost) })} · ${t('play.canShare')}` : t('play.cost', { cost: money(cost) }) + best;
     layer.add(label(this, GAME_W / 2, GAME_H / 2 + (won ? 0 : -60), text, 24, C.greyDark));
-    layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 90, won ? 'Build more' : 'Fix it', () => this.stopSim(), { width: 240, height: 70, color: C.primary, shade: C.primaryDark }));
-    layer.add(button(this, GAME_W / 2 + 140, GAME_H / 2 + 90, this.isDraft ? 'Edit level' : 'Editor', () => this.scene.start('editor'), { width: 240, height: 70, fontSize: 26, color: C.blue, shade: C.blueDark }));
+    layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 90, won ? t('play.buildMore') : t('play.fixIt'), () => this.stopSim(), { width: 240, height: 70, color: C.primary, shade: C.primaryDark }));
+    layer.add(button(this, GAME_W / 2 + 140, GAME_H / 2 + 90, this.isDraft ? t('play.editLevel') : t('menu.editor'), () => this.scene.start('editor'), { width: 240, height: 70, fontSize: 26, color: C.blue, shade: C.blueDark }));
     if (friend) {
       // A friend's level goes into "My levels" as a new level (your bridge comes along).
-      layer.add(button(this, GAME_W / 2, GAME_H / 2 + 180, '✏️ Edit a copy', () => {
+      layer.add(button(this, GAME_W / 2, GAME_H / 2 + 180, t('play.editCopy'), () => {
         const spec = parseCustomId(this.level.id);
         const added = spec !== undefined && save.addEditorLevel(spec);
-        this.scene.start('editor', added ? { toast: 'A copy is in My levels. Cross it to share it.' } : { toast: 'My levels is full. Delete a level first.', list: true });
+        this.scene.start('editor', added ? { toast: t('play.copyAdded') } : { toast: t('play.listFull'), list: true });
       }, { width: 300, height: 58, fontSize: 24, color: C.good, shade: C.goodDark }));
     }
   }
@@ -1134,28 +1130,28 @@ export class PlayScene extends Phaser.Scene {
   /** Result of a sandbox run. Nothing is scored; the bridge can be shared as a code. */
   private showSandboxResult(won: boolean, reason: string, cost: number, broken: number): void {
     const layer = this.resultPanel(400);
-    const title = won ? 'It made it! 🎉' : LOSS_TITLE[reason] ?? 'Splash!';
+    const title = won ? t('play.itMadeIt') : lossTitle(reason);
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 130, title, 56, C.ink));
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 55, `Cost $${cost.toLocaleString('en-US')} · Beams broken: ${broken}`, 26, C.greyDark));
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 15, 'Sandbox: just for fun, nothing is scored.', 22, C.greyDark));
-    layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 70, won ? 'Build more' : 'Fix it', () => this.stopSim(), { width: 240, height: 70, color: C.primary, shade: C.primaryDark }));
-    layer.add(button(this, GAME_W / 2 + 140, GAME_H / 2 + 70, 'New setup', () => this.scene.start('sandbox'), { width: 240, height: 70, fontSize: 26, color: C.blue, shade: C.blueDark }));
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 55, `${t('play.cost', { cost: money(cost) })} · ${t('play.broken', { n: broken })}`, 26, C.greyDark));
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 15, t('play.sandboxNote'), 22, C.greyDark));
+    layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 70, won ? t('play.buildMore') : t('play.fixIt'), () => this.stopSim(), { width: 240, height: 70, color: C.primary, shade: C.primaryDark }));
+    layer.add(button(this, GAME_W / 2 + 140, GAME_H / 2 + 70, t('play.newSetup'), () => this.scene.start('sandbox'), { width: 240, height: 70, fontSize: 26, color: C.blue, shade: C.blueDark }));
     if (won && this.design.list.length > 0) {
-      layer.add(button(this, GAME_W / 2, GAME_H / 2 + 150, '📋 Copy bridge code', () => void this.copyCode(), { width: 320, height: 56, fontSize: 22, color: C.good, shade: C.goodDark }));
+      layer.add(button(this, GAME_W / 2, GAME_H / 2 + 150, `📋 ${t('play.copyCode')}`, () => void this.copyCode(), { width: 320, height: 56, fontSize: 22, color: C.good, shade: C.goodDark }));
     }
   }
 
   /** Result of a stress test: held or broke. Nothing is saved. */
   private showStressResult(won: boolean, broken: number): void {
     const layer = this.resultPanel(380);
-    const vehicle = VEHICLES[this.level.vehicle].name;
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 120, won ? 'It held! 💪' : 'It broke!', 56, C.ink));
-    const text = won ? `Your bridge held the ${vehicle}.` : `The ${vehicle} was too heavy.`;
+    const vehicle = vehicleName(this.level.vehicle);
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 120, won ? t('play.held') : t('play.broke'), 56, C.ink));
+    const text = won ? t('play.heldText', { vehicle }) : t('play.tooHeavy', { vehicle });
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 45, text, 26, C.greyDark));
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 5, `Beams broken: ${broken}`, 22, C.greyDark));
-    layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 90, 'Try again', () => this.stopSim(), { width: 240, height: 70, color: C.blue, shade: C.blueDark }));
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 5, t('play.broken', { n: broken }), 22, C.greyDark));
+    layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 90, t('play.tryAgain'), () => this.stopSim(), { width: 240, height: 70, color: C.blue, shade: C.blueDark }));
     layer.add(
-      button(this, GAME_W / 2 + 140, GAME_H / 2 + 90, 'Back to level', () => this.scene.start('play', { levelId: this.level.id }), {
+      button(this, GAME_W / 2 + 140, GAME_H / 2 + 90, t('play.backToLevel'), () => this.scene.start('play', { levelId: this.level.id }), {
         width: 240,
         height: 70,
         fontSize: 26,
@@ -1167,18 +1163,13 @@ export class PlayScene extends Phaser.Scene {
 
   private showLoss(reason: string): void {
     const layer = this.resultPanel(360);
-    const title = LOSS_TITLE[reason] ?? 'Splash!';
-    const tip =
-      reason === 'fell' || reason === 'collapse'
-        ? 'Look for red beams: they broke first.'
-        : reason === 'stuck'
-          ? 'Is the road smooth and connected?'
-          : reason === 'flipped'
-            ? 'Big drops tip the car over. Build a ramp down.'
-            : 'The car ran out of time.';
+    const title = lossTitle(reason);
+    const tip = t(
+      reason === 'fell' || reason === 'collapse' ? 'play.tipBroke' : reason === 'stuck' ? 'play.tipStuck' : reason === 'flipped' ? 'play.tipFlipped' : 'play.tipTime',
+    );
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 110, title, 56, C.ink));
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 30, tip, 26, C.greyDark));
-    layer.add(button(this, GAME_W / 2, GAME_H / 2 + 80, 'Fix it', () => this.stopSim(), { width: 260, height: 76, color: C.primary, shade: C.primaryDark }));
+    layer.add(button(this, GAME_W / 2, GAME_H / 2 + 80, t('play.fixIt'), () => this.stopSim(), { width: 260, height: 76, color: C.primary, shade: C.primaryDark }));
   }
 }
 

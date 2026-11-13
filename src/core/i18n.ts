@@ -4,6 +4,8 @@
  * Screens move to `t()` a few at a time; text not moved yet stays English.
  */
 
+import { PLAY_EN, PLAY_TEXTS } from './texts/play';
+
 export const LANGS = ['en', 'de', 'es', 'pt', 'fr', 'tr', 'ru', 'mk'] as const;
 export type Lang = (typeof LANGS)[number];
 
@@ -19,7 +21,7 @@ export const LANG_NAMES: Record<Lang, string> = {
   mk: 'Македонски',
 };
 
-const EN = {
+const EN_BASE = {
   'menu.tagline': 'Build it. Break it. Laugh. Try again.',
   'menu.play': 'PLAY',
   'menu.shop': 'Shop',
@@ -63,10 +65,14 @@ const EN = {
   'daily.note': 'Only today counts for the streak and coins. Old days are just for fun.',
 } as const;
 
+const EN = { ...EN_BASE, ...PLAY_EN };
+
 export type TextKey = keyof typeof EN;
 type Table = Record<TextKey, string>;
+/** One language's base table; screen tables (`src/core/texts/`) are merged in below. */
+type BaseTable = Record<keyof typeof EN_BASE, string>;
 
-const DE: Table = {
+const DE: BaseTable = {
   'menu.tagline': 'Bauen. Kaputt machen. Lachen. Nochmal.',
   'menu.play': 'SPIELEN',
   'menu.shop': 'Laden',
@@ -110,7 +116,7 @@ const DE: Table = {
   'daily.note': 'Nur heute zählt für Serie und Münzen. Alte Tage sind nur zum Spaß.',
 };
 
-const ES: Table = {
+const ES: BaseTable = {
   'menu.tagline': 'Constrúyelo. Rómpelo. Ríete. Otra vez.',
   'menu.play': 'JUGAR',
   'menu.shop': 'Tienda',
@@ -154,7 +160,7 @@ const ES: Table = {
   'daily.note': 'Solo hoy cuenta para la racha y las monedas. Los días pasados son por diversión.',
 };
 
-const PT: Table = {
+const PT: BaseTable = {
   'menu.tagline': 'Construa. Quebre. Ria. Tente de novo.',
   'menu.play': 'JOGAR',
   'menu.shop': 'Loja',
@@ -198,7 +204,7 @@ const PT: Table = {
   'daily.note': 'Só hoje conta para a sequência e as moedas. Dias antigos são só por diversão.',
 };
 
-const FR: Table = {
+const FR: BaseTable = {
   'menu.tagline': 'Construis. Casse. Ris. Recommence.',
   'menu.play': 'JOUER',
   'menu.shop': 'Boutique',
@@ -242,7 +248,7 @@ const FR: Table = {
   'daily.note': 'Seul aujourd’hui compte pour la série et les pièces. Les anciens jours sont pour le plaisir.',
 };
 
-const TR: Table = {
+const TR: BaseTable = {
   'menu.tagline': 'Kur. Yık. Gül. Yine dene.',
   'menu.play': 'OYNA',
   'menu.shop': 'Mağaza',
@@ -286,7 +292,7 @@ const TR: Table = {
   'daily.note': 'Seri ve paralar için sadece bugün sayılır. Eski günler sadece eğlence için.',
 };
 
-const RU: Table = {
+const RU: BaseTable = {
   'menu.tagline': 'Строй. Ломай. Смейся. Ещё раз.',
   'menu.play': 'ИГРАТЬ',
   'menu.shop': 'Магазин',
@@ -330,7 +336,7 @@ const RU: Table = {
   'daily.note': 'Для серии и монет считается только сегодня. Старые дни — просто для удовольствия.',
 };
 
-const MK: Table = {
+const MK: BaseTable = {
   'menu.tagline': 'Изгради. Скрши. Смеј се. Пак.',
   'menu.play': 'ИГРАЈ',
   'menu.shop': 'Продавница',
@@ -374,7 +380,8 @@ const MK: Table = {
   'daily.note': 'Само денес се брои за низата и парите. Старите денови се само за забава.',
 };
 
-export const TEXTS: Record<Lang, Table> = { en: EN, de: DE, es: ES, pt: PT, fr: FR, tr: TR, ru: RU, mk: MK };
+const BASE: Record<Lang, BaseTable> = { en: EN_BASE, de: DE, es: ES, pt: PT, fr: FR, tr: TR, ru: RU, mk: MK };
+export const TEXTS: Record<Lang, Table> = Object.fromEntries(LANGS.map((l) => [l, { ...BASE[l], ...PLAY_TEXTS[l] }])) as Record<Lang, Table>;
 
 export const isLang = (v: unknown): v is Lang => typeof v === 'string' && (LANGS as readonly string[]).includes(v);
 

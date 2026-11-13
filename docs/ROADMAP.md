@@ -128,7 +128,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
   - [x] Core (`src/core/i18n.ts`): English base table, de, es, pt, fr, tr, ru, mk; `translate` with {names}; the browser language picks the game language (`pickLang`), English otherwise; tests check every language has every key with the same {names}. Game side `t()` in `src/game/i18n.ts`; `settings.lang` in the save
   - [x] Settings: 🌐 Language row (tap for the next language; the menu restarts in it with Settings open). Menu, Settings and Trophies titles use `t()`. Button labels shrink to fit long words
   - [x] World select, level select and the daily calendar use `t()`; world names translated (`worldName`, `twoLines` splits them for the cards); calendar day and month names come from `Intl.DateTimeFormat`. The streak line is now "🔥 Daily streak: N" (no plural forms needed)
-  - [ ] Move the other screens to `t()`: play scene (tool bar, result panels, hints), shop, stats, sandbox, editor, achievement names and texts, level names and tips
+  - [x] Play scene uses `t()`: tool bar (material names), GO/Edit, toasts, pause, every result panel, loss tips, share code errors (`code` in `decodeBridge`), vehicle names (`vehicleName`). Texts in `src/core/texts/play.ts`, merged into the tables. Dollar amounts keep "$1,250" in every language
+  - [ ] Move the other screens to `t()`: shop, stats, sandbox, editor, achievement names and texts, level names and tips
   - [ ] A rounded font with Cyrillic for ru and mk (Fredoka has none; today the system font is used). An OFL font from npm, e.g. Nunito or Comfortaa, only its Cyrillic part, checked against the 8 MB limit
   - [ ] Ask the owner (Macedonian speaker) to read the mk text; a native check of the other languages before launch
   - [ ] Store texts in the 8 languages (M9)

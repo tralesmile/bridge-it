@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'vitest';
+import { MATERIALS } from '../src/core/materials';
+import { VEHICLES } from '../src/core/vehicles';
 import { LANGS, LANG_NAMES, TEXTS, isLang, nextLang, pickLang, translate, twoLines, type TextKey } from '../src/core/i18n';
 
 const vars = (s: string): string[] => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
@@ -20,6 +22,15 @@ describe('languages', () => {
   test('short labels stay short in every language (buttons do not grow)', () => {
     const limits: Partial<Record<TextKey, number>> = { 'settings.on': 6, 'settings.off': 6, 'menu.play': 10, 'menu.shop': 11, 'menu.stats': 11, 'menu.settings': 11, 'menu.editor': 11, 'menu.sandbox': 11, 'menu.trophies': 11 };
     for (const lang of LANGS) for (const [k, max] of Object.entries(limits)) expect(TEXTS[lang][k as TextKey].length, `${lang} ${k}`).toBeLessThanOrEqual(max);
+  });
+
+  test('play scene: tool bar labels stay short, every material and vehicle has a name', () => {
+    const tool: TextKey[] = ['play.erase', 'play.undo', 'play.hint', 'play.go', 'play.edit', ...Object.keys(MATERIALS).map((m) => `mat.${m}` as TextKey)];
+    for (const lang of LANGS) for (const k of tool) expect(TEXTS[lang][k].length, `${lang} ${k}`).toBeLessThanOrEqual(10);
+    // English names match the core tables (they are used in level tips and tests).
+    for (const m of Object.values(MATERIALS)) expect(TEXTS.en[`mat.${m.id}` as TextKey]).toBe(m.name);
+    for (const v of Object.values(VEHICLES)) expect(TEXTS.en[`vehicle.${v.id}` as TextKey]).toBe(v.name);
+    expect(translate('en', 'play.nextStar', { cost: '1,200', next: '900' })).toBe('Cost $1,200 · next star at $900');
   });
 
   test('translate fills in names and keeps unknown ones', () => {

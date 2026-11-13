@@ -1,4 +1,5 @@
 import { pickLang, translate, type Lang, type TextKey } from '../core/i18n';
+import type { VehicleId } from '../core/types';
 import { save } from './save';
 
 /** The player's language: the one picked in Settings, else the browser's (English if the game does not have it). */
@@ -31,3 +32,6 @@ export function dateNames(lang: Lang = currentLang()): { weekday: (d: Date) => s
     return { weekday: (d) => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()], month: (d) => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()] };
   }
 }
+
+/** A vehicle's name in the player's language ("Moo Car"). */
+export const vehicleName = (id: VehicleId): string => t(`vehicle.${id}`);

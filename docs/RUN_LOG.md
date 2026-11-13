@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-13 — Run 47
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- Localization: the play scene uses `t()`. Tool bar (material names), GO / Edit, Paste code, Hint, toasts, pause card, win, loss, sandbox, stress test and player-level result panels, loss tips, vehicle names (`vehicleName`). Share code errors now carry a `code` (`not-code`, `typo`, `no-level`, `damaged`, `material`, `no-fit`) so the game shows them in the player's language. Texts live in `src/core/texts/play.ts` and are merged into the main tables. Level names and tips are still English.
+
+**Verified**
+- `npm run check` green (new: tool bar labels at most 10 letters in every language, English material and vehicle names match the core tables, share error codes). `npm run e2e` exit 0, no FAIL (new: level 1 in German shows Straße, Löschen, Zurück, LOS!, Code einfügen, and the German win panel; the save is put back after). Screenshots checked: German play scene and win panel.
+
+**Lessons**
+- An e2e that "plays an empty bridge" is not empty when the level has a saved bridge from earlier steps: level 1 loaded its winning bridge and won. Check what the save holds before choosing what to assert.
+- Restore the save (`localStorage` copy before, write back after) around extra e2e attempts, so stats and fail counters for later checks stay the same.
+- A Bash heredoc with many quotes can trip the shell safety check; write longer edit scripts with the Write tool into the scratchpad and run them.
+
 ## 2026-11-13 — Run 46
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

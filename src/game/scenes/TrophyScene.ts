@@ -70,7 +70,7 @@ export class TrophyScene extends Phaser.Scene {
     this.cards = layer;
     const { page, pages, items } = pageItems(ACHIEVEMENTS, this.page, this.perPage);
     this.page = page;
-    this.pageText?.setText(t('trophies.page', { page: page + 1, pages }));
+    this.pageText?.setText(t('common.page', { page: page + 1, pages }));
     this.prevBtn?.setEnabled(page > 0);
     this.nextBtn?.setEnabled(page < pages - 1);
 

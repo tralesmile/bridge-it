@@ -6,6 +6,7 @@ import { addBackground } from '../background';
 import { save } from '../save';
 import { C, GAME_W, hex } from '../theme';
 import { button, label, panel } from '../ui';
+import { t, worldName } from '../i18n';
 
 export class LevelSelectScene extends Phaser.Scene {
   constructor() {
@@ -16,8 +17,8 @@ export class LevelSelectScene extends Phaser.Scene {
     addBackground(this, data.world ?? 1);
     const world = WORLDS.find((w) => w.id === data.world) ?? WORLDS[0];
     panel(this, GAME_W / 2, 395, 1000, 580);
-    label(this, GAME_W / 2, 160, world.name, 48, C.ink);
-    button(this, 110, 60, '◀ Back', () => this.scene.start('worlds'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    label(this, GAME_W / 2, 160, worldName(world.id), 48, C.ink);
+    button(this, 110, 60, t('common.back'), () => this.scene.start('worlds'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
     onBack(this, () => this.scene.start('worlds'));
 
     const ids = ALL_LEVELS.map((l) => l.id);
@@ -32,7 +33,7 @@ export class LevelSelectScene extends Phaser.Scene {
     page = Math.min(Math.max(0, page), pages - 1);
     if (pages > 1) {
       const go = (p: number) => () => this.scene.restart({ world: world.id, page: p });
-      label(this, GAME_W - 200, 60, `Page ${page + 1} / ${pages}`, 24, C.ink);
+      label(this, GAME_W - 200, 60, t('common.page', { page: page + 1, pages }), 24, C.ink);
       const opt = { width: 80, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark };
       if (page > 0) button(this, GAME_W - 340, 60, '◀', go(page - 1), opt);
       if (page < pages - 1) button(this, GAME_W - 60, 60, '▶', go(page + 1), opt);

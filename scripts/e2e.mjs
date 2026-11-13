@@ -308,6 +308,39 @@ async function run(viewport, name) {
   await sleep(500);
   await page.screenshot({ path: `${OUT}/${name}-9d-levels-held.png` });
 
+  // World select, level select and the daily calendar follow the language (Russian here), then back to English.
+  const sceneTexts = (key) => page.evaluate((k) => {
+    const out = [];
+    const walk = (o) => { if (o.type === 'Text') out.push(o.text); (o.list ?? []).forEach(walk); };
+    globalThis.__bridgeit.scene.getScene(k).children.list.forEach(walk);
+    return out;
+  }, key);
+  const setLang = async (lang) => {
+    await page.evaluate((l) => {
+      const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}');
+      if (l) s.settings.lang = l; else delete s.settings.lang;
+      localStorage.setItem('bridgeit.save', JSON.stringify(s));
+    }, lang);
+    await page.reload();
+    await page.waitForFunction(() => globalThis.__bridgeit?.scene?.isActive('menu'), null, { timeout: 15000 });
+  };
+  await setLang('ru');
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('menu').scene.start('worlds'); });
+  await sleep(500);
+  const ruWorlds = await sceneTexts('worlds');
+  if (name === 'desktop') await page.screenshot({ path: `${OUT}/${name}-9l-worlds-ru.png` });
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('worlds').scene.start('levels', { world: 2 }); });
+  await sleep(400);
+  const ruLevels = await sceneTexts('levels');
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('levels').scene.start('daily'); });
+  await sleep(400);
+  const ruDaily = await sceneTexts('daily');
+  if (name === 'desktop') await page.screenshot({ path: `${OUT}/${name}-9l-daily-ru.png` });
+  check(ruWorlds.includes('Выбери мир') && ruWorlds.includes('Ферма в\nдолине') && ruWorlds.includes('Скоро') && ruLevels.includes('Рельсы каньона') && ruLevels.includes('◀ Назад')
+    && ruDaily.includes('Календарь') && ruDaily.some((t) => t.startsWith('Сегодня\n')),
+    `${name}: world select, level select and calendar are in Russian (${JSON.stringify([ruWorlds.slice(0, 6), ruLevels.slice(0, 2), ruDaily.slice(0, 3)])})`);
+  await setLang(null);
+
   // Shop: with 160 coins, buy the Sky paint, Brick road and Birch beams (second cards), check the save, then see them in a level.
   await page.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}');

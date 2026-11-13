@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { LANGS, LANG_NAMES, TEXTS, isLang, nextLang, pickLang, translate, type TextKey } from '../src/core/i18n';
+import { LANGS, LANG_NAMES, TEXTS, isLang, nextLang, pickLang, translate, twoLines, type TextKey } from '../src/core/i18n';
 
 const vars = (s: string): string[] => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
@@ -23,8 +23,8 @@ describe('languages', () => {
   });
 
   test('translate fills in names and keeps unknown ones', () => {
-    expect(translate('en', 'trophies.page', { page: 2, pages: 3 })).toBe('Page 2 / 3');
-    expect(translate('de', 'trophies.page', { page: 1 })).toBe('Seite 1 / {pages}');
+    expect(translate('en', 'common.page', { page: 2, pages: 3 })).toBe('Page 2 / 3');
+    expect(translate('de', 'common.page', { page: 1 })).toBe('Seite 1 / {pages}');
     expect(translate('mk', 'menu.play')).toBe('ИГРАЈ');
   });
 
@@ -38,5 +38,16 @@ describe('languages', () => {
     expect(isLang('xx')).toBe(false);
     expect(nextLang('en')).toBe('de');
     expect(nextLang('mk')).toBe('en');
+  });
+
+  test('world names split onto two lines near the middle', () => {
+    expect(twoLines('Farm Valley')).toBe('Farm\nValley');
+    expect(twoLines('Шини во кањон')).toBe('Шини во\nкањон');
+    expect(twoLines('Farmtal')).toBe('Farmtal');
+    // Every world name fits a narrow card: no line longer than 15 letters.
+    for (const lang of LANGS) for (const w of [1, 2, 3, 4, 5]) {
+      const name = TEXTS[lang][`world.${w}` as TextKey];
+      for (const line of twoLines(name).split('\n')) expect(line.length, `${lang} ${name}`).toBeLessThanOrEqual(15);
+    }
   });
 });

@@ -7,9 +7,11 @@ import { addBackground } from '../background';
 import { save } from '../save';
 import { C, GAME_W, WORLD_BACKGROUNDS, hex } from '../theme';
 import { button, label, panel } from '../ui';
+import { twoLines } from '../../core/i18n';
+import { t, worldName } from '../i18n';
 
-/** Worlds that are planned but have no levels yet. Shown as "Coming soon". */
-const COMING_SOON = ['Candy Mountain'];
+/** Worlds (ids) that are planned but have no levels yet. Shown as "Coming soon". */
+const COMING_SOON = [5];
 
 /** Card colours per world (index = world id - 1). */
 const CARD_COLORS: [string, string][] = [
@@ -102,20 +104,20 @@ export class WorldSelectScene extends Phaser.Scene {
   create(): void {
     addBackground(this);
     panel(this, GAME_W / 2, 395, 1000, 580);
-    label(this, GAME_W / 2, 160, 'Choose a world', 48, C.ink);
-    button(this, 110, 60, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    label(this, GAME_W / 2, 160, t('worlds.title'), 48, C.ink);
+    button(this, 110, 60, t('common.back'), () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
     onBack(this, () => this.scene.start('menu'));
 
     // Daily Bridge: a new level every day, with a streak.
     const today = dateKey(new Date());
     const done = save.data.daily.last === today;
-    button(this, GAME_W - 150, 60, done ? 'Daily ✓' : 'Daily Bridge', () => this.scene.start('play', { levelId: `daily-${today}` }), {
+    button(this, GAME_W - 150, 60, done ? t('worlds.dailyDone') : t('worlds.daily'), () => this.scene.start('play', { levelId: `daily-${today}` }), {
       width: 240, height: 56, fontSize: 24, color: done ? C.good : C.gold, shade: done ? C.goodDark : '#d99a14', textColor: done ? C.white : C.ink,
     });
     button(this, GAME_W - 312, 60, '📅', () => this.scene.start('daily'), { width: 64, height: 56, fontSize: 26, color: C.gold, shade: '#d99a14', textColor: C.ink });
     const streak = liveStreak(save.data.daily, today);
-    const saver = saverFree(save.data.daily, today) ? ' · saver ready' : '';
-    label(this, GAME_W - 150, 112, streak > 0 ? `🔥 ${streak} day streak${saver}` : 'Win it every day!', 18, C.ink);
+    const saver = saverFree(save.data.daily, today) ? ` · ${t('worlds.saver')}` : '';
+    label(this, GAME_W - 150, 112, streak > 0 ? `${t('worlds.streak', { n: streak })}${saver}` : t('worlds.winDaily'), 18, C.ink);
 
     const ids = ALL_LEVELS.map((l) => l.id);
     const total = WORLDS.length + COMING_SOON.length;
@@ -129,7 +131,7 @@ export class WorldSelectScene extends Phaser.Scene {
       const open = world.levels.length > 0 && isUnlocked(ids, save.data.stars, world.levels[0].id);
       // Two-word names go on two lines so they fit a narrow card.
       const [color, shade] = CARD_COLORS[i] ?? [C.primary, C.primaryDark];
-      const b = button(this, x, 350, open ? world.name.replace(' ', '\n') : '🔒', () => this.scene.start('levels', { world: world.id }), {
+      const b = button(this, x, 350, open ? twoLines(worldName(world.id)) : '🔒', () => this.scene.start('levels', { world: world.id }), {
         width: cardW,
         height: 190,
         fontSize: open ? 28 : 56,
@@ -149,17 +151,17 @@ export class WorldSelectScene extends Phaser.Scene {
         label(this, x, 475, `★ ${got} / ${world.levels.length * 3}`, 26, C.ink);
       } else {
         const prev = WORLDS[i - 1];
-        label(this, x, 475, world.name, 22, C.ink);
-        label(this, x, 505, prev ? `Finish ${prev.name}` : 'Locked', 18, C.ink);
+        label(this, x, 475, worldName(world.id), 22, C.ink);
+        label(this, x, 505, prev ? t('worlds.finish', { world: worldName(prev.id) }) : t('worlds.locked'), 18, C.ink);
       }
     });
 
-    COMING_SOON.forEach((name, j) => {
+    COMING_SOON.forEach((id, j) => {
       const x = startX + (WORLDS.length + j) * (cardW + gap);
       const b = button(this, x, 350, '🔒', () => undefined, { width: cardW, height: 190, fontSize: 56, color: C.grey, shade: C.greyDark });
       b.setEnabled(false);
-      label(this, x, 475, name, 22, C.ink);
-      label(this, x, 505, 'Coming soon', 18, C.ink);
+      label(this, x, 475, worldName(id), 22, C.ink);
+      label(this, x, 505, t('worlds.soon'), 18, C.ink);
     });
   }
 }

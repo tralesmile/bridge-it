@@ -15,3 +15,19 @@ export function currentLang(): Lang {
 
 /** Game text in the player's language. */
 export const t = (key: TextKey, vars?: Record<string, string | number>): string => translate(currentLang(), key, vars);
+
+/** A world's name in the player's language (world ids 1 to 5 have a text). */
+export function worldName(id: number): string {
+  return id >= 1 && id <= 5 ? t(`world.${id}` as TextKey) : `World ${id}`;
+}
+
+/** Short weekday and month names in the player's language ("Mon", "Nov"), from the browser; English if it has none. */
+export function dateNames(lang: Lang = currentLang()): { weekday: (d: Date) => string; month: (d: Date) => string } {
+  try {
+    const wd = new Intl.DateTimeFormat(lang, { weekday: 'short' });
+    const mo = new Intl.DateTimeFormat(lang, { month: 'short' });
+    return { weekday: (d) => wd.format(d), month: (d) => mo.format(d).replace(/\.$/, '') };
+  } catch {
+    return { weekday: (d) => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()], month: (d) => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()] };
+  }
+}

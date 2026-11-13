@@ -42,7 +42,25 @@ const EN = {
   'common.close': 'Close',
   'common.back': '◀ Back',
   'trophies.title': 'Achievements',
-  'trophies.page': 'Page {page} / {pages}',
+  'common.page': 'Page {page} / {pages}',
+  'world.1': 'Farm Valley',
+  'world.2': 'Canyon Rails',
+  'world.3': 'Pirate Bay',
+  'world.4': 'River Town',
+  'world.5': 'Candy Mountain',
+  'worlds.title': 'Choose a world',
+  'worlds.daily': 'Daily Bridge',
+  'worlds.dailyDone': 'Daily ✓',
+  'worlds.streak': '🔥 Daily streak: {n}',
+  'worlds.saver': 'saver ready',
+  'worlds.winDaily': 'Win it every day!',
+  'worlds.finish': 'Finish {world}',
+  'worlds.locked': 'Locked',
+  'worlds.soon': 'Coming soon',
+  'daily.title': 'Daily calendar',
+  'daily.today': 'Today',
+  'daily.start': 'Win today to start a streak!',
+  'daily.note': 'Only today counts for the streak and coins. Old days are just for fun.',
 } as const;
 
 export type TextKey = keyof typeof EN;
@@ -71,7 +89,25 @@ const DE: Table = {
   'common.close': 'Schließen',
   'common.back': '◀ Zurück',
   'trophies.title': 'Erfolge',
-  'trophies.page': 'Seite {page} / {pages}',
+  'common.page': 'Seite {page} / {pages}',
+  'world.1': 'Farmtal',
+  'world.2': 'Canyon-Bahn',
+  'world.3': 'Piratenbucht',
+  'world.4': 'Flussstadt',
+  'world.5': 'Zuckerberg',
+  'worlds.title': 'Wähle eine Welt',
+  'worlds.daily': 'Tagesbrücke',
+  'worlds.dailyDone': 'Heute ✓',
+  'worlds.streak': '🔥 Tagesserie: {n}',
+  'worlds.saver': 'Retter bereit',
+  'worlds.winDaily': 'Gewinne sie jeden Tag!',
+  'worlds.finish': 'Erst {world} schaffen',
+  'worlds.locked': 'Gesperrt',
+  'worlds.soon': 'Bald da',
+  'daily.title': 'Tageskalender',
+  'daily.today': 'Heute',
+  'daily.start': 'Gewinne heute und starte eine Serie!',
+  'daily.note': 'Nur heute zählt für Serie und Münzen. Alte Tage sind nur zum Spaß.',
 };
 
 const ES: Table = {
@@ -97,7 +133,25 @@ const ES: Table = {
   'common.close': 'Cerrar',
   'common.back': '◀ Atrás',
   'trophies.title': 'Logros',
-  'trophies.page': 'Página {page} / {pages}',
+  'common.page': 'Página {page} / {pages}',
+  'world.1': 'Valle Granja',
+  'world.2': 'Rieles del Cañón',
+  'world.3': 'Bahía Pirata',
+  'world.4': 'Pueblo del Río',
+  'world.5': 'Montaña Dulce',
+  'worlds.title': 'Elige un mundo',
+  'worlds.daily': 'Puente diario',
+  'worlds.dailyDone': 'Diario ✓',
+  'worlds.streak': '🔥 Racha diaria: {n}',
+  'worlds.saver': 'salvador listo',
+  'worlds.winDaily': '¡Gánalo cada día!',
+  'worlds.finish': 'Termina {world}',
+  'worlds.locked': 'Bloqueado',
+  'worlds.soon': 'Muy pronto',
+  'daily.title': 'Calendario diario',
+  'daily.today': 'Hoy',
+  'daily.start': '¡Gana hoy para empezar una racha!',
+  'daily.note': 'Solo hoy cuenta para la racha y las monedas. Los días pasados son por diversión.',
 };
 
 const PT: Table = {
@@ -123,7 +177,25 @@ const PT: Table = {
   'common.close': 'Fechar',
   'common.back': '◀ Voltar',
   'trophies.title': 'Conquistas',
-  'trophies.page': 'Página {page} / {pages}',
+  'common.page': 'Página {page} / {pages}',
+  'world.1': 'Vale da Fazenda',
+  'world.2': 'Trilhos do Cânion',
+  'world.3': 'Baía Pirata',
+  'world.4': 'Vila do Rio',
+  'world.5': 'Montanha Doce',
+  'worlds.title': 'Escolha um mundo',
+  'worlds.daily': 'Ponte diária',
+  'worlds.dailyDone': 'Diária ✓',
+  'worlds.streak': '🔥 Sequência: {n}',
+  'worlds.saver': 'proteção pronta',
+  'worlds.winDaily': 'Vença todo dia!',
+  'worlds.finish': 'Termine {world}',
+  'worlds.locked': 'Bloqueado',
+  'worlds.soon': 'Em breve',
+  'daily.title': 'Calendário diário',
+  'daily.today': 'Hoje',
+  'daily.start': 'Vença hoje para começar uma sequência!',
+  'daily.note': 'Só hoje conta para a sequência e as moedas. Dias antigos são só por diversão.',
 };
 
 const FR: Table = {
@@ -149,7 +221,25 @@ const FR: Table = {
   'common.close': 'Fermer',
   'common.back': '◀ Retour',
   'trophies.title': 'Succès',
-  'trophies.page': 'Page {page} / {pages}',
+  'common.page': 'Page {page} / {pages}',
+  'world.1': 'Vallée Ferme',
+  'world.2': 'Rails du Canyon',
+  'world.3': 'Baie Pirate',
+  'world.4': 'Ville Fleuve',
+  'world.5': 'Mont Bonbon',
+  'worlds.title': 'Choisis un monde',
+  'worlds.daily': 'Pont du jour',
+  'worlds.dailyDone': 'Jour ✓',
+  'worlds.streak': '🔥 Série : {n}',
+  'worlds.saver': 'sauveur prêt',
+  'worlds.winDaily': 'Gagne-le chaque jour !',
+  'worlds.finish': 'Finis {world}',
+  'worlds.locked': 'Verrouillé',
+  'worlds.soon': 'Bientôt',
+  'daily.title': 'Calendrier',
+  'daily.today': 'Aujourd’hui',
+  'daily.start': 'Gagne aujourd’hui pour lancer une série !',
+  'daily.note': 'Seul aujourd’hui compte pour la série et les pièces. Les anciens jours sont pour le plaisir.',
 };
 
 const TR: Table = {
@@ -175,7 +265,25 @@ const TR: Table = {
   'common.close': 'Kapat',
   'common.back': '◀ Geri',
   'trophies.title': 'Başarılar',
-  'trophies.page': 'Sayfa {page} / {pages}',
+  'common.page': 'Sayfa {page} / {pages}',
+  'world.1': 'Çiftlik Vadisi',
+  'world.2': 'Kanyon Rayları',
+  'world.3': 'Korsan Koyu',
+  'world.4': 'Nehir Kasabası',
+  'world.5': 'Şeker Dağı',
+  'worlds.title': 'Bir dünya seç',
+  'worlds.daily': 'Günün Köprüsü',
+  'worlds.dailyDone': 'Günlük ✓',
+  'worlds.streak': '🔥 Seri: {n}',
+  'worlds.saver': 'kurtarıcı hazır',
+  'worlds.winDaily': 'Her gün kazan!',
+  'worlds.finish': 'Önce {world}',
+  'worlds.locked': 'Kilitli',
+  'worlds.soon': 'Yakında',
+  'daily.title': 'Günlük takvim',
+  'daily.today': 'Bugün',
+  'daily.start': 'Seri başlatmak için bugün kazan!',
+  'daily.note': 'Seri ve paralar için sadece bugün sayılır. Eski günler sadece eğlence için.',
 };
 
 const RU: Table = {
@@ -201,7 +309,25 @@ const RU: Table = {
   'common.close': 'Закрыть',
   'common.back': '◀ Назад',
   'trophies.title': 'Достижения',
-  'trophies.page': 'Стр. {page} / {pages}',
+  'common.page': 'Стр. {page} / {pages}',
+  'world.1': 'Ферма в долине',
+  'world.2': 'Рельсы каньона',
+  'world.3': 'Пиратская бухта',
+  'world.4': 'Речной город',
+  'world.5': 'Конфетная гора',
+  'worlds.title': 'Выбери мир',
+  'worlds.daily': 'Мост дня',
+  'worlds.dailyDone': 'День ✓',
+  'worlds.streak': '🔥 Серия: {n}',
+  'worlds.saver': 'спасение готово',
+  'worlds.winDaily': 'Побеждай каждый день!',
+  'worlds.finish': 'Пройди {world}',
+  'worlds.locked': 'Закрыто',
+  'worlds.soon': 'Скоро',
+  'daily.title': 'Календарь',
+  'daily.today': 'Сегодня',
+  'daily.start': 'Победи сегодня, чтобы начать серию!',
+  'daily.note': 'Для серии и монет считается только сегодня. Старые дни — просто для удовольствия.',
 };
 
 const MK: Table = {
@@ -227,7 +353,25 @@ const MK: Table = {
   'common.close': 'Затвори',
   'common.back': '◀ Назад',
   'trophies.title': 'Достигнувања',
-  'trophies.page': 'Стр. {page} / {pages}',
+  'common.page': 'Стр. {page} / {pages}',
+  'world.1': 'Фарма Долина',
+  'world.2': 'Шини во кањон',
+  'world.3': 'Пиратски залив',
+  'world.4': 'Речен град',
+  'world.5': 'Бонбон планина',
+  'worlds.title': 'Избери свет',
+  'worlds.daily': 'Мост на денот',
+  'worlds.dailyDone': 'Денес ✓',
+  'worlds.streak': '🔥 Низа: {n}',
+  'worlds.saver': 'спас подготвен',
+  'worlds.winDaily': 'Победи секој ден!',
+  'worlds.finish': 'Заврши {world}',
+  'worlds.locked': 'Заклучено',
+  'worlds.soon': 'Наскоро',
+  'daily.title': 'Календар',
+  'daily.today': 'Денес',
+  'daily.start': 'Победи денес за да почнеш низа!',
+  'daily.note': 'Само денес се брои за низата и парите. Старите денови се само за забава.',
 };
 
 export const TEXTS: Record<Lang, Table> = { en: EN, de: DE, es: ES, pt: PT, fr: FR, tr: TR, ru: RU, mk: MK };
@@ -251,3 +395,12 @@ export function pickLang(preferred: readonly string[]): Lang {
 
 /** The next language in the list, for the Settings button (wraps around). */
 export const nextLang = (lang: Lang): Lang => LANGS[(LANGS.indexOf(lang) + 1) % LANGS.length];
+
+/** A name on two lines for a narrow card: split at the space nearest the middle (one word stays one line). */
+export function twoLines(name: string): string {
+  let best = -1;
+  for (let i = 0; i < name.length; i++) {
+    if (name[i] === ' ' && (best < 0 || Math.abs(i - name.length / 2) < Math.abs(best - name.length / 2))) best = i;
+  }
+  return best < 0 ? name : `${name.slice(0, best)}\n${name.slice(best + 1)}`;
+}

@@ -248,7 +248,7 @@ const RIVER: LevelSpec[] = [
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;
 
-function costOf(beams: Beam[]): number {
+export function costOf(beams: Beam[]): number {
   let total = 0;
   for (const beam of beams) {
     const [ax, ay] = beam.a.split(',').map(Number);

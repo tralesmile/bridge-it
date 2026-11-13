@@ -111,6 +111,15 @@ describe('save data', () => {
     expect(s.settings.shake).toBe(false);
     expect(s.held).toEqual([]);
     expect(sanitize({ held: ['w1-1', 'w1-1', 'nope', 7] }).held).toEqual(['w1-1']);
+    expect(s.sandboxWins).toEqual([]);
+    // The editor draft is checked field by field; a bad one starts fresh, a too high best cost is dropped.
+    expect(s.editor.best).toBe(0);
+    const draft = { name: 'Hop', gap: 6, leftHeight: 1, rightHeight: 0, vehicle: 'car', materials: ['road', 'wood'], budget: 3000, anchors: [{ x: 3, y: -2 }], authorCost: 0 };
+    expect(sanitize({ editor: { draft, best: 1200 } }).editor).toEqual({ draft, best: 1200 });
+    expect(sanitize({ editor: { draft, best: 99999 } }).editor.best).toBe(0);
+    expect(sanitize({ editor: { draft: { ...draft, gap: 99 }, best: 5 } }).editor.draft.gap).toBe(8);
+    expect(sanitize({ editor: { draft: { ...draft, anchors: 'x' } } }).editor.draft.anchors).toEqual([]);
+    expect(sanitize({ sandboxWins: ['sandbox-6-car-flat-none', 'sandbox-6-car-flat-none', 'sandbox-7-car-flat-none', 'w1-1', 3] }).sandboxWins).toEqual(['sandbox-6-car-flat-none']);
   });
 
   test('a save that got the supporter coins also owns the supporter paint (old saves from before it existed)', () => {

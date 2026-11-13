@@ -41,6 +41,7 @@ export class MenuScene extends Phaser.Scene {
     button(this, 270, 60, 'Trophies', () => this.scene.start('trophies'), { width: 170, height: 52, fontSize: 22, color: C.primary, shade: C.primaryDark });
     button(this, 445, 60, 'Stats', () => this.scene.start('stats'), { width: 150, height: 52, fontSize: 22, color: C.blue, shade: C.blueDark });
     button(this, 625, 60, 'Sandbox', () => this.scene.start('sandbox'), { width: 170, height: 52, fontSize: 22, color: C.good, shade: C.goodDark });
+    button(this, 805, 60, 'Editor', () => this.scene.start('editor'), { width: 170, height: 52, fontSize: 22, color: C.primary, shade: C.primaryDark });
     this.add.image(60, 125, 'coin').setScale(0.8);
     label(this, 80, 125, `${save.data.coins}`, 26, C.ink).setOrigin(0, 0.5);
 

@@ -83,8 +83,12 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 
 ## M5 Creativity
 - [x] Sandbox mode (`src/core/sandbox.ts`, `SandboxScene`, Sandbox button on the menu): pick gap (6/10/16/24 m), vehicle, far side (same, 2 m lower, 2 m higher) and helpers (rocks, high posts, both); every material, no money limit (cost shown), no stars. Nothing is scored (no coins, fails, stats); the bridge is saved per setup and can be shared as a code (share codes now read sandbox and daily ids). Tool bar gets narrower buttons when a level has 6 materials
-- [ ] Sandbox: a small achievement or two ("Tinkerer": win 5 sandbox setups), once there is a sandbox counter in the save
-- [ ] Level editor for players
+- [x] Sandbox achievements: `save.sandboxWins` (setup ids crossed, the only sandbox save write), Tinkerer (5 different setups) and Mad Engineer (the train over 24 m; a steel-leg truss on rocks wins, tested). 26 achievements; the Trophies grid has 6 columns and long names shrink to fit
+- [x] Level editor for players, first version (`src/core/custom.ts`, `EditorScene`, Editor button on the menu): gap 2-24 m, both cliff heights (-4 to +4 m), vehicle, materials (road always), money, and up to 16 rocks tapped on the grid. The whole level lives in its id (`custom-<data>`), so saved bridges and bridge codes work with no server. Test plays it; when your own bridge crosses, the cheapest cost is kept and "Copy level code" (`BL1.<data>.<check>`) unlocks; the maker's cost sets the 3-star budget. "Paste code" plays a friend's level. Player levels give no coins, stars or stats (no farming)
+- [ ] Level editor: more than one saved level ("My levels" list, rename, delete), and "Edit a copy" of a friend's level
+- [ ] Level editor: ship lanes (drawbridge levels) and a goal distance
+- [ ] Level editor: keep stars on friends' levels (a small list in the save, capped so the save stays small)
+- [ ] Level editor: achievements (make a level, cross a friend's level)
 - [x] Share codes core: `encodeBridge` / `decodeBridge` in `src/core/share.ts` (format `BI1.<levelId>.<data>.<check>`, checked against level rules; tested on all solutions)
 - [x] Share codes UI: "Copy bridge code" on the win panel, "Paste code" button on the play scene (uses window.prompt; not covered by e2e)
 

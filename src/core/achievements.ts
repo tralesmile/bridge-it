@@ -1,7 +1,8 @@
 /**
- * Achievements: 24 goals checked from the save data. Pure, so it can be unit-tested.
+ * Achievements: 26 goals checked from the save data. Pure, so it can be unit-tested.
  * An achievement stays unlocked once earned (the save keeps the list).
  */
+import { parseSandboxId } from './sandbox';
 import { SHOP_ITEMS } from './shop';
 import type { LevelDef } from './types';
 
@@ -26,6 +27,8 @@ export interface AchievementInput {
   held?: string[];
   /** Best daily bridge streak. */
   dailyBest?: number;
+  /** Sandbox setup ids that a vehicle crossed (optional for old callers). */
+  sandboxWins?: string[];
 }
 
 export interface Achievement {
@@ -67,6 +70,7 @@ function perfectWorld(world: number, name: string): Achievement {
 const WORLD_NAMES: [number, string][] = [[1, 'Farm Valley'], [2, 'Canyon Rails'], [3, 'Pirate Bay'], [4, 'River Town']];
 const paints = SHOP_ITEMS.filter((s) => s.kind === 'paint' && s.price > 0).map((s) => s.id);
 const heldCount = (i: AchievementInput) => count(i.levels, (l) => (i.held ?? []).includes(l.id));
+const sandboxSetups = (i: AchievementInput) => [...new Set(i.sandboxWins ?? [])].map(parseSandboxId).filter((o) => o !== undefined);
 const wonWith = (i: AchievementInput, vehicle: string) => count(i.levels, (l) => l.vehicle === vehicle && (i.stars[l.id] ?? 0) > 0);
 
 export const ACHIEVEMENTS: Achievement[] = [
@@ -87,6 +91,8 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'stress-10', name: 'Over-Engineered', text: 'Pass the stress test on 10 levels.', progress: (i) => [Math.min(10, heldCount(i)), 10] },
   { id: 'daily-1', name: 'Daily Builder', text: 'Win a Daily Bridge.', progress: (i) => [Math.min(1, i.dailyBest ?? 0), 1] },
   { id: 'daily-7', name: 'Week of Bridges', text: 'Reach a 7 day Daily Bridge streak.', progress: (i) => [Math.min(7, i.dailyBest ?? 0), 7] },
+  { id: 'sandbox-5', name: 'Tinkerer', text: 'Win 5 different sandbox setups.', progress: (i) => [Math.min(5, sandboxSetups(i).length), 5] },
+  { id: 'sandbox-train', name: 'Mad Engineer', text: 'Get the train over 24 m in the sandbox.', progress: (i) => [Math.min(1, count(sandboxSetups(i), (o) => o.vehicle === 'train' && o.gap === 24)), 1] },
   { id: 'all-paints', name: 'Paint Box', text: 'Own every paint.', progress: (i) => [count(paints, (p) => i.owned.includes(p)), paints.length] },
 ];
 

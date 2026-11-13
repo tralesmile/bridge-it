@@ -372,6 +372,8 @@ async function run(viewport, name) {
     for (let x = 0; x < 6; x++) beams.push({ a: `${x},0`, b: `${x + 1},0`, material: 'road' });
     for (const [a, b] of [['0,0', '1,1'], ['1,1', '2,0'], ['2,0', '3,1'], ['3,1', '4,0'], ['4,0', '5,1'], ['5,1', '6,0'], ['1,1', '3,1'], ['3,1', '5,1']]) beams.push({ a, b, material: 'wood' });
     s.designs = { ...(s.designs || {}), 'sandbox-6-car-flat-none': beams };
+    // 4 other setups already crossed: this win is the 5th, which earns "Tinkerer".
+    s.sandboxWins = ['sandbox-10-car-flat-none', 'sandbox-16-car-flat-none', 'sandbox-24-car-flat-none', 'sandbox-6-truck-flat-none'];
     localStorage.setItem('bridgeit.save', JSON.stringify(s));
   });
   await page.reload();
@@ -389,18 +391,79 @@ async function run(viewport, name) {
   const sb = await page.evaluate(() => { const p = globalThis.__bridgeit.scene.getScene('play'); return { id: p.level.id, tools: p.toolButtons.size, beams: p.design.list.length }; });
   check(sb.id === 'sandbox-6-car-flat-none' && sb.tools === 7 && sb.beams === 14, `${name}: sandbox level opens with every material and the saved bridge (${JSON.stringify(sb)})`);
   await page.screenshot({ path: `${OUT}/${name}-9v-sandbox-build.png` });
-  const sbBefore = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); return JSON.stringify([s.coins, s.stats, s.fails, s.stars, s.achievements]); });
+  const sbBefore = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); return JSON.stringify([s.coins, s.stats, s.fails, s.stars]); });
   await click(1160, 664); // GO
   await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon !== null, null, { timeout: 30000 });
   await sleep(600);
   const sbWon = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon);
-  const sbAfter = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); return JSON.stringify([s.coins, s.stats, s.fails, s.stars, s.achievements]); });
+  const sbAfter = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); return JSON.stringify([s.coins, s.stats, s.fails, s.stars]); });
   check(sbWon === true && sbBefore === sbAfter, `${name}: the sandbox truss crosses and nothing is scored (won ${sbWon}, save same ${sbBefore === sbAfter})`);
+  const sbAch = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); return { wins: s.sandboxWins.length, has: s.sandboxWins.includes('sandbox-6-car-flat-none'), tinkerer: s.achievements.includes('sandbox-5') }; });
+  check(sbAch.wins === 5 && sbAch.has && sbAch.tinkerer, `${name}: the sandbox win is saved and the 5th setup earns Tinkerer (${JSON.stringify(sbAch)})`);
   await page.screenshot({ path: `${OUT}/${name}-9v-sandbox-won.png` });
   await click(780, 430); // New setup
   check(await active('sandbox'), `${name}: New setup goes back to the sandbox setup`);
   await page.keyboard.press('Escape'); await sleep(300);
   check(await active('menu'), `${name}: Escape on the sandbox setup goes back to the menu`);
+
+  // Level editor: change the level, add a rock, test it, cross it, copy the level code, play it as a friend.
+  await click(805, 60);
+  check(await active('editor'), `${name}: Editor button opens the level editor`);
+  await click(245, 140); await click(469, 140); // gap 8 -> 7 -> 8 m
+  await click(469, 335); await click(469, 335); // money 4000 -> 5000
+  const ev = await page.evaluate(() => { const v = globalThis.__bridgeit.scene.getScene('editor').view(); return { ppm: v.ppm, x0: v.x0, y0: v.y0 }; });
+  await click(ev.x0 + (4 + 3) * ev.ppm, ev.y0 - (-2 + 6) * ev.ppm); // rock at (4, -2)
+  await page.screenshot({ path: `${OUT}/${name}-9x-editor.png` });
+  const draft = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save')).editor);
+  check(draft.draft.gap === 8 && draft.draft.budget === 5000 && JSON.stringify(draft.draft.anchors) === '[{"x":4,"y":-2}]' && draft.best === 0,
+    `${name}: editor saves the draft (${JSON.stringify(draft)})`);
+  const copyOff = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('editor').copyButton.alpha < 1);
+  check(copyOff, `${name}: Copy level code is off until the level is crossed`);
+  await click(1120, 640); // Test
+  await sleep(600);
+  check(await active('play'), `${name}: Test opens the level in the play scene`);
+  await page.evaluate(() => {
+    const p = globalThis.__bridgeit.scene.getScene('play');
+    for (let x = 0; x < 8; x++) p.design.add({ x, y: 0 }, { x: x + 1, y: 0 }, 'road');
+    for (let x = 0; x < 8; x += 2) { p.design.add({ x, y: 0 }, { x: x + 1, y: 1 }, 'wood'); p.design.add({ x: x + 1, y: 1 }, { x: x + 2, y: 0 }, 'wood'); }
+    for (let x = 1; x < 7; x += 2) p.design.add({ x, y: 1 }, { x: x + 2, y: 1 }, 'wood');
+    p.design.add({ x: 4, y: 0 }, { x: 4, y: -2 }, 'wood');
+    p.afterChange();
+  });
+  await page.screenshot({ path: `${OUT}/${name}-9x-editor-test.png` });
+  const edBefore = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); return JSON.stringify([s.coins, s.stats, s.stars]); });
+  await click(1160, 664); // GO
+  await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon !== null, null, { timeout: 30000 });
+  await sleep(800);
+  const edWon = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon);
+  const edAfter = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); return { score: JSON.stringify([s.coins, s.stats, s.stars]), best: s.editor.best }; });
+  check(edWon === true && edAfter.best > 0 && edAfter.score === edBefore, `${name}: your bridge crosses your level, its cost is kept and nothing is scored (won ${edWon}, best ${edAfter.best})`);
+  await page.screenshot({ path: `${OUT}/${name}-9x-editor-won.png` });
+  await click(780, 450); // Edit level
+  check(await active('editor'), `${name}: Edit level goes back to the editor`);
+  await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new Error('blocked')) } }));
+  await click(860, 640); // Copy level code
+  await sleep(300);
+  const levelCode = await page.locator('#code-dialog textarea').inputValue().catch(() => '');
+  check(levelCode.startsWith('BL1.'), `${name}: Copy level code gives a level code (${levelCode})`);
+  await page.screenshot({ path: `${OUT}/${name}-9x-editor-code.png` });
+  await page.click('#code-dialog button.ok');
+  await click(640, 640); // Paste code
+  await page.locator('#code-dialog textarea').fill('BL1.nope.abc');
+  await page.click('#code-dialog button.ok');
+  await sleep(300);
+  check(await active('editor'), `${name}: a bad level code stays in the editor`);
+  await click(640, 640);
+  await page.locator('#code-dialog textarea').fill(levelCode);
+  await page.click('#code-dialog button.ok');
+  await sleep(700);
+  const friend = await page.evaluate(() => { const p = globalThis.__bridgeit.scene.getScene('play'); return { on: globalThis.__bridgeit.scene.isActive('play'), id: p.level.id, gap: p.level.gapEnd, stars: p.level.starBudgets, beams: p.design.list.length }; });
+  check(friend.on && friend.gap === 8 && friend.stars[1] === Math.ceil(edAfter.best / 50) * 50 && friend.beams === 0, `${name}: a level code opens the level for a friend (${JSON.stringify(friend)})`);
+  await page.screenshot({ path: `${OUT}/${name}-9x-editor-friend.png` });
+  await page.keyboard.press('Escape'); await sleep(300);
+  check(await active('editor'), `${name}: Escape on a player level goes back to the editor`);
+  await page.keyboard.press('Escape'); await sleep(300);
+  check(await active('menu'), `${name}: Escape in the editor goes back to the menu`);
   await page.close();
 }
 

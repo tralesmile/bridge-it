@@ -1,4 +1,5 @@
 import { build, hangers, roadDeck, rockPosts, type LevelEntry } from './levels';
+import { customLevel, parseCustomId } from './custom';
 import { findLevel } from './daily';
 import type { MaterialId } from './materials';
 import type { Point, VehicleId } from './types';
@@ -74,8 +75,10 @@ export function sandboxLevel(o: SandboxOptions): LevelEntry {
   return { ...level, id: sandboxId(o), index: 0, budget: SANDBOX_BUDGET, starBudgets: [SANDBOX_BUDGET, SANDBOX_BUDGET], solution: [] };
 }
 
-/** A level by id: world levels, the daily bridge, or a sandbox setup. */
+/** A level by id: world levels, the daily bridge, a sandbox setup, or a player-made level. */
 export function anyLevel(id: string): LevelEntry | undefined {
   const o = parseSandboxId(id);
-  return o ? sandboxLevel(o) : findLevel(id);
+  if (o) return sandboxLevel(o);
+  const c = parseCustomId(id);
+  return c ? customLevel(c) : findLevel(id);
 }

@@ -2,6 +2,7 @@ import { BridgeDesign, keyOf, pointOf } from './bridge';
 import { anyLevel } from './sandbox';
 import { MATERIAL_ORDER } from './materials';
 import type { Beam } from './types';
+import { checksum, fromB64, toB64 } from './codec';
 
 /**
  * Share codes: "BI1.<levelId>.<data>.<check>".
@@ -10,26 +11,6 @@ import type { Beam } from './types';
  */
 const OFFSET = 64;
 const PREFIX = 'BI1';
-
-const toB64 = (bytes: number[]): string =>
-  btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-
-const fromB64 = (text: string): number[] | null => {
-  if (!/^[A-Za-z0-9_-]*$/.test(text)) return null;
-  try {
-    const bin = atob(text.replace(/-/g, '+').replace(/_/g, '/'));
-    return [...bin].map((c) => c.charCodeAt(0));
-  } catch {
-    return null;
-  }
-};
-
-/** Small checksum so typos in a pasted code are caught. */
-const checksum = (text: string): string => {
-  let h = 7;
-  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) % 46656;
-  return h.toString(36).padStart(3, '0');
-};
 
 export function encodeBridge(levelId: string, beams: Beam[]): string {
   const bytes: number[] = [];

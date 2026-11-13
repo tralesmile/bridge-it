@@ -55,6 +55,9 @@ describe('sandbox', () => {
     expect(new Simulation(down, ramp).runToEnd()).toBe('won');
     const rocks = sandboxLevel({ gap: 16, vehicle: 'truck', bank: 'flat', help: 'rocks' });
     expect(new Simulation(rocks, [...roadDeck(0, 16), ...warrenTruss(0, 16), ...rockLegs(16, 4, 'steel')]).runToEnd()).toBe('won');
+    // The "Mad Engineer" achievement can be earned: the train over 24 m on steel rock legs.
+    const train = sandboxLevel({ gap: 24, vehicle: 'train', bank: 'flat', help: 'rocks' });
+    expect(new Simulation(train, [...roadDeck(0, 24), ...warrenTruss(0, 24), ...rockLegs(24, 4, 'steel')]).runToEnd()).toBe('won');
   }, 60000);
 
   test('sandbox bridges can be shared as codes', () => {

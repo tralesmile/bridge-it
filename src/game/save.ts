@@ -1,6 +1,8 @@
-import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type PlayStats } from '../core/achievements';
+import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type AchievementInput, type PlayStats } from '../core/achievements';
 import { DAILY_COINS, EMPTY_DAILY, canPlayDay, dateKey, isDailyId, recordCalendarWin, type DailyState } from '../core/daily';
 import { ALL_LEVELS } from '../core/levels';
+import { parseSandboxId } from '../core/sandbox';
+import { DEFAULT_CUSTOM, customId, parseCustomId, specProblem, type CustomSpec } from '../core/custom';
 import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, grantSupporterItems, type ShopKind, type ShopState } from '../core/shop';
 import { EMPTY_PURCHASES, applyOwned, sanitizePurchases, type PurchaseState } from '../core/purchases';
 import type { Beam } from '../core/types';
@@ -24,12 +26,16 @@ export interface SaveData {
   daily: DailyState;
   /** Level ids whose stress test held (the heavier vehicle crossed). */
   held: string[];
+  /** Sandbox setup ids that a vehicle crossed (for achievements; nothing else is scored). */
+  sandboxWins: string[];
+  /** The player's level in the editor, and the cheapest bridge that crossed it (0 = not crossed yet). */
+  editor: { draft: CustomSpec; best: number };
   /** Real-money purchases as last seen from the store (the store's answer always wins). */
   purchases: PurchaseState;
   settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], purchases: { ...EMPTY_PURCHASES }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], sandboxWins: [], editor: { draft: { ...DEFAULT_CUSTOM, anchors: [], materials: [...DEFAULT_CUSTOM.materials] }, best: 0 }, purchases: { ...EMPTY_PURCHASES }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {
@@ -94,6 +100,19 @@ export function sanitize(raw: unknown): SaveData {
   }
   const levelIds = new Set(ALL_LEVELS.map((l) => l.id));
   if (Array.isArray(r.held)) base.held = [...new Set(r.held.filter((id): id is string => typeof id === 'string' && levelIds.has(id)))];
+  if (Array.isArray(r.sandboxWins)) base.sandboxWins = [...new Set(r.sandboxWins.filter((id): id is string => typeof id === 'string' && parseSandboxId(id) !== undefined))];
+  if (r.editor && typeof r.editor === 'object') {
+    const e = r.editor as Partial<SaveData['editor']>;
+    // Read the draft through its id, which checks every field; a bad draft starts fresh.
+    const d = e.draft && typeof e.draft === 'object' ? (e.draft as CustomSpec) : null;
+    let ok: CustomSpec | undefined;
+    try {
+      ok = d && Array.isArray(d.anchors) && Array.isArray(d.materials) && specProblem(d) === null ? parseCustomId(customId(d)) : undefined;
+    } catch {
+      ok = undefined;
+    }
+    if (ok) base.editor = { draft: { ...ok, authorCost: 0 }, best: typeof e.best === 'number' && Number.isInteger(e.best) && e.best > 0 && e.best <= ok.budget ? e.best : 0 };
+  }
   if (r.designs && typeof r.designs === 'object') {
     for (const [k, v] of Object.entries(r.designs)) {
       if (Array.isArray(v)) {
@@ -178,6 +197,46 @@ class SaveStore {
     this.persist();
   }
 
+  /** Marks a sandbox setup that a vehicle crossed. Nothing else in the save changes. */
+  recordSandboxWin(id: string): void {
+    if (this.data.sandboxWins.includes(id) || parseSandboxId(id) === undefined) return;
+    this.data.sandboxWins.push(id);
+    this.persist();
+  }
+
+  /** The level id the editor tests with (the draft, not crossed yet). */
+  get draftId(): string {
+    return customId({ ...this.data.editor.draft, authorCost: 0 });
+  }
+
+  /** Changes the draft. The bridge moves with it; a change other than the name means it must be crossed again. */
+  setDraft(draft: CustomSpec): void {
+    const oldId = this.draftId;
+    const sameLevel = customId({ ...draft, name: '', authorCost: 0 }) === customId({ ...this.data.editor.draft, name: '', authorCost: 0 });
+    this.data.editor = { draft: { ...draft, authorCost: 0 }, best: sameLevel ? this.data.editor.best : 0 };
+    const newId = this.draftId;
+    if (newId !== oldId) {
+      if (this.data.designs[oldId]) this.data.designs[newId] = this.data.designs[oldId];
+      delete this.data.designs[oldId];
+    }
+    this.persist();
+  }
+
+  /** A bridge crossed the draft: keep the cheapest cost (it sets the 3-star budget in the level code). */
+  recordDraftWin(cost: number): void {
+    const e = this.data.editor;
+    const c = Math.round(cost);
+    if (c <= 0 || c > e.draft.budget) return;
+    e.best = e.best > 0 ? Math.min(e.best, c) : c;
+    this.persist();
+  }
+
+  /** Everything the achievements read from the save. */
+  get achievementInput(): AchievementInput {
+    const d = this.data;
+    return { stars: d.stars, bestCost: d.bestCost, owned: d.owned, stats: d.stats, levels: ALL_LEVELS, held: d.held, dailyBest: d.daily.best, sandboxWins: d.sandboxWins };
+  }
+
   /** Fresh purchase data from the store. Returns the coins given now (supporter pack, once). */
   applyPurchases(owned: { noAds: boolean; supporter: boolean }): number {
     const { state, coins } = applyOwned(this.data.purchases, owned);
@@ -196,10 +255,7 @@ class SaveStore {
   /** Saves and returns achievements earned since the last check. */
   checkAchievements(): string[] {
     const d = this.data;
-    const fresh = newAchievements(
-      { stars: d.stars, bestCost: d.bestCost, owned: d.owned, stats: d.stats, levels: ALL_LEVELS, held: d.held, dailyBest: d.daily.best },
-      d.achievements,
-    );
+    const fresh = newAchievements(this.achievementInput, d.achievements);
     if (fresh.length) {
       d.achievements = [...d.achievements, ...fresh];
       this.persist();

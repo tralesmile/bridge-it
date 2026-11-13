@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { BUILD_MARGIN_X, BUILD_MAX_Y, BUILD_MIN_Y, BridgeDesign, distance, keyOf, pointOf, snap, type AddResult } from '../../core/bridge';
 import { DAILY_PREFIX, isDailyId } from '../../core/daily';
 import { anyLevel, isSandboxId } from '../../core/sandbox';
+import { isCustomId } from '../../core/custom';
 import { levelById, nextLevel, type LevelEntry } from '../../core/levels';
 import { MATERIALS, type MaterialId } from '../../core/materials';
 import { decodeBridge, encodeBridge } from '../../core/share';
@@ -92,6 +93,8 @@ export class PlayScene extends Phaser.Scene {
   sandbox = false;
   /** Result of the last sandbox run (read by the browser test). */
   lastSandboxWon: boolean | null = null;
+  /** A player-made level (from the editor or a friend's level code). Nothing is scored. */
+  custom = false;
 
   private dragFrom: Point | null = null;
   private dragTo: Point | null = null;
@@ -120,6 +123,7 @@ export class PlayScene extends Phaser.Scene {
     const level = heavy ?? found;
     this.level = level;
     this.sandbox = isSandboxId(level.id);
+    this.custom = isCustomId(level.id);
     this.lastSandboxWon = null;
     this.design = BridgeDesign.restore(level, save.data.designs[level.id] ?? []);
     this.mode = 'build';
@@ -377,7 +381,8 @@ export class PlayScene extends Phaser.Scene {
     this.buildUi.push(this.pasteButton);
     const name = this.sandbox
       ? `Sandbox · ${this.level.gapEnd - this.level.gapStart} m · ${VEHICLES[this.level.vehicle].name}`
-      : isDailyId(this.level.id) ? `Daily: ${this.level.name}` : `${this.level.index}. ${this.level.name}`;
+      : isDailyId(this.level.id) ? `Daily: ${this.level.name}`
+      : this.custom ? `${this.isDraft ? 'My level' : 'Player level'}: ${this.level.name}` : `${this.level.index}. ${this.level.name}`;
     const title = label(this, GAME_W / 2, 40, this.stress ? `Stress test: ${this.level.name}` : name, 34, C.white);
     title.setStroke(C.ink, 8);
 
@@ -628,7 +633,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private hintAllowed(): boolean {
-    return !this.stress && !this.sandbox && (save.data.fails[this.level.id] ?? 0) >= HINT_AFTER_FAILS;
+    return !this.stress && !this.sandbox && !this.custom && (save.data.fails[this.level.id] ?? 0) >= HINT_AFTER_FAILS;
   }
 
   private afterChange(): void {
@@ -917,10 +922,27 @@ export class PlayScene extends Phaser.Scene {
       if (won) sfx.win(1);
       else sfx.lose();
       this.lastSandboxWon = won;
+      // The only save write in the sandbox: which setups were crossed (for 2 achievements).
+      if (won) {
+        save.recordSandboxWin(this.level.id);
+        announceAchievements(this, 900);
+      }
       if (!won) {
         this.weakBeams = sim.beamStates.filter((s) => s.broken || s.stress > 0.8).map((s) => ({ a: pointOf(s.beam.a), b: pointOf(s.beam.b) }));
       }
       this.time.delayedCall(won ? 350 : 700, () => this.showSandboxResult(won, sim.lossReason ?? 'fell', cost, sim.brokenCount));
+      return;
+    }
+    if (this.custom) {
+      // Player levels are not scored. A win on your own draft lets you share it (cheapest cost sets 3 stars).
+      if (won) sfx.win(starsFor(this.level, cost));
+      else sfx.lose();
+      this.lastSandboxWon = won;
+      if (won && this.isDraft) save.recordDraftWin(cost);
+      if (!won) {
+        this.weakBeams = sim.beamStates.filter((s) => s.broken || s.stress > 0.8).map((s) => ({ a: pointOf(s.beam.a), b: pointOf(s.beam.b) }));
+      }
+      this.time.delayedCall(won ? 350 : 700, () => this.showCustomResult(won, sim.lossReason ?? 'fell', cost));
       return;
     }
     if (this.stress) {
@@ -972,6 +994,7 @@ export class PlayScene extends Phaser.Scene {
   /** Back to where the player came from: the world's levels, or world select for the daily bridge. */
   private leave(): void {
     if (this.sandbox) this.scene.start('sandbox');
+    else if (this.custom) this.scene.start('editor');
     else if (isDailyId(this.level.id)) this.scene.start('worlds');
     else this.scene.start('levels', { world: this.level.world });
   }
@@ -1072,6 +1095,26 @@ export class PlayScene extends Phaser.Scene {
         },
       });
     }
+  }
+
+  /** True for the editor's own draft (its id has no maker's cost yet). */
+  private get isDraft(): boolean {
+    return this.level.id === save.draftId;
+  }
+
+  /** Result on a player level: stars from the maker's cost, but nothing is saved except the maker's own test. */
+  private showCustomResult(won: boolean, reason: string, cost: number): void {
+    const layer = this.resultPanel(420);
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 150, won ? 'Made it!' : LOSS_TITLE[reason] ?? 'Splash!', 56, C.ink));
+    if (won) {
+      const stars = starsFor(this.level, cost);
+      for (let i = 0; i < 3; i++) layer.add(this.add.image(GAME_W / 2 - 90 + i * 90, GAME_H / 2 - 65, i < stars ? 'star' : 'star-empty').setScale(1.1));
+    }
+    const text = !won ? 'Try again: change the bridge.'
+      : this.isDraft ? `Cost $${cost.toLocaleString('en-US')} · Now you can share the level code.` : `Cost $${cost.toLocaleString('en-US')}`;
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 + (won ? 0 : -60), text, 24, C.greyDark));
+    layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 90, won ? 'Build more' : 'Fix it', () => this.stopSim(), { width: 240, height: 70, color: C.primary, shade: C.primaryDark }));
+    layer.add(button(this, GAME_W / 2 + 140, GAME_H / 2 + 90, this.isDraft ? 'Edit level' : 'Editor', () => this.scene.start('editor'), { width: 240, height: 70, fontSize: 26, color: C.blue, shade: C.blueDark }));
   }
 
   /** Result of a sandbox run. Nothing is scored; the bridge can be shared as a code. */

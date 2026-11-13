@@ -31,5 +31,5 @@ You are the whole team (producer, designer, artist, engineer, QA, marketing) bui
 - `npm run flavours` — build the CrazyGames and Poki versions (`dist-crazygames`, `dist-poki`) and check their SDK scripts
 - `npm run e2e` — browser test with Google Chrome (needs a build first; `npm run check` builds)
   In e2e, `page.evaluate` must never return a Phaser object (write `() => { ...; }`): it can crash with "object reference chain is too long".
-  It takes about 12 minutes now: run it in the background as `npm run e2e > <scratchpad>/e2e.txt 2>&1; echo exit $?`, then grep the file for FAIL (a pipe like `npm run e2e | grep` hides the exit code).
+  After editing `scripts/e2e.mjs`, run `node --check scripts/e2e.mjs` first (a repeated `const` name breaks the whole run). It takes about 12 minutes now: run it in the background as `npm run e2e > <scratchpad>/e2e.txt 2>&1; echo exit $?`, then grep the file for FAIL (a pipe like `npm run e2e | grep` hides the exit code).
 - Quick look at one new screen: a small Playwright script in the git-excluded `probe/` folder (vite preview on its own port, seed localStorage, click, screenshot) before writing the e2e check.

@@ -2,6 +2,24 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-13 — Run 42
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- Sandbox achievements: `save.sandboxWins` keeps the sandbox setups a vehicle crossed (the only sandbox save write). Tinkerer: 5 different setups. Mad Engineer: the train over 24 m (unit test proves a steel-leg truss on rocks wins it). 26 achievements; Trophies grid now 6 columns, long titles shrink to fit. `save.achievementInput` is the one place that builds the input (Trophies screen uses it too).
+- Level editor (M5), first version. Core `src/core/custom.ts`: a `CustomSpec` (name, gap, cliff heights, vehicle, materials, money, rocks, maker's cost) packs into bytes and base64url, so the id `custom-<data>` is the level. `anyLevel` reads it, so saved bridges and bridge codes work. Level codes `BL1.<data>.<check>`; only a level crossed by its maker can be shared; the maker's cost sets the 3-star budget. Base64 and checksum moved to `src/core/codec.ts` (shared with bridge codes).
+- `EditorScene`: steppers for gap, cliffs and money, vehicle and material buttons, a grid picture where a tap adds or removes a rock, name button (uses the code dialog), Paste code (play a friend's level), Copy level code (on once crossed), Test. Play scene: "My level" / "Player level" title, its own result panel (stars, cost, Build more, Edit level), no hint, no coins or stats. Escape goes back to the editor. The draft and its best cost are in `save.editor`; the bridge moves with the draft when you change it, and any change other than the name means it must be crossed again.
+
+**Verified**
+- `npm run check` green (574 tests, 13 new), `npm run e2e` exit 0 with no FAIL, 127 checks (new: Tinkerer earned on the 5th sandbox setup; editor draft saved, Copy off until crossed, test win keeps the cost and scores nothing, level code copied, a bad code stays in the editor, the code opens the level for a friend with the right 3-star budget, Escape back to editor and menu). `npm run flavours` PASS. Probe and e2e screenshots checked: menu with the Editor button, editor, test level, win panel, friend's level, Trophies at 6 columns.
+
+**Lessons**
+- Putting the whole level into its id avoids a second store: every system that takes a level id (saved designs, bridge codes, the play scene) worked with no change except `anyLevel`.
+- A level spec with the maker's cost inside the id means the test id must leave the cost out (0), or the id changes on the first win and the saved bridge is lost. The cost goes only into the shared code.
+- The first probe "lost" because the default money ($2,000) was too small for an 8 m truss and the design silently refused beams. Defaults must allow the simple answer; now $4,000.
+- Run `node --check scripts/e2e.mjs` after editing the e2e script: a duplicate `const` name (`before`, `after` are used early in `run`) fails the whole 12-minute run at once. Prefix new names per section (`edBefore`).
+- A test bridge for the e2e must be one already proven to win (an 8 m wood truss wins with the car, a 10 m one breaks).
+- Next: "My levels" list in the editor, or Localization (M8).
+
 ## 2026-11-13 — Run 41
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

@@ -9,6 +9,7 @@ import { ShopScene } from './game/scenes/ShopScene';
 import { DailyScene } from './game/scenes/DailyScene';
 import { StatsScene } from './game/scenes/StatsScene';
 import { TrophyScene } from './game/scenes/TrophyScene';
+import { EditorScene } from './game/scenes/EditorScene';
 import { SandboxScene } from './game/scenes/SandboxScene';
 import { C, GAME_H, GAME_W } from './game/theme';
 import { setupBackKeys } from './game/native';
@@ -34,7 +35,7 @@ const game = new Phaser.Game({
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   input: { activePointers: 3 },
   render: { antialias: true, roundPixels: false },
-  scene: [BootScene, MenuScene, WorldSelectScene, LevelSelectScene, PlayScene, ShopScene, TrophyScene, StatsScene, DailyScene, SandboxScene],
+  scene: [BootScene, MenuScene, WorldSelectScene, LevelSelectScene, PlayScene, ShopScene, TrophyScene, StatsScene, DailyScene, SandboxScene, EditorScene],
 });
 
 // Exposed for automated browser tests only.

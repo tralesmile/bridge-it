@@ -1,5 +1,5 @@
 import { BridgeDesign, keyOf, pointOf } from './bridge';
-import { levelById } from './levels';
+import { anyLevel } from './sandbox';
 import { MATERIAL_ORDER } from './materials';
 import type { Beam } from './types';
 
@@ -54,7 +54,7 @@ export function decodeBridge(code: string): DecodeResult {
   if (checksum(body) !== check) return { ok: false, error: 'The code has a typo. Please check it.' };
   const data = parts[2];
   const levelId = parts[1];
-  const level = levelById(levelId);
+  const level = anyLevel(levelId);
   if (!level) return { ok: false, error: 'This level does not exist.' };
   const bytes = fromB64(data);
   if (!bytes || bytes.length % 5 !== 0) return { ok: false, error: 'The code is damaged.' };

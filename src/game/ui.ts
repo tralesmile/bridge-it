@@ -172,7 +172,7 @@ const RESTORE_TEXT: Record<RestoreResult, string> = {
 };
 
 /** Real-money purchases (app only): Remove ads, Supporter pack, Restore purchases. */
-export function openSupport(scene: Phaser.Scene): void {
+export function openSupport(scene: Phaser.Scene, onClose: () => void = () => undefined): void {
   const W = 1280;
   const H = 720;
   const layer = scene.add.container(0, 0).setDepth(55);
@@ -221,8 +221,12 @@ export function openSupport(scene: Phaser.Scene): void {
     for (const fn of buys) fn();
   }, { width: 280, height: 64, fontSize: 24, color: C.greyDark, shade: C.ink });
   layer.add([status, restore]);
-  layer.add(button(scene, W / 2 + 170, H / 2 + 225, 'Close', () => layer.destroy(), { width: 220, height: 64, color: C.blue, shade: C.blueDark }));
-  closeOnBack(layer, () => layer.destroy());
+  const close = () => {
+    layer.destroy();
+    onClose();
+  };
+  layer.add(button(scene, W / 2 + 170, H / 2 + 225, 'Close', close, { width: 220, height: 64, color: C.blue, shade: C.blueDark }));
+  closeOnBack(layer, close);
 }
 
 /**

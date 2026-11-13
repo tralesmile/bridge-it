@@ -2,6 +2,23 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-13 — Run 41
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- Supporter thank-you: Rose Gold paint, only with the Supporter pack (`supporter: true` shop item, `grantSupporterItems`). Never sold for coins (`buy` says "Only in the Supporter pack."); owned once the pack is seen, and kept after a refund like the coins. Old saves that got the supporter coins get it on load. Shop card with a gold ring and heart; shown only in the app with a store, or once owned; tapping it opens the Support window, which now names the paint. Paint row uses narrower cards when it has 9.
+- Sandbox mode (M5): `src/core/sandbox.ts` (setups from 4 gaps x 3 vehicles x 3 far sides x 4 helper sets, id `sandbox-<gap>-<vehicle>-<bank>-<help>`, `anyLevel` finds world, daily and sandbox levels). `SandboxScene` with choice rows and a small picture of the setup; Sandbox button on the menu. In the play scene: every material (tool bar gets narrower buttons when there are 6), cost shown with no limit, no hint, no stars/coins/fails/stats; result panel with "It made it!", Build more, New setup and Copy bridge code. The bridge is saved per setup.
+- Share codes now decode sandbox and daily level ids (before: world levels only).
+- e2e: fixed a flaky crash: `page.evaluate(() => game.scene.start(...))` returned Phaser's scene manager, which Playwright sometimes cannot serialize ("object reference chain is too long"). All such calls now use a block body and return nothing.
+- e2e: supporter paint appears for a supporter save and can be used; Sandbox button, setup, 7 tools and the saved bridge, the truss crosses, nothing in the save changes, New setup and Escape.
+
+**Verified**
+- `npm run check` green (567 tests, 7 new), `npm run flavours` PASS, `npm run e2e` exit 0 with no FAIL. Probe screenshots checked: shop with the store (9 paint cards), Support window text, owned Rose Gold in a level, sandbox setup, 24 m truck sandbox with rocks and posts, sandbox win panel.
+
+**Lessons**
+- In e2e, never return a Phaser object from `page.evaluate`: write `() => { ...; }`. A concise arrow that returns `scene.start(...)` passes most runs and crashes some.
+- A safety check can refuse a long inline heredoc that mixes Python and JS template strings; write the edit script to the scratchpad with the Write tool and run it from there.
+- Next: World 5 probe with a faster vehicle, or the level editor for players (sandbox is a good base: it already has setups and codes).
+
 ## 2026-11-12 — Run 40
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

@@ -1,7 +1,7 @@
 import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type PlayStats } from '../core/achievements';
 import { DAILY_COINS, EMPTY_DAILY, canPlayDay, dateKey, isDailyId, recordCalendarWin, type DailyState } from '../core/daily';
 import { ALL_LEVELS } from '../core/levels';
-import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, type ShopKind, type ShopState } from '../core/shop';
+import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, grantSupporterItems, type ShopKind, type ShopState } from '../core/shop';
 import { EMPTY_PURCHASES, applyOwned, sanitizePurchases, type PurchaseState } from '../core/purchases';
 import type { Beam } from '../core/types';
 
@@ -105,6 +105,7 @@ export function sanitize(raw: unknown): SaveData {
     }
   }
   base.purchases = sanitizePurchases(r.purchases);
+  if (base.purchases.supporterCoins) base.owned = grantSupporterItems(base.owned);
   if (r.settings && typeof r.settings === 'object') {
     base.settings.sound = r.settings.sound !== false;
     base.settings.music = r.settings.music !== false;
@@ -182,6 +183,7 @@ class SaveStore {
     const { state, coins } = applyOwned(this.data.purchases, owned);
     this.data.purchases = state;
     this.data.coins += coins;
+    if (state.supporter) this.data.owned = grantSupporterItems(this.data.owned);
     this.persist();
     return coins;
   }

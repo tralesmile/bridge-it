@@ -27,7 +27,7 @@ export const PRODUCTS: readonly Product[] = [
     id: 'supporter_pack',
     entitlement: 'supporter',
     name: 'Supporter pack',
-    lines: ['Everything in Remove ads,', `plus ${SUPPORTER_COINS} coins. Thank you!`],
+    lines: ['Everything in Remove ads,', `plus ${SUPPORTER_COINS} coins and the`, 'Rose Gold paint. Thank you!'],
     fallbackPrice: '$9.99',
   },
 ];

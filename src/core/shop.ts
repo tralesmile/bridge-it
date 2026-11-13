@@ -16,6 +16,8 @@ export interface ShopItem {
    * ride: the small car's body shape (car levels only); colours are its trim. Same size and weight, so physics never change.
    */
   colors: string[];
+  /** Only for players who bought the Supporter pack (a thank-you; never sold for coins). */
+  supporter?: true;
 }
 
 export const SHOP_ITEMS: ShopItem[] = [
@@ -28,6 +30,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'paint-candy', kind: 'paint', name: 'Candy', price: 100, colors: ['#ff6fb5', '#ffa8d4', '#d9408a'] },
   { id: 'paint-night', kind: 'paint', name: 'Night', price: 150, colors: ['#3a3f5c', '#5d6488', '#20233a'] },
   { id: 'paint-gold', kind: 'paint', name: 'Gold', price: 300, colors: ['#e8b923', '#ffe27a', '#b88a0c'] },
+  { id: 'paint-rosegold', kind: 'paint', name: 'Rose Gold', price: 0, supporter: true, colors: ['#f59a86', '#ffd3c4', '#c8664f'] },
   // Road decks (colour only).
   { id: 'deck-classic', kind: 'deck', name: 'Asphalt', price: 0, colors: ['#4a4458', '#ffd84a', '#2d2938'] },
   { id: 'deck-brick', kind: 'deck', name: 'Brick', price: 60, colors: ['#b5523b', '#ffe2c2', '#7d3424'] },
@@ -69,7 +72,19 @@ export interface ShopState {
 
 export const itemById = (id: string): ShopItem | undefined => SHOP_ITEMS.find((i) => i.id === id);
 
-export const isOwned = (state: ShopState, id: string): boolean => (itemById(id)?.price ?? 1) === 0 || state.owned.includes(id);
+export const isOwned = (state: Pick<ShopState, 'owned'>, id: string): boolean => {
+  const item = itemById(id);
+  if (!item) return false;
+  return (item.price === 0 && !item.supporter) || state.owned.includes(id);
+};
+
+/** Thank-you items for Supporter pack buyers. */
+export const SUPPORTER_ITEMS: readonly string[] = SHOP_ITEMS.filter((i) => i.supporter).map((i) => i.id);
+
+/** Adds the supporter items to the owned list (kept for good, like the supporter coins). */
+export function grantSupporterItems(owned: readonly string[]): string[] {
+  return [...owned, ...SUPPORTER_ITEMS.filter((id) => !owned.includes(id))];
+}
 
 export type BuyResult = { ok: true; state: ShopState } | { ok: false; error: string };
 
@@ -78,6 +93,7 @@ export function buy(state: ShopState, id: string): BuyResult {
   const item = itemById(id);
   if (!item) return { ok: false, error: 'Unknown item.' };
   if (isOwned(state, id)) return { ok: false, error: 'You have it already.' };
+  if (item.supporter) return { ok: false, error: 'Only in the Supporter pack.' };
   if (state.coins < item.price) return { ok: false, error: `You need ${item.price - state.coins} more coins.` };
   return {
     ok: true,
@@ -96,7 +112,7 @@ export function equip(state: ShopState, id: string): ShopState {
 export function equipped(state: Pick<ShopState, 'equipped' | 'owned'>, kind: ShopKind): ShopItem {
   const id = state.equipped[kind];
   const item = itemById(id);
-  if (item && item.kind === kind && (item.price === 0 || state.owned.includes(id))) return item;
+  if (item && item.kind === kind && isOwned(state, id)) return item;
   return itemById(DEFAULT_EQUIPPED[kind])!;
 }
 

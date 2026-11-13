@@ -82,7 +82,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Stats screen (`statRows` in `src/core/stats.ts`, `StatsScene`, Stats button on the menu): levels, stars, worlds, attempts, wins, win rate, fails, broken beams, hints, cost, coins, achievements, daily streak
 
 ## M5 Creativity
-- [ ] Sandbox mode
+- [x] Sandbox mode (`src/core/sandbox.ts`, `SandboxScene`, Sandbox button on the menu): pick gap (6/10/16/24 m), vehicle, far side (same, 2 m lower, 2 m higher) and helpers (rocks, high posts, both); every material, no money limit (cost shown), no stars. Nothing is scored (no coins, fails, stats); the bridge is saved per setup and can be shared as a code (share codes now read sandbox and daily ids). Tool bar gets narrower buttons when a level has 6 materials
+- [ ] Sandbox: a small achievement or two ("Tinkerer": win 5 sandbox setups), once there is a sandbox counter in the save
 - [ ] Level editor for players
 - [x] Share codes core: `encodeBridge` / `decodeBridge` in `src/core/share.ts` (format `BI1.<levelId>.<data>.<check>`, checked against level rules; tested on all solutions)
 - [x] Share codes UI: "Copy bridge code" on the win panel, "Paste code" button on the play scene (uses window.prompt; not covered by e2e)
@@ -109,7 +110,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [ ] Check the AdMob flow on a real phone (consent form, test ads show and close, hint after a rewarded ad); first on the CI debug APK
 - [x] RevenueCat purchases (`src/game/store.ts`, `@revenuecat/purchases-capacitor` 13.8.0, app build only): Remove ads ($3.99: no breaks, hints without ads) and Supporter pack ($9.99: Remove ads plus 300 coins, once per save), Restore purchases. Prices come from the store in the player's currency. Pending payments unlock later through the update listener; a refund brings ads back but never takes coins. A double tap starts one payment. The saved state works offline. "Remove ads" button in Settings opens the Support window; hidden until the owner's RevenueCat keys are in `REVENUECAT_KEYS`. Tested with a fake plugin (13 tests); `npm run flavours` checks web and portal builds have no RevenueCat code
 - [ ] RevenueCat keys and products (after the owner's accounts): public SDK keys in `REVENUECAT_KEYS`, products `remove_ads` and `supporter_pack` (non-consumable) in Play Console and App Store Connect, entitlements `no_ads` and `supporter` in RevenueCat; then test a sandbox purchase, a pending payment and restore on real phones
-- [ ] Shop items only for supporters (a gold car paint), so the pack gives a visible thank-you
+- [x] Shop items only for supporters: Rose Gold paint (`supporter: true` in `SHOP_ITEMS`). Not for coins; owned once the Supporter pack is seen and kept for good (like the coins, even after a refund). The card (gold ring, heart) shows only in the app with a store or once owned; tapping it opens the Support window. The paint row uses narrower cards when it has 9
 - [x] Safe areas (the game box stays inside the notch insets), back step for Escape and the Android back button (`src/game/back.ts`: open windows close first, then the scene goes back; on the menu the app minimizes), haptics on placing beams, breaks and splashes (`src/game/native.ts`, follows the Screen shake switch; plugin code only loads in the app)
 - [x] Codemagic config (`codemagic.yaml`): `ios-release` builds the .ipa on a cloud Mac and sends it to TestFlight; `android-release` builds a signed .aab (the signing block in `android/app/build.gradle` only turns on with Codemagic's keystore variables). Not run yet: needs the owner's accounts
 - [ ] First real Codemagic run (after the owner connects the accounts); fix whatever it reports

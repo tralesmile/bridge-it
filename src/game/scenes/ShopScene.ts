@@ -5,7 +5,8 @@ import { sfx } from '../audio';
 import { addBackground } from '../background';
 import { save } from '../save';
 import { C, GAME_W, hex } from '../theme';
-import { announceAchievements, button, label, panel } from '../ui';
+import { store } from '../store';
+import { announceAchievements, button, label, openSupport, panel } from '../ui';
 
 const CARD_W = 136;
 const CARD_H = 150;
@@ -30,7 +31,8 @@ export class ShopScene extends Phaser.Scene {
     label(this, GAME_W - 165, 60, `${save.data.coins}`, 34, C.white).setOrigin(0, 0.5).setStroke(C.ink, 8);
 
     label(this, GAME_W / 2, 118, 'Paint for your car, truck and train', 24, C.ink);
-    this.row(SHOP_ITEMS.filter((i) => i.kind === 'paint'), 212);
+    // The supporter paint shows only where it can be had (app with a store) or once it is owned.
+    this.row(SHOP_ITEMS.filter((i) => i.kind === 'paint' && (!i.supporter || store.available() || isOwned(save.shop, i.id))), 212);
     // Road colours and car shapes share the middle row, each with its own title.
     const middle = [SHOP_ITEMS.filter((i) => i.kind === 'deck'), SHOP_ITEMS.filter((i) => i.kind === 'ride')];
     const groupW = middle.map((g) => g.length * CARD_W + (g.length - 1) * GAP);
@@ -50,17 +52,25 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private row(items: ShopItem[], y: number, cx = GAME_W / 2): void {
-    const total = items.length * CARD_W + (items.length - 1) * GAP;
-    items.forEach((item, i) => this.card(item, cx - total / 2 + CARD_W / 2 + i * (CARD_W + GAP), y));
+    // A long row (paint with the supporter card) uses narrower cards so it fits the panel.
+    const w = items.length > 8 ? 124 : CARD_W;
+    const gap = items.length > 8 ? 10 : GAP;
+    const total = items.length * w + (items.length - 1) * gap;
+    items.forEach((item, i) => this.card(item, cx - total / 2 + w / 2 + i * (w + gap), y, w));
   }
 
-  private card(item: ShopItem, x: number, y: number): void {
+  private card(item: ShopItem, x: number, y: number, CARD_W: number): void {
     const shop = save.shop;
     const owned = isOwned(shop, item.id);
     const worn = equipped(shop, item.kind).id === item.id;
     const g = this.add.graphics({ x, y });
     g.fillStyle(hex(C.white), 1);
     g.fillRoundedRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 18);
+    if (item.supporter) {
+      // A gold ring and a heart mark the thank-you item.
+      g.lineStyle(4, hex(C.gold), 1);
+      g.strokeRoundedRect(-CARD_W / 2 + 4, -CARD_H / 2 + 4, CARD_W - 8, CARD_H - 8, 15);
+    }
     if (worn) {
       g.lineStyle(5, hex(C.good), 1);
       g.strokeRoundedRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 18);
@@ -102,11 +112,12 @@ export class ShopScene extends Phaser.Scene {
       for (const [px, py] of [[-48, -22], [0, -58], [48, -22], [0, -22]]) g.fillCircle(px, py, 4);
     }
     label(this, x, y + 2, item.name, 21, C.ink);
-    const text = worn ? 'In use' : owned ? 'Use' : `${item.price}`;
-    const canAfford = save.data.coins >= item.price;
-    const colors = worn ? { color: C.good, shade: C.goodDark } : owned ? { color: C.blue, shade: C.blueDark } : canAfford ? { color: C.primary, shade: C.primaryDark } : { color: C.grey, shade: C.greyDark };
-    const b = button(this, x, y + 44, text, () => this.choose(item), { width: 112, height: 44, fontSize: 22, ...colors });
-    if (!owned) {
+    if (item.supporter) label(this, x + CARD_W / 2 - 18, y - CARD_H / 2 + 18, '♥', 22, C.primary);
+    const text = worn ? 'In use' : owned ? 'Use' : item.supporter ? 'Supporter' : `${item.price}`;
+    const canAfford = !item.supporter && save.data.coins >= item.price;
+    const colors = worn ? { color: C.good, shade: C.goodDark } : owned ? { color: C.blue, shade: C.blueDark } : item.supporter ? { color: C.gold, shade: C.primaryDark, textColor: C.ink } : canAfford ? { color: C.primary, shade: C.primaryDark } : { color: C.grey, shade: C.greyDark };
+    const b = button(this, x, y + 44, text, () => this.choose(item), { width: 112, height: 44, fontSize: item.supporter && !owned ? 18 : 22, ...colors });
+    if (!owned && !item.supporter) {
       // Price with a coin in front of it.
       this.add.image(x - 30, y + 42, 'coin').setScale(0.55);
       (b.list[2] as Phaser.GameObjects.Text).setX(12);
@@ -120,6 +131,11 @@ export class ShopScene extends Phaser.Scene {
     if (isOwned(shop, item.id)) {
       save.equipItem(item.id);
       this.scene.restart();
+      return;
+    }
+    if (item.supporter) {
+      // Not for coins: it comes with the Supporter pack.
+      openSupport(this, () => this.scene.restart());
       return;
     }
     const error = save.buyItem(item.id);

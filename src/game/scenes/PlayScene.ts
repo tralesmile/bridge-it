@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { BUILD_MARGIN_X, BUILD_MAX_Y, BUILD_MIN_Y, BridgeDesign, distance, keyOf, pointOf, snap, type AddResult } from '../../core/bridge';
-import { DAILY_PREFIX, findLevel, isDailyId } from '../../core/daily';
+import { DAILY_PREFIX, isDailyId } from '../../core/daily';
+import { anyLevel, isSandboxId } from '../../core/sandbox';
 import { levelById, nextLevel, type LevelEntry } from '../../core/levels';
 import { MATERIALS, type MaterialId } from '../../core/materials';
 import { decodeBridge, encodeBridge } from '../../core/share';
@@ -28,6 +29,8 @@ type Mode = 'build' | 'sim' | 'result';
 const WATER_Y = -4.5;
 const MIN_PX_PER_M = 28;
 const HINT_AFTER_FAILS = 2;
+
+const LOSS_TITLE: Record<string, string> = { fell: 'Splash!', collapse: 'Splash!', stuck: 'Stuck!', flipped: 'Flipped!', timeout: 'Too slow!' };
 
 const REASONS: Record<string, string> = {
   'too-long': 'Too long for this material',
@@ -85,6 +88,10 @@ export class PlayScene extends Phaser.Scene {
   stress = false;
   /** Result of the last stress test (read by the browser test). */
   lastStressWon = false;
+  /** Sandbox: every material, no money limit, nothing scored. Only the bridge is saved. */
+  sandbox = false;
+  /** Result of the last sandbox run (read by the browser test). */
+  lastSandboxWon: boolean | null = null;
 
   private dragFrom: Point | null = null;
   private dragTo: Point | null = null;
@@ -105,13 +112,15 @@ export class PlayScene extends Phaser.Scene {
   }
 
   init(data: { levelId?: string; stress?: boolean }): void {
-    const found = findLevel(data.levelId ?? '') ?? levelById('w1-1');
+    const found = anyLevel(data.levelId ?? '') ?? levelById('w1-1');
     if (!found) throw new Error('No levels defined');
     // Stress Test: the same level and saved bridge with the next heavier vehicle.
     const heavy = data.stress ? stressLevel(found) : null;
     this.stress = !!heavy;
     const level = heavy ?? found;
     this.level = level;
+    this.sandbox = isSandboxId(level.id);
+    this.lastSandboxWon = null;
     this.design = BridgeDesign.restore(level, save.data.designs[level.id] ?? []);
     this.mode = 'build';
     this.boats = [];
@@ -366,7 +375,9 @@ export class PlayScene extends Phaser.Scene {
     button(this, 90, 50, '◀', () => this.leave(), { width: 76, height: 56, fontSize: 30, color: C.blue, shade: C.blueDark });
     this.pasteButton = button(this, 215, 50, 'Paste code', () => void this.pasteCode(), { width: 170, height: 56, fontSize: 22, color: C.grey, shade: C.greyDark });
     this.buildUi.push(this.pasteButton);
-    const name = isDailyId(this.level.id) ? `Daily: ${this.level.name}` : `${this.level.index}. ${this.level.name}`;
+    const name = this.sandbox
+      ? `Sandbox · ${this.level.gapEnd - this.level.gapStart} m · ${VEHICLES[this.level.vehicle].name}`
+      : isDailyId(this.level.id) ? `Daily: ${this.level.name}` : `${this.level.index}. ${this.level.name}`;
     const title = label(this, GAME_W / 2, 40, this.stress ? `Stress test: ${this.level.name}` : name, 34, C.white);
     title.setStroke(C.ink, 8);
 
@@ -394,19 +405,23 @@ export class PlayScene extends Phaser.Scene {
       spring: [C.spring, '#b03b72'],
       erase: [C.anchor, '#a8302a'],
     };
+    // Many tools (sandbox: every material) get narrower buttons so Undo stays clear of GO.
+    const many = tools.length > 5;
+    const step = many ? 126 : 170;
+    const x0 = many ? 72 : 110;
     tools.forEach((t, i) => {
       const name = t === 'erase' ? 'Erase' : MATERIALS[t].name;
-      const b = button(this, 110 + i * 170, GAME_H - 52, name, () => this.selectTool(t), {
-        width: 150,
+      const b = button(this, x0 + i * step, GAME_H - 52, name, () => this.selectTool(t), {
+        width: many ? 116 : 150,
         height: 60,
-        fontSize: 24,
+        fontSize: many ? 21 : 24,
         color: colors[t][0],
         shade: colors[t][1],
       });
       this.toolButtons.set(t, b);
       this.buildUi.push(b);
     });
-    this.undoButton = button(this, 110 + tools.length * 170, GAME_H - 52, 'Undo', () => this.undo(), { width: 130, height: 60, fontSize: 24, color: C.grey, shade: C.greyDark });
+    this.undoButton = button(this, x0 + tools.length * step - (many ? 6 : 0), GAME_H - 52, 'Undo', () => this.undo(), { width: many ? 104 : 130, height: 60, fontSize: many ? 21 : 24, color: C.grey, shade: C.greyDark });
     this.buildUi.push(this.undoButton);
     this.hintButton = button(this, GAME_W - 330, GAME_H - 52, '💡 Hint', () => void this.requestHint(), { width: 150, height: 60, fontSize: 24, color: C.gold, shade: '#d29b1b', textColor: C.ink });
     this.hintButton.setVisible(this.hintAllowed());
@@ -424,6 +439,12 @@ export class PlayScene extends Phaser.Scene {
   private updateCost(): void {
     const cost = this.design.cost;
     const { budget, starBudgets } = this.level;
+    this.undoButton.setEnabled(this.design.canUndo);
+    if (this.sandbox) {
+      // No money limit in the sandbox: just show what the bridge costs.
+      this.costText.setText(`Cost $${cost.toLocaleString('en-US')}`);
+      return;
+    }
     this.costText.setText(`$${cost.toLocaleString('en-US')} / $${budget.toLocaleString('en-US')}`);
     const g = this.costBar;
     g.clear();
@@ -607,7 +628,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private hintAllowed(): boolean {
-    return !this.stress && (save.data.fails[this.level.id] ?? 0) >= HINT_AFTER_FAILS;
+    return !this.stress && !this.sandbox && (save.data.fails[this.level.id] ?? 0) >= HINT_AFTER_FAILS;
   }
 
   private afterChange(): void {
@@ -891,6 +912,17 @@ export class PlayScene extends Phaser.Scene {
     this.mode = 'result';
     const won = sim.status === 'won';
     const cost = this.design.cost;
+    if (this.sandbox) {
+      // Nothing is scored in the sandbox: no stars, coins, fails or stats.
+      if (won) sfx.win(1);
+      else sfx.lose();
+      this.lastSandboxWon = won;
+      if (!won) {
+        this.weakBeams = sim.beamStates.filter((s) => s.broken || s.stress > 0.8).map((s) => ({ a: pointOf(s.beam.a), b: pointOf(s.beam.b) }));
+      }
+      this.time.delayedCall(won ? 350 : 700, () => this.showSandboxResult(won, sim.lossReason ?? 'fell', cost, sim.brokenCount));
+      return;
+    }
     if (this.stress) {
       if (won) sfx.win(1);
       else sfx.lose();
@@ -939,7 +971,8 @@ export class PlayScene extends Phaser.Scene {
 
   /** Back to where the player came from: the world's levels, or world select for the daily bridge. */
   private leave(): void {
-    if (isDailyId(this.level.id)) this.scene.start('worlds');
+    if (this.sandbox) this.scene.start('sandbox');
+    else if (isDailyId(this.level.id)) this.scene.start('worlds');
     else this.scene.start('levels', { world: this.level.world });
   }
 
@@ -1041,6 +1074,20 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
+  /** Result of a sandbox run. Nothing is scored; the bridge can be shared as a code. */
+  private showSandboxResult(won: boolean, reason: string, cost: number, broken: number): void {
+    const layer = this.resultPanel(400);
+    const title = won ? 'It made it! 🎉' : LOSS_TITLE[reason] ?? 'Splash!';
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 130, title, 56, C.ink));
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 55, `Cost $${cost.toLocaleString('en-US')} · Beams broken: ${broken}`, 26, C.greyDark));
+    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 15, 'Sandbox: just for fun, nothing is scored.', 22, C.greyDark));
+    layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 70, won ? 'Build more' : 'Fix it', () => this.stopSim(), { width: 240, height: 70, color: C.primary, shade: C.primaryDark }));
+    layer.add(button(this, GAME_W / 2 + 140, GAME_H / 2 + 70, 'New setup', () => this.scene.start('sandbox'), { width: 240, height: 70, fontSize: 26, color: C.blue, shade: C.blueDark }));
+    if (won && this.design.list.length > 0) {
+      layer.add(button(this, GAME_W / 2, GAME_H / 2 + 150, '📋 Copy bridge code', () => void this.copyCode(), { width: 320, height: 56, fontSize: 22, color: C.good, shade: C.goodDark }));
+    }
+  }
+
   /** Result of a stress test: held or broke. Nothing is saved. */
   private showStressResult(won: boolean, broken: number): void {
     const layer = this.resultPanel(380);
@@ -1063,7 +1110,7 @@ export class PlayScene extends Phaser.Scene {
 
   private showLoss(reason: string): void {
     const layer = this.resultPanel(360);
-    const title = reason === 'fell' || reason === 'collapse' ? 'Splash!' : reason === 'stuck' ? 'Stuck!' : reason === 'flipped' ? 'Flipped!' : 'Too slow!';
+    const title = LOSS_TITLE[reason] ?? 'Splash!';
     const tip =
       reason === 'fell' || reason === 'collapse'
         ? 'Look for red beams: they broke first.'

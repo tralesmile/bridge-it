@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { ALL_LEVELS } from '../src/core/levels';
-import { DEFAULT_EQUIPPED, RIDE_TEXTURE, SHOP_ITEMS, buy, vehicleTextureKey, coinsAvailable, equip, equipped, isOwned, type ShopState } from '../src/core/shop';
+import { DEFAULT_EQUIPPED, RIDE_TEXTURE, SHOP_ITEMS, SUPPORTER_ITEMS, buy, grantSupporterItems, vehicleTextureKey, coinsAvailable, equip, equipped, isOwned, type ShopState } from '../src/core/shop';
 
 const start: ShopState = { coins: 100, owned: [], equipped: { ...DEFAULT_EQUIPPED } };
 
@@ -84,5 +84,21 @@ describe('shop', () => {
     expect(vehicleTextureKey(p.state, 'train')).toBe('train-paint-sky');
     // A body you do not own (edited save) falls back to the Moo Car.
     expect(vehicleTextureKey({ owned: [], equipped: { ...DEFAULT_EQUIPPED, ride: 'ride-camper' } }, 'car')).toBe('car');
+  });
+
+  test('supporter paint: not free, not for coins, owned only after the Supporter pack, kept for good', () => {
+    expect(SUPPORTER_ITEMS).toEqual(['paint-rosegold']);
+    const rich = { ...start, coins: 5000 };
+    expect(isOwned(rich, 'paint-rosegold')).toBe(false);
+    expect(buy(rich, 'paint-rosegold')).toEqual({ ok: false, error: 'Only in the Supporter pack.' });
+    expect(equip(rich, 'paint-rosegold')).toBe(rich);
+    // An edited save that wears it without owning it falls back to Classic.
+    expect(equipped({ owned: [], equipped: { ...DEFAULT_EQUIPPED, paint: 'paint-rosegold' } }, 'paint').id).toBe('paint-classic');
+    const owned = grantSupporterItems(['paint-sky']);
+    expect(owned).toEqual(['paint-sky', 'paint-rosegold']);
+    expect(grantSupporterItems(owned)).toEqual(owned); // no doubles
+    const state = { ...start, owned };
+    expect(isOwned(state, 'paint-rosegold')).toBe(true);
+    expect(vehicleTextureKey(equip(state, 'paint-rosegold'), 'car')).toBe('car-paint-rosegold');
   });
 });

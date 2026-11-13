@@ -108,7 +108,7 @@ async function run(viewport, name) {
   check(backFromStress === 'false car build', `${name}: Back to level returns to the normal level (${backFromStress})`);
 
   // Level 3 with a bad bridge should fail, then the Fix it button returns to building.
-  await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w1-3' }));
+  await page.evaluate(() => { globalThis.__bridgeit.scene.start('play', { levelId: 'w1-3' }); });
   await sleep(600);
   await drag(592 - 48, 390, 592 + 48, 390);
   await drag(592 + 48, 390, 592 + 144, 390);
@@ -147,25 +147,25 @@ async function run(viewport, name) {
   await sleep(300);
   check((await playBeams()) === 2, `${name}: a bad code keeps the bridge`);
   // Level 9 has an uneven cliff and a wide gap: look at it with the hint on.
-  await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w1-9' }));
+  await page.evaluate(() => { globalThis.__bridgeit.scene.start('play', { levelId: 'w1-9' }); });
   await sleep(600);
   await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
   await sleep(300);
   await page.screenshot({ path: `${OUT}/${name}-7-wide-level.png` });
   // World 2 uses rope hangers from high anchors.
-  await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w2-3' }));
+  await page.evaluate(() => { globalThis.__bridgeit.scene.start('play', { levelId: 'w2-3' }); });
   await sleep(600);
   await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
   await sleep(300);
   await page.screenshot({ path: `${OUT}/${name}-8-rope-level.png` });
   // A 32 m gap: the play scene zooms out to fit it.
-  await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w2-10' }));
+  await page.evaluate(() => { globalThis.__bridgeit.scene.start('play', { levelId: 'w2-10' }); });
   await sleep(600);
   await page.evaluate(() => { const s = globalThis.__bridgeit.scene.getScene('play'); s.showHint = true; s.drawHint(); });
   await sleep(300);
   await page.screenshot({ path: `${OUT}/${name}-9-zoomed-level.png` });
   // The train level (long vehicle).
-  await page.evaluate(() => globalThis.__bridgeit.scene.start('play', { levelId: 'w2-14' }));
+  await page.evaluate(() => { globalThis.__bridgeit.scene.start('play', { levelId: 'w2-14' }); });
   await sleep(600);
   await page.screenshot({ path: `${OUT}/${name}-9b-train-level.png` });
   // World 3 Pirate Bay levels (opened by id), each with its hint shown.
@@ -202,7 +202,7 @@ async function run(viewport, name) {
   await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').mode === 'result', null, { timeout: 20000 }).catch(() => {});
   const lockWon = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').sim?.status);
   check(lockWon === 'won', `${name}: the Lock Gate drawbridge solution wins in the game (got ${lockWon})`);
-  await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').scene.start('levels', { world: 3 }));
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('play').scene.start('levels', { world: 3 }); });
   await sleep(600);
   check(await active('levels'), `${name}: world 3 level select opens`);
   await page.screenshot({ path: `${OUT}/${name}-9w3-levels.png` });
@@ -249,7 +249,7 @@ async function run(viewport, name) {
     `${name}: daily win saves the streak and 20 coins, not world stars (${JSON.stringify(daily.daily)}, coins ${coinsBefore} -> ${daily.coins})`);
 
   // Daily calendar: 📅 on world select; an old day can be played but gives no coins and keeps the streak.
-  await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').scene.start('worlds'));
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('play').scene.start('worlds'); });
   await sleep(500);
   await click(968, 60);
   check(await active('daily'), `${name}: 📅 button opens the daily calendar`);
@@ -272,7 +272,7 @@ async function run(viewport, name) {
   check(past.coins === daily.coins && past.daily.streak === 1 && past.daily.last === daily.daily.last && past.daily.played.includes(pastId.slice(6)),
     `${name}: an old day gets a tick, no coins, same streak (${JSON.stringify(past.daily)}, coins ${past.coins})`);
   // The level select shows the stress test badge on level 1 (held earlier).
-  await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').scene.start('levels', { world: 1 }));
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('play').scene.start('levels', { world: 1 }); });
   await sleep(500);
   await page.screenshot({ path: `${OUT}/${name}-9d-levels-held.png` });
 
@@ -309,7 +309,7 @@ async function run(viewport, name) {
   await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); s.coins = 120; localStorage.setItem('bridgeit.save', JSON.stringify(s)); });
   await page.reload();
   await page.waitForFunction(() => globalThis.__bridgeit?.scene?.isActive('menu'), null, { timeout: 15000 });
-  await page.evaluate(() => globalThis.__bridgeit.scene.getScene('menu').scene.start('shop'));
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('menu').scene.start('shop'); });
   await sleep(500);
   await click(1170, 445); // Ice Cream, 120 coins
   const van = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}'));
@@ -320,6 +320,19 @@ async function run(viewport, name) {
   const vanTex = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').chassisSprite.texture.key);
   check(vanTex === 'icecream-paint-sky', `${name}: the car level uses the bought shape with its paint (${vanTex})`);
   await page.screenshot({ path: `${OUT}/${name}-9s-van.png` });
+  // Supporter paint: hidden on the web until owned; a save with the Supporter pack shows it as a 9th paint card and can use it.
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); s.purchases = { noAds: true, supporter: true, supporterCoins: true }; localStorage.setItem('bridgeit.save', JSON.stringify(s)); });
+  await page.reload();
+  await page.waitForFunction(() => globalThis.__bridgeit?.scene?.isActive('menu'), null, { timeout: 15000 });
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('menu').scene.start('shop'); });
+  await sleep(500);
+  await click(1176, 256); // Rose Gold, 9th paint card
+  const rose = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}'));
+  check(rose.equipped?.paint === 'paint-rosegold' && rose.owned?.includes('paint-rosegold'), `${name}: supporter paint is owned and can be used (${rose.equipped?.paint})`);
+  await page.screenshot({ path: `${OUT}/${name}-9s-shop-supporter.png` });
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); s.equipped.paint = 'paint-sky'; delete s.purchases; localStorage.setItem('bridgeit.save', JSON.stringify(s)); });
+  await page.reload();
+  await page.waitForFunction(() => globalThis.__bridgeit?.scene?.isActive('menu'), null, { timeout: 15000 });
 
   // Achievements: earlier wins and the purchase are saved; the Trophies screen lists them.
   const ach = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').achievements || []);
@@ -347,10 +360,47 @@ async function run(viewport, name) {
   await page.keyboard.press('Escape'); await sleep(300);
   await click(640, 430);
   check(await active('worlds'), `${name}: Escape closes the settings window`);
-  await page.evaluate(() => globalThis.__bridgeit.scene.getScene('worlds').scene.start('play', { levelId: 'w1-2' }));
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('worlds').scene.start('play', { levelId: 'w1-2' }); });
   await sleep(500);
   await page.keyboard.press('Escape'); await sleep(400);
   check(await active('levels'), `${name}: Escape in a level goes back to level select`);
+
+  // Sandbox: menu button, setup screen, every material, a saved bridge crosses, nothing is scored.
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}');
+    const beams = [];
+    for (let x = 0; x < 6; x++) beams.push({ a: `${x},0`, b: `${x + 1},0`, material: 'road' });
+    for (const [a, b] of [['0,0', '1,1'], ['1,1', '2,0'], ['2,0', '3,1'], ['3,1', '4,0'], ['4,0', '5,1'], ['5,1', '6,0'], ['1,1', '3,1'], ['3,1', '5,1']]) beams.push({ a, b, material: 'wood' });
+    s.designs = { ...(s.designs || {}), 'sandbox-6-car-flat-none': beams };
+    localStorage.setItem('bridgeit.save', JSON.stringify(s));
+  });
+  await page.reload();
+  await page.waitForFunction(() => globalThis.__bridgeit?.scene?.isActive('menu'), null, { timeout: 15000 });
+  await sleep(300);
+  await click(625, 60);
+  check(await active('sandbox'), `${name}: Sandbox button opens the sandbox setup`);
+  await click(420, 195); // 6 m
+  await click(420, 275); // car
+  await click(420, 355); // same height
+  await click(420, 435); // no helpers
+  await page.screenshot({ path: `${OUT}/${name}-9v-sandbox-setup.png` });
+  await click(1020, 600); // Build
+  await sleep(600);
+  const sb = await page.evaluate(() => { const p = globalThis.__bridgeit.scene.getScene('play'); return { id: p.level.id, tools: p.toolButtons.size, beams: p.design.list.length }; });
+  check(sb.id === 'sandbox-6-car-flat-none' && sb.tools === 7 && sb.beams === 14, `${name}: sandbox level opens with every material and the saved bridge (${JSON.stringify(sb)})`);
+  await page.screenshot({ path: `${OUT}/${name}-9v-sandbox-build.png` });
+  const sbBefore = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); return JSON.stringify([s.coins, s.stats, s.fails, s.stars, s.achievements]); });
+  await click(1160, 664); // GO
+  await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon !== null, null, { timeout: 30000 });
+  await sleep(600);
+  const sbWon = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon);
+  const sbAfter = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); return JSON.stringify([s.coins, s.stats, s.fails, s.stars, s.achievements]); });
+  check(sbWon === true && sbBefore === sbAfter, `${name}: the sandbox truss crosses and nothing is scored (won ${sbWon}, save same ${sbBefore === sbAfter})`);
+  await page.screenshot({ path: `${OUT}/${name}-9v-sandbox-won.png` });
+  await click(780, 430); // New setup
+  check(await active('sandbox'), `${name}: New setup goes back to the sandbox setup`);
+  await page.keyboard.press('Escape'); await sleep(300);
+  check(await active('menu'), `${name}: Escape on the sandbox setup goes back to the menu`);
   await page.close();
 }
 

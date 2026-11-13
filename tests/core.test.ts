@@ -113,6 +113,13 @@ describe('save data', () => {
     expect(sanitize({ held: ['w1-1', 'w1-1', 'nope', 7] }).held).toEqual(['w1-1']);
   });
 
+  test('a save that got the supporter coins also owns the supporter paint (old saves from before it existed)', () => {
+    expect(sanitize({ purchases: { supporter: true, supporterCoins: true }, owned: ['paint-sky'] }).owned).toEqual(['paint-sky', 'paint-rosegold']);
+    // Refunded later: coins and paint stay.
+    expect(sanitize({ purchases: { supporter: false, supporterCoins: true } }).owned).toEqual(['paint-rosegold']);
+    expect(sanitize({ purchases: { noAds: true } }).owned).toEqual([]);
+  });
+
   test('keeps only known shop items and falls back for bad equipped ids', () => {
     const fresh = sanitize({});
     expect(fresh.owned).toEqual([]);

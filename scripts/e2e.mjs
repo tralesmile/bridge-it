@@ -120,7 +120,8 @@ async function run(viewport, name) {
   check(mode === 'result', `${name}: an unsupported long road fails (mode ${mode})`);
   await click(640, 440);
   const back = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').mode);
-  check(back === 'build', `${name}: Fix it returns to building (mode ${back})`);
+  const goShown = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').goButton.visible);
+  check(back === 'build' && goShown, `${name}: Fix it returns to building with the GO button (mode ${back}, GO ${goShown})`);
   // Bridge codes use an in-game dialog, not window.prompt (portals and app web views may block it).
   await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new Error('blocked')) } }));
   const playBeams = () => page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').design.list.length);
@@ -481,6 +482,15 @@ async function run(viewport, name) {
   await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon !== null, null, { timeout: 30000 });
   await sleep(800);
   await page.screenshot({ path: `${OUT}/${name}-9x-editor-friend-won.png` });
+  const fsSave = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); return { list: s.friendStars, id: globalThis.__bridgeit.scene.getScene('play').level.id }; });
+  check(fsSave.list.length === 1 && fsSave.list[0].id === fsSave.id && fsSave.list[0].stars >= 1, `${name}: a friend's level keeps its best stars (${JSON.stringify(fsSave.list.map((f) => f.stars))})`);
+  await click(500, 450); // Build more
+  await sleep(300);
+  await click(1160, 664); // GO again: the panel now shows the best stars
+  await page.waitForFunction(() => { const p = globalThis.__bridgeit.scene.getScene('play'); return p.mode === 'result' && !!p.resultLayer; }, null, { timeout: 30000 });
+  await sleep(800);
+  const fsText = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').resultLayer.list.filter((o) => o.type === 'Text').map((o) => o.text).join(' | '));
+  check(fsText.includes('Your best:'), `${name}: a second win shows the best stars (${fsText})`);
   await click(640, 540); // Edit a copy
   await sleep(500);
   const mlCopy = await page.evaluate(() => {

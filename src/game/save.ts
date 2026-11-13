@@ -2,7 +2,7 @@ import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type AchievementInput, type
 import { DAILY_COINS, EMPTY_DAILY, canPlayDay, dateKey, isDailyId, recordCalendarWin, type DailyState } from '../core/daily';
 import { ALL_LEVELS } from '../core/levels';
 import { parseSandboxId } from '../core/sandbox';
-import { DEFAULT_CUSTOM, MY_LEVELS_MAX, cleanName, customId, freshName, parseCustomId, specProblem, type CustomSpec } from '../core/custom';
+import { DEFAULT_CUSTOM, MY_LEVELS_MAX, addFriendStars, cleanName, customId, freshName, friendStarsOf, parseCustomId, readFriendStars, specProblem, type CustomSpec, type FriendStars } from '../core/custom';
 import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, grantSupporterItems, type ShopKind, type ShopState } from '../core/shop';
 import { EMPTY_PURCHASES, applyOwned, sanitizePurchases, type PurchaseState } from '../core/purchases';
 import type { Beam } from '../core/types';
@@ -56,12 +56,14 @@ export interface SaveData {
   sandboxWins: string[];
   /** "My levels": the player's levels (at least one) and the one open in the editor. */
   editor: { levels: EditorSlot[]; current: number };
+  /** Best stars on friends' levels, newest first (capped, see FRIEND_STARS_MAX). */
+  friendStars: FriendStars[];
   /** Real-money purchases as last seen from the store (the store's answer always wins). */
   purchases: PurchaseState;
   settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], sandboxWins: [], editor: { levels: [freshSlot()], current: 0 }, purchases: { ...EMPTY_PURCHASES }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], sandboxWins: [], editor: { levels: [freshSlot()], current: 0 }, friendStars: [], purchases: { ...EMPTY_PURCHASES }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {
@@ -142,6 +144,7 @@ export function sanitize(raw: unknown): SaveData {
       if (one) base.editor = { levels: [one], current: 0 };
     }
   }
+  base.friendStars = readFriendStars(r.friendStars);
   if (r.designs && typeof r.designs === 'object') {
     for (const [k, v] of Object.entries(r.designs)) {
       if (Array.isArray(v)) {
@@ -231,6 +234,14 @@ export class SaveStore {
     if (this.data.sandboxWins.includes(id) || parseSandboxId(id) === undefined) return;
     this.data.sandboxWins.push(id);
     this.persist();
+  }
+
+  /** A win on a friend's level: keeps the best stars. Returns the best stars before this win (0 if none). */
+  recordFriendWin(id: string, stars: number): number {
+    const before = friendStarsOf(this.data.friendStars, id);
+    this.data.friendStars = addFriendStars(this.data.friendStars, id, stars);
+    this.persist();
+    return before;
   }
 
   /** The level open in the editor. */

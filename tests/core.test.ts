@@ -247,4 +247,17 @@ describe('My levels (editor list)', () => {
     expect(s.data.designs[s.draftId]).toHaveLength(1);
     expect(s.data.designs[id]).toHaveLength(1);
   });
+  test("a friend's level keeps its best stars and nothing else", () => {
+    const s = new SaveStore();
+    const id = customId({ ...friend, authorCost: 900 });
+    const coins = s.data.coins;
+    expect(s.recordFriendWin(id, 2)).toBe(0);
+    expect(s.recordFriendWin(id, 1)).toBe(2);
+    expect(s.recordFriendWin(id, 3)).toBe(2);
+    expect(s.data.friendStars).toEqual([{ id, stars: 3 }]);
+    expect(s.data.coins).toBe(coins);
+    expect(s.data.stars).toEqual({});
+    expect(sanitize(JSON.parse(JSON.stringify(s.data))).friendStars).toEqual([{ id, stars: 3 }]);
+    expect(sanitize({ friendStars: [{ id: 'level-1', stars: 3 }] }).friendStars).toEqual([]);
+  });
 });

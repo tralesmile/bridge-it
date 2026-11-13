@@ -2,6 +2,22 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-13 — Run 44
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- My levels: a 🔗 share button under the bin on each card copies a crossed level's code without opening it (off when not crossed). The message names the level; in the window it shows in the note line (the editor toast is under the window).
+- Stars on friends' levels: `save.friendStars` keeps the best stars per friend's level id, newest first, at most 40 (`addFriendStars`, `friendStarsOf`, `readFriendStars` in `src/core/custom.ts`). Result panel: "New best!" or "Your best: N ★"; the play title shows ★★☆ once crossed. Still no coins, stars or stats from player levels.
+- Bug fix: after a result panel, "Fix it" / "Build more" left the GO button hidden (`resultPanel` hides it, `stopSim` never showed it again). Found by the new e2e that drives a friend's level twice; e2e now also checks GO is visible after Fix it.
+
+**Verified**
+- `npm run check` green (584 tests, 4 new). `npm run e2e` exit 0, no FAIL, after each task (new: share copies the crossed level's code and keeps the list open, off when not crossed; friend's level keeps its stars; a second win shows the best). Screenshots checked: My levels with the share buttons and the copied message.
+
+**Lessons**
+- To commit one finished task while the next is already edited: copy the changed file aside, `git show HEAD:file > file`, re-apply only the first task's edit script, `git add`, then copy the full file back. Keep edit scripts in files so they can be re-run.
+- No e2e ever pressed GO a second time after a result, so a hidden GO button went unseen. Test the loop players do most: fail, fix, GO again.
+- Moving a button (the bin went from y 160 to 137) breaks e2e clicks at fixed spots; grep the e2e for the old coordinates.
+- Next: Level editor ship lanes and goal distance, editor achievements, or Localization (M8).
+
 ## 2026-11-13 — Run 43
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

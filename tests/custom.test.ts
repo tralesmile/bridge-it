@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { roadDeck, rockLegs, warrenTruss } from '../src/core/levels';
 import {
   CUSTOM_MAX_ANCHORS, DEFAULT_CUSTOM, anchorProblem, cleanName, freshName, customId, customLevel, customStars, decodeLevel, encodeLevel,
-  isCustomId, parseCustomId, specProblem, type CustomSpec,
+  isCustomId, parseCustomId, specProblem, type CustomSpec, FRIEND_STARS_MAX, addFriendStars, friendStarsOf, readFriendStars,
 } from '../src/core/custom';
 import { anyLevel } from '../src/core/sandbox';
 import { decodeBridge, encodeBridge } from '../src/core/share';
@@ -105,5 +105,35 @@ describe('player levels', () => {
     expect(decodeLevel('hello').ok).toBe(false);
     const fresh = decodeLevel(encodeLevel({ ...rocky, authorCost: 0 }));
     expect(fresh.ok).toBe(false);
+  });
+});
+
+describe("stars on friends' levels", () => {
+  const a = customId({ ...rocky, authorCost: 4321 });
+  const b = customId({ ...DEFAULT_CUSTOM, authorCost: 800 });
+  test('keeps the best stars and moves the newest win to the front', () => {
+    let list = addFriendStars([], a, 2);
+    expect(friendStarsOf(list, a)).toBe(2);
+    list = addFriendStars(list, b, 1);
+    expect(list.map((f) => f.id)).toEqual([b, a]);
+    list = addFriendStars(list, a, 1);
+    expect(list).toEqual([{ id: a, stars: 2 }, { id: b, stars: 1 }]);
+    list = addFriendStars(list, b, 3);
+    expect(friendStarsOf(list, b)).toBe(3);
+    expect(friendStarsOf(list, 'custom-nope')).toBe(0);
+  });
+  test('drops the oldest level past the cap', () => {
+    const ids = Array.from({ length: FRIEND_STARS_MAX + 5 }, (_, i) => customId({ ...DEFAULT_CUSTOM, budget: 1000 + i * 100 }));
+    let list: ReturnType<typeof addFriendStars> = [];
+    for (const id of ids) list = addFriendStars(list, id, 3);
+    expect(list).toHaveLength(FRIEND_STARS_MAX);
+    expect(list[0].id).toBe(ids[ids.length - 1]);
+    expect(friendStarsOf(list, ids[0])).toBe(0);
+  });
+  test('reading a save drops bad entries', () => {
+    expect(readFriendStars('x')).toEqual([]);
+    const raw = [{ id: a, stars: 3 }, { id: a, stars: 1 }, { id: 'custom-!!', stars: 2 }, { id: 'level-1', stars: 2 }, { id: b, stars: 4 }, null, { id: b, stars: 1 }];
+    expect(readFriendStars(raw)).toEqual([{ id: a, stars: 3 }, { id: b, stars: 1 }]);
+    expect(readFriendStars(Array.from({ length: 60 }, () => ({ id: a, stars: 2 })))).toHaveLength(1);
   });
 });

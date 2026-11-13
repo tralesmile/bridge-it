@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { BUILD_MARGIN_X, BUILD_MAX_Y, BUILD_MIN_Y, BridgeDesign, distance, keyOf, pointOf, snap, type AddResult } from '../../core/bridge';
 import { DAILY_PREFIX, isDailyId } from '../../core/daily';
 import { anyLevel, isSandboxId } from '../../core/sandbox';
-import { isCustomId, parseCustomId } from '../../core/custom';
+import { friendStarsOf, isCustomId, parseCustomId } from '../../core/custom';
 import { levelById, nextLevel, type LevelEntry } from '../../core/levels';
 import { MATERIALS, type MaterialId } from '../../core/materials';
 import { decodeBridge, encodeBridge } from '../../core/share';
@@ -382,7 +382,7 @@ export class PlayScene extends Phaser.Scene {
     const name = this.sandbox
       ? `Sandbox · ${this.level.gapEnd - this.level.gapStart} m · ${VEHICLES[this.level.vehicle].name}`
       : isDailyId(this.level.id) ? `Daily: ${this.level.name}`
-      : this.custom ? `${this.isDraft ? 'My level' : 'Player level'}: ${this.level.name}` : `${this.level.index}. ${this.level.name}`;
+      : this.custom ? `${this.isDraft ? 'My level' : 'Player level'}: ${this.level.name}${this.isDraft ? '' : friendBest(this.level.id)}` : `${this.level.index}. ${this.level.name}`;
     const title = label(this, GAME_W / 2, 40, this.stress ? `Stress test: ${this.level.name}` : name, 34, C.white);
     title.setStroke(C.ink, 8);
 
@@ -835,7 +835,7 @@ export class PlayScene extends Phaser.Scene {
   private stopSim(): void {
     this.sim = null;
     this.mode = 'build';
-    this.goButton.setLabel('GO!');
+    this.goButton.setLabel('GO!').setVisible(true);
     for (const o of this.buildUi) (o as unknown as Phaser.GameObjects.Components.Visible).setVisible(true);
     this.hintButton.setVisible(this.hintAllowed());
     this.resultLayer?.destroy();
@@ -939,10 +939,12 @@ export class PlayScene extends Phaser.Scene {
       else sfx.lose();
       this.lastSandboxWon = won;
       if (won && this.isDraft) save.recordDraftWin(cost);
+      // Friends' levels keep only the best stars (no coins or stats).
+      const before = won && !this.isDraft ? save.recordFriendWin(this.level.id, starsFor(this.level, cost)) : 0;
       if (!won) {
         this.weakBeams = sim.beamStates.filter((s) => s.broken || s.stress > 0.8).map((s) => ({ a: pointOf(s.beam.a), b: pointOf(s.beam.b) }));
       }
-      this.time.delayedCall(won ? 350 : 700, () => this.showCustomResult(won, sim.lossReason ?? 'fell', cost));
+      this.time.delayedCall(won ? 350 : 700, () => this.showCustomResult(won, sim.lossReason ?? 'fell', cost, before));
       return;
     }
     if (this.stress) {
@@ -1103,16 +1105,18 @@ export class PlayScene extends Phaser.Scene {
   }
 
   /** Result on a player level: stars from the maker's cost, but nothing is saved except the maker's own test. */
-  private showCustomResult(won: boolean, reason: string, cost: number): void {
+  /** `before`: on a friend's level, the best stars before this win (0 if none). */
+  private showCustomResult(won: boolean, reason: string, cost: number, before = 0): void {
     const friend = !this.isDraft;
     const layer = this.resultPanel(friend ? 500 : 420);
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 150, won ? 'Made it!' : LOSS_TITLE[reason] ?? 'Splash!', 56, C.ink));
+    const stars = won ? starsFor(this.level, cost) : 0;
     if (won) {
-      const stars = starsFor(this.level, cost);
       for (let i = 0; i < 3; i++) layer.add(this.add.image(GAME_W / 2 - 90 + i * 90, GAME_H / 2 - 65, i < stars ? 'star' : 'star-empty').setScale(1.1));
     }
+    const best = !before ? '' : stars > before ? ' · New best!' : ` · Your best: ${before} ★`;
     const text = !won ? 'Try again: change the bridge.'
-      : this.isDraft ? `Cost $${cost.toLocaleString('en-US')} · Now you can share the level code.` : `Cost $${cost.toLocaleString('en-US')}`;
+      : this.isDraft ? `Cost $${cost.toLocaleString('en-US')} · Now you can share the level code.` : `Cost $${cost.toLocaleString('en-US')}${best}`;
     layer.add(label(this, GAME_W / 2, GAME_H / 2 + (won ? 0 : -60), text, 24, C.greyDark));
     layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 90, won ? 'Build more' : 'Fix it', () => this.stopSim(), { width: 240, height: 70, color: C.primary, shade: C.primaryDark }));
     layer.add(button(this, GAME_W / 2 + 140, GAME_H / 2 + 90, this.isDraft ? 'Edit level' : 'Editor', () => this.scene.start('editor'), { width: 240, height: 70, fontSize: 26, color: C.blue, shade: C.blueDark }));
@@ -1175,4 +1179,10 @@ export class PlayScene extends Phaser.Scene {
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 30, tip, 26, C.greyDark));
     layer.add(button(this, GAME_W / 2, GAME_H / 2 + 80, 'Fix it', () => this.stopSim(), { width: 260, height: 76, color: C.primary, shade: C.primaryDark }));
   }
+}
+
+/** " ★★☆" after a friend's level name once it was crossed, or nothing. */
+function friendBest(id: string): string {
+  const n = friendStarsOf(save.data.friendStars, id);
+  return n > 0 ? `  ${'★'.repeat(n)}${'☆'.repeat(3 - n)}` : '';
 }

@@ -205,3 +205,38 @@ export function decodeLevel(code: string): LevelCodeResult {
   if (spec.authorCost <= 0) return { ok: false, error: 'This level was never crossed by its maker.' };
   return { ok: true, spec };
 }
+
+/** How many friends' levels keep their stars (newest first, so the save stays small). */
+export const FRIEND_STARS_MAX = 40;
+
+/** Best stars on a friend's level (a `custom-` id from a level code). */
+export interface FriendStars {
+  id: string;
+  stars: 1 | 2 | 3;
+}
+
+/** The best stars kept for a friend's level, or 0. */
+export const friendStarsOf = (list: readonly FriendStars[], id: string): number => list.find((f) => f.id === id)?.stars ?? 0;
+
+/** Adds a win: keeps the best stars, moves the level to the front, and drops the oldest past `max`. */
+export function addFriendStars(list: readonly FriendStars[], id: string, stars: number, max = FRIEND_STARS_MAX): FriendStars[] {
+  const s = Math.max(1, Math.min(3, Math.round(stars))) as 1 | 2 | 3;
+  const best = Math.max(s, friendStarsOf(list, id)) as 1 | 2 | 3;
+  return [{ id, stars: best }, ...list.filter((f) => f.id !== id)].slice(0, max);
+}
+
+/** Reads the list from a save: only real level ids, stars 1 to 3, no repeats, at most `max`. */
+export function readFriendStars(raw: unknown, max = FRIEND_STARS_MAX): FriendStars[] {
+  if (!Array.isArray(raw)) return [];
+  const out: FriendStars[] = [];
+  for (const f of raw) {
+    if (out.length >= max) break;
+    if (!f || typeof f !== 'object') continue;
+    const { id, stars } = f as Partial<FriendStars>;
+    if (typeof id !== 'string' || !isCustomId(id) || parseCustomId(id) === undefined) continue;
+    if (stars !== 1 && stars !== 2 && stars !== 3) continue;
+    if (out.some((o) => o.id === id)) continue;
+    out.push({ id, stars });
+  }
+  return out;
+}

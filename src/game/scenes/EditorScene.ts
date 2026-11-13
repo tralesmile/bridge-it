@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import { BUILD_MARGIN_X, BUILD_MAX_Y, BUILD_MIN_Y } from '../../core/bridge';
 import {
-  CUSTOM_BUDGET, CUSTOM_GAP, CUSTOM_HEIGHT, CUSTOM_MAX_ANCHORS, CUSTOM_VEHICLES, MY_LEVELS_MAX,
-  anchorProblem, baseAnchors, cleanName, customId, decodeLevel, encodeLevel, type CustomSpec,
+  CUSTOM_BUDGET, CUSTOM_GAP, CUSTOM_GOAL, CUSTOM_HEIGHT, CUSTOM_MAX_ANCHORS, CUSTOM_MAX_LANES, CUSTOM_VEHICLES, LANE_WIDTH, MY_LEVELS_MAX,
+  anchorProblem, baseAnchors, cleanName, customId, decodeLevel, encodeLevel, goalOf, inLane, laneProblem, lanesOf, type CustomSpec,
 } from '../../core/custom';
 import { MATERIALS, MATERIAL_ORDER, type MaterialId } from '../../core/materials';
 import { vehicleTextureKey } from '../../core/shop';
@@ -33,6 +33,10 @@ export class EditorScene extends Phaser.Scene {
   private nameButton!: Button;
   private copyButton!: Button;
   private toast!: Phaser.GameObjects.Text;
+  /** What a tap on the grid adds: a rock or a ship lane. */
+  private tapMode: 'rock' | 'lane' = 'rock';
+  private modeButtons = new Map<'rock' | 'lane', Button>();
+  private modeHint!: Phaser.GameObjects.Text;
   /** The "My levels" window, while it is open. */
   private listLayer?: Phaser.GameObjects.Container;
 
@@ -50,6 +54,8 @@ export class EditorScene extends Phaser.Scene {
     this.values.clear();
     this.vehicleButtons = [];
     this.materialButtons.clear();
+    this.modeButtons.clear();
+    this.tapMode = 'rock';
     addBackground(this);
     panel(this, GAME_W / 2, 395, 1240, 590);
     button(this, 110, 50, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
@@ -85,7 +91,14 @@ export class EditorScene extends Phaser.Scene {
     this.picture = this.add.graphics();
     const hit = this.add.zone(BOX.left, BOX.top, BOX.width, BOX.height).setOrigin(0).setInteractive();
     hit.on('pointerdown', (p: Phaser.Input.Pointer) => this.tapGrid(p.x, p.y));
-    label(this, BOX.left + BOX.width / 2, BOX.top + BOX.height + 22, 'Tap the grid to add or remove a rock.', 20, C.greyDark);
+    this.stepper('goal', 'Flag', 578, (d) => ({ goal: clamp(goalOf(this.draft) + d, CUSTOM_GOAL.min, CUSTOM_GOAL.max) }), () => `${goalOf(this.draft)} m`);
+    const modes = [['rock', '🪨 Rocks'], ['lane', '🚢 Ship lanes']] as const;
+    modes.forEach(([mode, text], i) => {
+      const b = button(this, BOX.left + 95 + i * 200, 578, text, () => this.setTapMode(mode), { width: 190, height: 44, fontSize: 19 });
+      b.setName(`editor-mode-${mode}`);
+      this.modeButtons.set(mode, b);
+    });
+    this.modeHint = label(this, BOX.left + 400, 578, '', 19, C.greyDark).setOrigin(0, 0.5);
 
     this.status = this.add.text(60, 640, '', { fontFamily: FONT, fontSize: '22px', fontStyle: 'bold', color: C.greyDark, wordWrap: { width: 470 } }).setOrigin(0, 0.5);
     button(this, 640, 640, 'Paste code', () => void this.pasteCode(), { width: 190, height: 60, fontSize: 22, color: C.grey, shade: C.greyDark }).setName('editor-paste');
@@ -175,9 +188,16 @@ ${info}`, () => {
     value.setData('text', text);
   }
 
+  private setTapMode(mode: 'rock' | 'lane'): void {
+    this.tapMode = mode;
+    sfx.place(0);
+    this.refresh();
+  }
+
   private change(patch: Partial<CustomSpec>): void {
     const next = { ...this.draft, ...patch };
-    // Anchors that no longer fit (a smaller gap, a moved cliff) are dropped.
+    // Lanes and anchors that no longer fit (a smaller gap, a moved cliff) are dropped.
+    if (next.lanes) next.lanes = next.lanes.filter((x0) => laneProblem(next, x0) === null);
     next.anchors = next.anchors.filter((p) => anchorProblem(next, p) === null);
     if (customId(next) === customId(this.draft)) {
       sfx.error();
@@ -211,6 +231,10 @@ ${info}`, () => {
     if (codeDialogOpen() || this.listLayer) return;
     const p = this.gridAt(sx, sy);
     if (!p) return;
+    if (this.tapMode === 'lane') {
+      this.tapLane(p.x);
+      return;
+    }
     const anchors = this.draft.anchors;
     if (anchors.some((a) => a.x === p.x && a.y === p.y)) {
       this.change({ anchors: anchors.filter((a) => a.x !== p.x || a.y !== p.y) });
@@ -228,6 +252,30 @@ ${info}`, () => {
       return;
     }
     this.change({ anchors: [...anchors, p] });
+  }
+
+  /** Lane mode: a tap on a lane removes it; anywhere else adds a 4 m lane around the tap. */
+  private tapLane(x: number): void {
+    const d = this.draft;
+    const lanes = lanesOf(d);
+    const hit = lanes.find((x0) => x > x0 && x < x0 + LANE_WIDTH) ?? lanes.find((x0) => x >= x0 && x <= x0 + LANE_WIDTH);
+    if (hit !== undefined) {
+      this.change({ lanes: lanes.filter((x0) => x0 !== hit) });
+      return;
+    }
+    const fail = (text: string) => {
+      sfx.error();
+      this.showToast(text);
+    };
+    if (d.gap < LANE_WIDTH) return fail(`A ship lane needs a gap of ${LANE_WIDTH} m or more.`);
+    if (lanes.length >= CUSTOM_MAX_LANES) return fail(`At most ${CUSTOM_MAX_LANES} ship lanes.`);
+    const x0 = clamp(x - LANE_WIDTH / 2, 0, d.gap - LANE_WIDTH);
+    const bad = laneProblem(d, x0);
+    if (bad) return fail(bad);
+    if (d.anchors.some((a) => inLane({ lanes: [x0] }, a.x))) return fail('Move the rocks out of the lane first.');
+    const withPiston = d.materials.includes('piston');
+    this.change({ lanes: [...lanes, x0].sort((a, b) => a - b), materials: MATERIAL_ORDER.filter((m) => m === 'piston' || d.materials.includes(m)) });
+    if (!withPiston) this.showToast('Piston added: drawbridges need it.');
   }
 
   /** Pixels per metre and the screen point of grid (−3, −6), so the whole build area fits the box. */
@@ -251,6 +299,11 @@ ${info}`, () => {
       const on = d.materials.includes(m);
       b.setColors(on ? C.good : C.grey, on ? C.goodDark : C.greyDark).setSelected(on);
     }
+    for (const [mode, b] of this.modeButtons) {
+      const on = this.tapMode === mode;
+      b.setColors(on ? C.good : C.grey, on ? C.goodDark : C.greyDark).setSelected(on);
+    }
+    this.modeHint.setText(this.tapMode === 'rock' ? 'Tap: add or remove a rock.' : `Tap: add or remove a ${LANE_WIDTH} m lane.`);
     this.nameButton.setLabel(`✏️ ${d.name}`);
     const best = save.editorSlot.best;
     this.status.setText(best > 0 ? `Crossed for $${best.toLocaleString('en-US')} ✓\nCopy the code for a friend.` : 'Not crossed yet.\nTest it: your bridge must cross first.');
@@ -278,6 +331,26 @@ ${info}`, () => {
     g.fillStyle(hex(C.grass), 1);
     g.fillRect(BOX.left + 10, sy(d.leftHeight) - 4, sx(0) - BOX.left - 10, 6);
     g.fillRect(sx(d.gap), sy(d.rightHeight) - 4, BOX.left + BOX.width - 10 - sx(d.gap), 6);
+    // Ship lanes: light blue columns with white dashes on both edges.
+    for (const x0 of lanesOf(d)) {
+      const l = sx(x0);
+      const w = sx(x0 + LANE_WIDTH) - l;
+      g.fillStyle(hex(C.waterLight), 0.45);
+      g.fillRect(l, BOX.top + 10, w, bottom - BOX.top - 20);
+      g.fillStyle(0xffffff, 0.85);
+      for (let y = BOX.top + 14; y < bottom - 14; y += 20) {
+        g.fillRect(l - 1.5, y, 3, 10);
+        g.fillRect(l + w - 1.5, y, 3, 10);
+      }
+    }
+    // The finish flag (at the edge of the picture when it is further out).
+    const fx = sx(Math.min(d.gap + goalOf(d), d.gap + BUILD_MARGIN_X));
+    const fy = sy(d.rightHeight);
+    const pole = Math.max(18, ppm * 1.6);
+    g.fillStyle(hex(C.ink), 1);
+    g.fillRect(fx - 1.5, fy - pole, 3, pole);
+    g.fillStyle(hex(C.gold), 1);
+    g.fillTriangle(fx + 1.5, fy - pole, fx + pole * 0.55, fy - pole * 0.8, fx + 1.5, fy - pole * 0.6);
     g.fillStyle(hex(C.ink), 0.25);
     for (let x = -BUILD_MARGIN_X; x <= d.gap + BUILD_MARGIN_X; x++) for (let y = BUILD_MIN_Y; y <= BUILD_MAX_Y; y++) g.fillCircle(sx(x), sy(y), 2);
     const r = Math.max(5, Math.min(10, ppm * 0.3));

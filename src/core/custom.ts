@@ -13,7 +13,9 @@ import type { Point, VehicleId } from './types';
 
 export const CUSTOM_PREFIX = 'custom-';
 export const LEVEL_CODE_PREFIX = 'BL1';
+/** Version 1: no ship lanes and the flag 4 m out. Version 2 adds the flag distance and ship lanes. */
 const VERSION = 1;
+const VERSION_LANES = 2;
 const OFFSET = 64;
 
 export const CUSTOM_GAP = { min: 2, max: 24 } as const;
@@ -21,6 +23,11 @@ export const CUSTOM_HEIGHT = { min: -4, max: 4 } as const;
 export const CUSTOM_BUDGET = { min: 200, max: 50000, step: 100 } as const;
 export const CUSTOM_MAX_ANCHORS = 16;
 export const CUSTOM_NAME_MAX = 20;
+/** Metres from the right cliff edge to the finish flag. */
+export const CUSTOM_GOAL = { min: 2, max: 8, default: 4 } as const;
+/** Every ship lane is this wide; two lanes side by side make a wide one. */
+export const LANE_WIDTH = 4;
+export const CUSTOM_MAX_LANES = 3;
 export const CUSTOM_VEHICLES: readonly VehicleId[] = ['car', 'truck', 'train'];
 /** How many levels "My levels" keeps. */
 export const MY_LEVELS_MAX = 12;
@@ -38,6 +45,22 @@ export interface CustomSpec {
   anchors: Point[];
   /** What the author's winning bridge cost; 0 while the level is not crossed yet. */
   authorCost: number;
+  /** Metres from the right cliff edge to the flag (default 4). */
+  goal?: number;
+  /** Left edge (x) of each ship lane, smallest first; each lane is `LANE_WIDTH` wide. */
+  lanes?: number[];
+}
+
+export const goalOf = (s: Pick<CustomSpec, 'goal'>): number => s.goal ?? CUSTOM_GOAL.default;
+export const lanesOf = (s: Pick<CustomSpec, 'lanes'>): number[] => s.lanes ?? [];
+/** True when x is strictly inside a ship lane (where ships sail). */
+export const inLane = (s: Pick<CustomSpec, 'lanes'>, x: number): boolean => lanesOf(s).some((x0) => x > x0 && x < x0 + LANE_WIDTH);
+
+/** Where a lane starting at x0 may go: inside the gap, not over another lane. */
+export function laneProblem(s: Pick<CustomSpec, 'gap' | 'lanes'>, x0: number): string | null {
+  if (!isInt(x0) || x0 < 0 || x0 + LANE_WIDTH > s.gap) return `A ship lane is ${LANE_WIDTH} m wide and must fit in the gap.`;
+  if (lanesOf(s).some((o) => o !== x0 && x0 < o + LANE_WIDTH && o < x0 + LANE_WIDTH)) return 'Ship lanes cannot overlap.';
+  return null;
 }
 
 export const DEFAULT_CUSTOM: CustomSpec = {
@@ -76,10 +99,11 @@ export const baseAnchors = (s: Pick<CustomSpec, 'gap' | 'leftHeight' | 'rightHei
 ];
 
 /** Where an extra anchor may go: on the build grid, inside the build area, not on a base anchor. */
-export function anchorProblem(s: Pick<CustomSpec, 'gap' | 'leftHeight' | 'rightHeight'>, p: Point): string | null {
+export function anchorProblem(s: Pick<CustomSpec, 'gap' | 'leftHeight' | 'rightHeight' | 'lanes'>, p: Point): string | null {
   if (!isInt(p.x) || !isInt(p.y)) return 'Anchors sit on the grid.';
   if (p.x < -BUILD_MARGIN_X || p.x > s.gap + BUILD_MARGIN_X || p.y < BUILD_MIN_Y || p.y > BUILD_MAX_Y) return 'Too far out.';
   if (baseAnchors(s).some((a) => a.x === p.x && a.y === p.y)) return 'There is an anchor here already.';
+  if (inLane(s, p.x)) return 'Ships sail here. Rocks go beside the lane.';
   return null;
 }
 
@@ -95,6 +119,15 @@ export function specProblem(s: CustomSpec): string | null {
   if (!isInt(s.budget) || s.budget < CUSTOM_BUDGET.min || s.budget > CUSTOM_BUDGET.max || s.budget % CUSTOM_BUDGET.step !== 0) {
     return `The money must be $${CUSTOM_BUDGET.min} to $${CUSTOM_BUDGET.max}.`;
   }
+  if (s.goal !== undefined && (!isInt(s.goal) || s.goal < CUSTOM_GOAL.min || s.goal > CUSTOM_GOAL.max)) return `The flag must be ${CUSTOM_GOAL.min} to ${CUSTOM_GOAL.max} m from the cliff.`;
+  if (s.lanes !== undefined && !Array.isArray(s.lanes)) return 'Ship lanes are wrong.';
+  const lanes = lanesOf(s);
+  if (lanes.length > CUSTOM_MAX_LANES) return `At most ${CUSTOM_MAX_LANES} ship lanes.`;
+  for (let i = 0; i < lanes.length; i++) {
+    const bad = laneProblem(s, lanes[i]);
+    if (bad) return bad;
+    if (i > 0 && lanes[i] <= lanes[i - 1]) return 'Ship lanes are out of order.';
+  }
   if (s.anchors.length > CUSTOM_MAX_ANCHORS) return `At most ${CUSTOM_MAX_ANCHORS} extra anchors.`;
   const seen = new Set<string>();
   for (const p of s.anchors) {
@@ -108,26 +141,45 @@ export function specProblem(s: CustomSpec): string | null {
   return null;
 }
 
-/** Bytes: version, gap, heights, vehicle, material bits, budget/100 (2), author cost (3), anchors, then the name. */
+/**
+ * Bytes: version, gap, heights, vehicle, material bits, budget/100 (2), author cost (3), then
+ * (version 2 only) the flag distance and the ship lanes, then the anchors and the name.
+ * A level with no lanes and the flag at 4 m stays version 1, so old level ids never change.
+ */
 function toBytes(s: CustomSpec): number[] {
   const mask = s.materials.reduce((m, id) => m | (1 << MATERIAL_ORDER.indexOf(id)), 0);
   const b100 = s.budget / 100;
-  const bytes = [VERSION, s.gap, s.leftHeight + OFFSET, s.rightHeight + OFFSET, CUSTOM_VEHICLES.indexOf(s.vehicle), mask, b100 >> 8, b100 & 255];
-  bytes.push((s.authorCost >> 16) & 255, (s.authorCost >> 8) & 255, s.authorCost & 255, s.anchors.length);
+  const lanes = lanesOf(s);
+  const v2 = lanes.length > 0 || goalOf(s) !== CUSTOM_GOAL.default;
+  const bytes = [v2 ? VERSION_LANES : VERSION, s.gap, s.leftHeight + OFFSET, s.rightHeight + OFFSET, CUSTOM_VEHICLES.indexOf(s.vehicle), mask, b100 >> 8, b100 & 255];
+  bytes.push((s.authorCost >> 16) & 255, (s.authorCost >> 8) & 255, s.authorCost & 255);
+  if (v2) bytes.push(goalOf(s), lanes.length, ...lanes.map((x) => x + OFFSET));
+  bytes.push(s.anchors.length);
   for (const p of s.anchors) bytes.push(p.x + OFFSET, p.y + OFFSET);
   bytes.push(...new TextEncoder().encode(s.name));
   return bytes;
 }
 
 function fromBytes(bytes: number[]): CustomSpec | null {
-  if (bytes.length < 12 || bytes[0] !== VERSION) return null;
-  const count = bytes[11];
-  if (bytes.length < 12 + count * 2) return null;
+  const v2 = bytes[0] === VERSION_LANES;
+  if (bytes.length < 12 || (bytes[0] !== VERSION && !v2)) return null;
+  let at = 11;
+  let goal: number | undefined;
+  let lanes: number[] | undefined;
+  if (v2) {
+    if (bytes.length < 13 + bytes[12]) return null;
+    goal = bytes[11];
+    lanes = bytes.slice(13, 13 + bytes[12]).map((x) => x - OFFSET);
+    at = 13 + bytes[12];
+  }
+  if (bytes.length < at + 1) return null;
+  const count = bytes[at];
+  if (bytes.length < at + 1 + count * 2) return null;
   const anchors: Point[] = [];
-  for (let i = 0; i < count; i++) anchors.push({ x: bytes[12 + i * 2] - OFFSET, y: bytes[13 + i * 2] - OFFSET });
+  for (let i = 0; i < count; i++) anchors.push({ x: bytes[at + 1 + i * 2] - OFFSET, y: bytes[at + 2 + i * 2] - OFFSET });
   let name: string;
   try {
-    name = new TextDecoder('utf-8', { fatal: true }).decode(new Uint8Array(bytes.slice(12 + count * 2)));
+    name = new TextDecoder('utf-8', { fatal: true }).decode(new Uint8Array(bytes.slice(at + 1 + count * 2)));
   } catch {
     return null;
   }
@@ -144,7 +196,9 @@ function fromBytes(bytes: number[]): CustomSpec | null {
     budget: ((bytes[6] << 8) | bytes[7]) * 100,
     anchors,
     authorCost: (bytes[8] << 16) | (bytes[9] << 8) | bytes[10],
+    ...(v2 ? { goal, lanes } : {}),
   };
+  if (v2 && lanesOf(spec).length === 0 && goalOf(spec) === CUSTOM_GOAL.default) return null; // would be version 1
   return specProblem(spec) ? null : spec;
 }
 
@@ -181,6 +235,8 @@ export function customLevel(s: CustomSpec): LevelEntry {
       vehicle: s.vehicle,
       materials: MATERIAL_ORDER.filter((m) => s.materials.includes(m)),
       extraAnchors: extra,
+      goalDistance: goalOf(s),
+      ...(lanesOf(s).length ? { shipLanes: lanesOf(s).map((x0) => ({ x0, x1: x0 + LANE_WIDTH })) } : {}),
       solution: (g) => roadDeck(0, g),
       tip: s.authorCost > 0 ? 'A player made this level. Can you cross it?' : 'Your level: build a bridge that crosses it.',
     },

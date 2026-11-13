@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { roadDeck, rockLegs, warrenTruss } from '../src/core/levels';
+import { leaf, roadDeck, rockLegs, warrenTruss } from '../src/core/levels';
 import {
   CUSTOM_MAX_ANCHORS, DEFAULT_CUSTOM, anchorProblem, cleanName, freshName, customId, customLevel, customStars, decodeLevel, encodeLevel,
-  isCustomId, parseCustomId, specProblem, type CustomSpec, FRIEND_STARS_MAX, addFriendStars, friendStarsOf, readFriendStars,
+  isCustomId, parseCustomId, specProblem, laneProblem, inLane, CUSTOM_GOAL, CUSTOM_MAX_LANES, type CustomSpec, FRIEND_STARS_MAX, addFriendStars, friendStarsOf, readFriendStars,
 } from '../src/core/custom';
 import { anyLevel } from '../src/core/sandbox';
 import { decodeBridge, encodeBridge } from '../src/core/share';
@@ -106,6 +106,55 @@ describe('player levels', () => {
     const fresh = decodeLevel(encodeLevel({ ...rocky, authorCost: 0 }));
     expect(fresh.ok).toBe(false);
   });
+});
+
+describe('ship lanes and the flag in player levels', () => {
+  const canal: CustomSpec = { ...DEFAULT_CUSTOM, name: 'Canal', gap: 4, materials: ['road', 'wood', 'piston'], anchors: [{ x: -1, y: 0 }], lanes: [0] };
+
+  test('levels without lanes keep their old id', () => {
+    expect(customId({ ...rocky, goal: CUSTOM_GOAL.default, lanes: [] })).toBe(customId(rocky));
+    expect(customId({ ...rocky, goal: 6 })).not.toBe(customId(rocky));
+  });
+
+  test('lanes and the flag read back from the id and the level code', () => {
+    for (const s of [canal, { ...rocky, goal: 6 }, { ...rocky, gap: 12, lanes: [0, 4, 8], goal: 2, anchors: [{ x: 4, y: -3 }] }]) {
+      expect(specProblem(s)).toBeNull();
+      const back = parseCustomId(customId(s));
+      expect(back && customId(back)).toBe(customId(s));
+      expect(back?.lanes ?? []).toEqual(s.lanes ?? []);
+      expect(back?.goal ?? CUSTOM_GOAL.default).toBe(s.goal ?? CUSTOM_GOAL.default);
+      const code = decodeLevel(encodeLevel({ ...s, authorCost: 500 }));
+      expect(code.ok && code.spec.lanes).toEqual(s.lanes ?? (s.goal !== undefined ? [] : undefined));
+    }
+  });
+
+  test('lane rules', () => {
+    expect(laneProblem(rocky, 0)).toBeNull();
+    expect(laneProblem(rocky, 8)).toBeNull();
+    expect(laneProblem(rocky, 9)).toMatch(/fit/);
+    expect(laneProblem(rocky, -1)).toMatch(/fit/);
+    expect(laneProblem({ ...rocky, lanes: [2] }, 4)).toMatch(/overlap/);
+    expect(laneProblem({ ...rocky, lanes: [2] }, 6)).toBeNull();
+    expect(specProblem({ ...rocky, lanes: [4, 0] })).toMatch(/order/);
+    expect(specProblem({ ...rocky, gap: 16, lanes: [0, 4, 8, 12], anchors: [] })).toMatch(new RegExp(`${CUSTOM_MAX_LANES}`));
+    expect(specProblem({ ...rocky, goal: 1 })).toMatch(/flag/);
+    expect(specProblem({ ...rocky, goal: 9 })).toMatch(/flag/);
+    // Rocks may sit on a lane edge (a pier) but not where ships sail.
+    expect(inLane({ lanes: [4] }, 4)).toBe(false);
+    expect(inLane({ lanes: [4] }, 5)).toBe(true);
+    expect(anchorProblem({ ...rocky, lanes: [4] }, { x: 6, y: -3 })).toMatch(/Ships/);
+    expect(anchorProblem({ ...rocky, lanes: [4] }, { x: 8, y: -3 })).toBeNull();
+  });
+
+  test('the level has the lanes and the flag; a drawbridge crosses it, nothing does not', () => {
+    const l = customLevel({ ...canal, goal: 6 });
+    expect(l.shipLanes).toEqual([{ x0: 0, x1: 4 }]);
+    expect(l.goalDistance).toBe(6);
+    expect(customLevel(rocky).shipLanes).toBeUndefined();
+    expect(customLevel(rocky).goalDistance).toBe(4);
+    expect(new Simulation(l, leaf(0, 1)).runToEnd()).toBe('won');
+    expect(new Simulation(l, []).runToEnd()).toBe('lost');
+  }, 60000);
 });
 
 describe("stars on friends' levels", () => {

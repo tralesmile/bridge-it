@@ -536,6 +536,43 @@ async function run(viewport, name) {
   await page.keyboard.press('Escape'); await sleep(300);
   const mlClosed = await page.evaluate(() => !globalThis.__bridgeit.scene.getScene('editor').listLayer);
   check(await active('editor') && mlClosed, `${name}: Escape closes My levels`);
+
+  // Ship lanes and the flag: a new 4 m level with a lane, a pier rock and the flag at 5 m; a drawbridge crosses it.
+  await click(330, 50); // My levels
+  await click(500, 650); // + New level
+  for (let i = 0; i < 4; i++) await click(245, 140); // gap 8 -> 4
+  await click(855, 578); // Ship lanes mode
+  const lnView = await page.evaluate(() => { const v = globalThis.__bridgeit.scene.getScene('editor').view(); return { ppm: v.ppm, x0: v.x0, y0: v.y0 }; });
+  const lnAt = (x, y) => click(lnView.x0 + (x + 3) * lnView.ppm, lnView.y0 - (y + 6) * lnView.ppm);
+  await lnAt(2, 0); // lane 0..4
+  await click(655, 578); // Rocks mode
+  await lnAt(-1, 0); // the piston's rock
+  await lnAt(2, -2); // in the lane: refused
+  await click(469, 578); // flag 4 -> 5 m
+  await page.screenshot({ path: `${OUT}/${name}-9x-editor-lane.png` });
+  const lnDraft = await page.evaluate(() => { const e = JSON.parse(localStorage.getItem('bridgeit.save')).editor; return e.levels[e.current].draft; });
+  check(JSON.stringify(lnDraft.lanes) === '[0]' && lnDraft.goal === 5 && lnDraft.materials.includes('piston') && JSON.stringify(lnDraft.anchors) === '[{"x":-1,"y":0}]',
+    `${name}: editor adds a ship lane (piston too), refuses a rock in it and moves the flag (${JSON.stringify(lnDraft)})`);
+  await click(1120, 640); // Test
+  await sleep(600);
+  const lnLevel = await page.evaluate(() => { const l = globalThis.__bridgeit.scene.getScene('play').level; return { lanes: JSON.stringify(l.shipLanes), goal: l.goalDistance }; });
+  check(lnLevel.lanes === '[{"x0":0,"x1":4}]' && lnLevel.goal === 5, `${name}: the test level has the lane and the flag (${JSON.stringify(lnLevel)})`);
+  await page.evaluate(() => {
+    const p = globalThis.__bridgeit.scene.getScene('play');
+    const add = (a, b, m) => p.design.add({ x: a[0], y: a[1] }, { x: b[0], y: b[1] }, m);
+    add([0, 0], [0, 2], 'road'); add([0, 2], [0, 4], 'road');
+    add([0, 0], [-1, 1], 'wood'); add([-1, 1], [0, 2], 'wood'); add([-1, 1], [-2, 3], 'wood'); add([-2, 3], [0, 4], 'wood');
+    add([-1, 0], [-2, 3], 'piston');
+    p.afterChange();
+  });
+  await click(1160, 664); // GO
+  await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon !== null, null, { timeout: 30000 });
+  await sleep(800);
+  const lnWon = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon);
+  check(lnWon === true, `${name}: a drawbridge crosses the player's ship lane level (won ${lnWon})`);
+  await page.screenshot({ path: `${OUT}/${name}-9x-editor-lane-won.png` });
+  await click(780, 450); // Edit level
+  check(await active('editor'), `${name}: back in the editor after the lane level`);
   await page.keyboard.press('Escape'); await sleep(300);
   check(await active('menu'), `${name}: Escape in the editor goes back to the menu`);
   await page.close();

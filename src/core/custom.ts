@@ -262,6 +262,18 @@ export function decodeLevel(code: string): LevelCodeResult {
   return { ok: true, spec };
 }
 
+/** Saved bridges kept for player levels that are neither in My levels nor crossed (stars). */
+export const LOOSE_DESIGNS_MAX = 20;
+
+/**
+ * Saved bridges of player levels to drop. `keys` are the saved design ids, oldest first; levels in
+ * `keep` (My levels, friends' levels with stars) always stay, and the newest `max` others stay.
+ */
+export function staleCustomDesigns(keys: readonly string[], keep: ReadonlySet<string>, max = LOOSE_DESIGNS_MAX): string[] {
+  const loose = keys.filter((k) => isCustomId(k) && !keep.has(k));
+  return loose.slice(0, Math.max(0, loose.length - max));
+}
+
 /** How many friends' levels keep their stars (newest first, so the save stays small). */
 export const FRIEND_STARS_MAX = 40;
 

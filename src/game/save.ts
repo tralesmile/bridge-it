@@ -2,7 +2,7 @@ import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type AchievementInput, type
 import { DAILY_COINS, EMPTY_DAILY, canPlayDay, dateKey, isDailyId, recordCalendarWin, type DailyState } from '../core/daily';
 import { ALL_LEVELS } from '../core/levels';
 import { parseSandboxId } from '../core/sandbox';
-import { DEFAULT_CUSTOM, MY_LEVELS_MAX, addFriendStars, cleanName, customId, freshName, friendStarsOf, parseCustomId, readFriendStars, specProblem, type CustomSpec, type FriendStars } from '../core/custom';
+import { DEFAULT_CUSTOM, MY_LEVELS_MAX, addFriendStars, isCustomId, staleCustomDesigns, cleanName, customId, freshName, friendStarsOf, parseCustomId, readFriendStars, specProblem, type CustomSpec, type FriendStars } from '../core/custom';
 import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, grantSupporterItems, type ShopKind, type ShopState } from '../core/shop';
 import { EMPTY_PURCHASES, applyOwned, sanitizePurchases, type PurchaseState } from '../core/purchases';
 import type { Beam } from '../core/types';
@@ -401,7 +401,15 @@ export class SaveStore {
       for (const k of Object.keys(this.data.designs)) if (isDailyId(k) && k !== levelId) delete this.data.designs[k];
       for (const k of Object.keys(this.data.fails)) if (isDailyId(k) && k !== levelId) delete this.data.fails[k];
     }
-    this.data.designs[levelId] = beams;
+    if (isCustomId(levelId)) {
+      // Newest last, so the bridges of friends' levels played long ago are the first to go.
+      delete this.data.designs[levelId];
+      this.data.designs[levelId] = beams;
+      const keep = new Set([...this.data.editor.levels.map(slotId), ...this.data.friendStars.map((f) => f.id), levelId]);
+      for (const k of staleCustomDesigns(Object.keys(this.data.designs), keep)) delete this.data.designs[k];
+    } else {
+      this.data.designs[levelId] = beams;
+    }
     this.persist();
   }
 

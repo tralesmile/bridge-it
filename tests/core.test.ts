@@ -4,7 +4,7 @@ import { levelById } from '../src/core/levels';
 import { LEVELS_PER_PAGE, isUnlocked, pageCount, pageOfIndex, starsFor } from '../src/core/scoring';
 import { Simulation } from '../src/core/simulation';
 import { SaveStore, sanitize } from '../src/game/save';
-import { MY_LEVELS_MAX, customId, type CustomSpec } from '../src/core/custom';
+import { LOOSE_DESIGNS_MAX, MY_LEVELS_MAX, customId, staleCustomDesigns, type CustomSpec } from '../src/core/custom';
 
 const level = levelById('w1-3')!;
 
@@ -259,5 +259,25 @@ describe('My levels (editor list)', () => {
     expect(s.data.stars).toEqual({});
     expect(sanitize(JSON.parse(JSON.stringify(s.data))).friendStars).toEqual([{ id, stars: 3 }]);
     expect(sanitize({ friendStars: [{ id: 'level-1', stars: 3 }] }).friendStars).toEqual([]);
+  });
+
+  test("old bridges of friends' levels are dropped; My levels, starred levels and world levels stay", () => {
+    const road = [{ a: '0,0', b: '1,0', material: 'road' as const }];
+    const friendId = (gap: number) => customId({ ...friend, gap, authorCost: 900 });
+    expect(staleCustomDesigns(['w1-1', 'custom-a', 'custom-b', 'custom-c'], new Set(['custom-a']), 1)).toEqual(['custom-b']);
+    const s = new SaveStore();
+    s.saveDesign('w1-1', road);
+    s.saveDesign(s.draftId, road);
+    const starred = friendId(2);
+    s.saveDesign(starred, road);
+    s.recordFriendWin(starred, 2);
+    const played = Array.from({ length: LOOSE_DESIGNS_MAX + 2 }, (_, i) => friendId(3 + i));
+    for (const id of played) s.saveDesign(id, road);
+    // Playing an old one again makes it new, so it stays.
+    s.saveDesign(played[0], road);
+    for (const id of [s.draftId, starred, 'w1-1', played[0], ...played.slice(2)]) expect(s.data.designs[id]).toBeDefined();
+    expect(s.data.designs[played[1]]).toBeUndefined();
+    // The open level, the starred one, the one just played and the newest 20 others.
+    expect(Object.keys(s.data.designs).filter((k) => k.startsWith('custom-'))).toHaveLength(LOOSE_DESIGNS_MAX + 3);
   });
 });

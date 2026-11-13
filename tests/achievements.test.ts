@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { ACHIEVEMENTS, EMPTY_STATS, isDone, newAchievements, type AchievementInput } from '../src/core/achievements';
+import { ACHIEVEMENTS, EMPTY_STATS, TROPHY_PAGE, isDone, newAchievements, pageCount, pageItems, type AchievementInput } from '../src/core/achievements';
 import { ALL_LEVELS } from '../src/core/levels';
 import { SHOP_ITEMS } from '../src/core/shop';
 
@@ -73,5 +73,26 @@ describe('achievements', () => {
     expect(isDone(byId('sandbox-train'), { ...empty, sandboxWins: ['sandbox-16-train-flat-none'] })).toBe(false);
     expect(isDone(byId('sandbox-train'), { ...empty, sandboxWins: ['sandbox-24-truck-flat-none'] })).toBe(false);
     expect(newAchievements({ ...empty, sandboxWins: ['sandbox-24-train-lower-both'] }, [])).toEqual(['sandbox-train']);
+  });
+});
+
+describe('Trophies pages', () => {
+  test('30 cards a page; more cards make more pages', () => {
+    expect(pageCount(0)).toBe(1);
+    expect(pageCount(30)).toBe(1);
+    expect(pageCount(31)).toBe(2);
+    expect(pageCount(ACHIEVEMENTS.length)).toBe(Math.ceil(ACHIEVEMENTS.length / TROPHY_PAGE));
+  });
+
+  test('a page holds its own cards and an out-of-range page is clamped', () => {
+    const items = Array.from({ length: 31 }, (_, i) => i);
+    expect(pageItems(items, 0).items).toHaveLength(30);
+    expect(pageItems(items, 1)).toEqual({ page: 1, pages: 2, items: [30] });
+    expect(pageItems(items, 9).page).toBe(1);
+    expect(pageItems(items, -3).page).toBe(0);
+    expect(pageItems(items, Number.NaN).page).toBe(0);
+    const pages = pageItems(items, 0, 12).pages;
+    expect(pages).toBe(3);
+    expect(Array.from({ length: pages }, (_, p) => pageItems(items, p, 12).items).flat()).toEqual(items);
   });
 });

@@ -112,3 +112,17 @@ export const isDone = (a: Achievement, i: AchievementInput): boolean => {
 export function newAchievements(i: AchievementInput, already: string[]): string[] {
   return ACHIEVEMENTS.filter((a) => !already.includes(a.id) && isDone(a, i)).map((a) => a.id);
 }
+
+/** The Trophies screen shows 30 cards a page (6 columns, 5 rows). */
+export const TROPHY_PAGE = 30;
+
+/** How many pages `count` cards need, at least 1. */
+export const pageCount = (count: number, perPage = TROPHY_PAGE): number => Math.max(1, Math.ceil(count / Math.max(1, perPage)));
+
+/** The cards on one page; a page out of range is clamped. */
+export function pageItems<T>(items: readonly T[], page: number, perPage = TROPHY_PAGE): { page: number; pages: number; items: T[] } {
+  const per = Math.max(1, perPage);
+  const pages = pageCount(items.length, per);
+  const p = Math.min(pages - 1, Math.max(0, Math.floor(Number.isFinite(page) ? page : 0)));
+  return { page: p, pages, items: items.slice(p * per, p * per + per) };
+}

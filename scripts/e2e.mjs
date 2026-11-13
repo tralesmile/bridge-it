@@ -343,6 +343,25 @@ async function run(viewport, name) {
   await click(270, 60);
   check(await active('trophies'), `${name}: Trophies button opens the achievements list`);
   await page.screenshot({ path: `${OUT}/${name}-9t-trophies.png` });
+  const trOne = await page.evaluate(() => !globalThis.__bridgeit.scene.getScene('trophies').nextBtn);
+  check(trOne, `${name}: all achievements fit one page, no page buttons`);
+  // Pages: 12 cards a page to see the buttons (the real page holds 30).
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('trophies').scene.restart({ perPage: 12 }); });
+  await sleep(400);
+  const trPage = () => page.evaluate(() => { const t = globalThis.__bridgeit.scene.getScene('trophies'); return { page: t.page, text: t.pageText?.text, cards: t.cards.list.filter((o) => o.type === 'Graphics').length }; });
+  const tr0 = await trPage();
+  await click(640 + 120, 670); // next page
+  await sleep(300);
+  const tr1 = await trPage();
+  await page.keyboard.press('ArrowRight'); await sleep(300);
+  await page.keyboard.press('ArrowRight'); await sleep(300);
+  const tr2 = await trPage();
+  await page.screenshot({ path: `${OUT}/${name}-9t-trophies-page3.png` });
+  await click(640 - 120, 670); // previous page
+  await sleep(300);
+  const tr3 = await trPage();
+  check(tr0.page === 0 && tr0.cards === 12 && tr0.text === 'Page 1 / 3' && tr1.page === 1 && tr2.page === 2 && tr2.cards === 5 && tr3.page === 1,
+    `${name}: Trophies pages turn with the buttons and arrow keys and stop at the last page (${JSON.stringify([tr0, tr1, tr2, tr3])})`);
 
   // Stats screen from the menu: the attempts and levels done match the save.
   await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('trophies').scene.start('menu'); });

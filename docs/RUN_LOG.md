@@ -2,6 +2,23 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-13 — Run 43
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`); skipped.
+- Level editor "My levels": the save keeps up to 12 levels (`save.editor = { levels, current }`); old saves with one `{ draft, best }` level move into the list. `SaveStore` gets `editorSlot`, `openEditorLevel`, `addEditorLevel` (fresh or a copy), `deleteEditorLevel` (never the last). New levels get free names ("My Level 2", `freshName` in core).
+- Editor: "📂 My levels" button opens a window with a card per level (name, gap, vehicle, crossed cost or "not crossed"), the open one in green. Tap a card to open it; tap the bin twice to delete; + New level; Close or Escape.
+- Friend's level result panel: "✏️ Edit a copy" adds the level to My levels (must be crossed again before it can be shared) and copies your bridge. When the list is full the editor opens with My levels and a message.
+- Levels with the same spec share one saved bridge: deleting or changing one keeps the bridge for the other.
+
+**Verified**
+- `npm run check` green (580 tests, 6 new: save migration and list rules, names, copy, delete, shared bridges). `npm run e2e` exit 0, no FAIL (new: Edit a copy, New level name, open a level, bin needs two taps, Escape closes the window; desktop and phone). Probe and e2e screenshots checked: editor top bar, My levels with 4 levels and a delete question, friend's result panel with Edit a copy, phone list.
+
+**Lessons**
+- `SaveStore` can be made in a unit test (no localStorage in node, it runs in memory), so save logic is easy to test: export the class.
+- A bash heredoc with Python that holds JS template strings (`${...}`) and `\n` was refused by a safety check again; write edit scripts with the Write tool from the start.
+- A copy of a friend's level keeps its name, so two cards can have the same name (the e2e copy is "My Level"). Fine for now; a "(copy)" suffix could come later.
+- Next: Level editor ship lanes and goal distance, stars on friends' levels, or Localization (M8).
+
 ## 2026-11-13 — Run 42
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

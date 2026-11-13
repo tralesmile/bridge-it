@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { BUILD_MARGIN_X, BUILD_MAX_Y, BUILD_MIN_Y, BridgeDesign, distance, keyOf, pointOf, snap, type AddResult } from '../../core/bridge';
 import { DAILY_PREFIX, isDailyId } from '../../core/daily';
 import { anyLevel, isSandboxId } from '../../core/sandbox';
-import { isCustomId } from '../../core/custom';
+import { isCustomId, parseCustomId } from '../../core/custom';
 import { levelById, nextLevel, type LevelEntry } from '../../core/levels';
 import { MATERIALS, type MaterialId } from '../../core/materials';
 import { decodeBridge, encodeBridge } from '../../core/share';
@@ -1104,7 +1104,8 @@ export class PlayScene extends Phaser.Scene {
 
   /** Result on a player level: stars from the maker's cost, but nothing is saved except the maker's own test. */
   private showCustomResult(won: boolean, reason: string, cost: number): void {
-    const layer = this.resultPanel(420);
+    const friend = !this.isDraft;
+    const layer = this.resultPanel(friend ? 500 : 420);
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 150, won ? 'Made it!' : LOSS_TITLE[reason] ?? 'Splash!', 56, C.ink));
     if (won) {
       const stars = starsFor(this.level, cost);
@@ -1115,6 +1116,14 @@ export class PlayScene extends Phaser.Scene {
     layer.add(label(this, GAME_W / 2, GAME_H / 2 + (won ? 0 : -60), text, 24, C.greyDark));
     layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 90, won ? 'Build more' : 'Fix it', () => this.stopSim(), { width: 240, height: 70, color: C.primary, shade: C.primaryDark }));
     layer.add(button(this, GAME_W / 2 + 140, GAME_H / 2 + 90, this.isDraft ? 'Edit level' : 'Editor', () => this.scene.start('editor'), { width: 240, height: 70, fontSize: 26, color: C.blue, shade: C.blueDark }));
+    if (friend) {
+      // A friend's level goes into "My levels" as a new level (your bridge comes along).
+      layer.add(button(this, GAME_W / 2, GAME_H / 2 + 180, '✏️ Edit a copy', () => {
+        const spec = parseCustomId(this.level.id);
+        const added = spec !== undefined && save.addEditorLevel(spec);
+        this.scene.start('editor', added ? { toast: 'A copy is in My levels. Cross it to share it.' } : { toast: 'My levels is full. Delete a level first.', list: true });
+      }, { width: 300, height: 58, fontSize: 24, color: C.good, shade: C.goodDark }));
+    }
   }
 
   /** Result of a sandbox run. Nothing is scored; the bridge can be shared as a code. */

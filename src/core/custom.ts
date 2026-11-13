@@ -22,6 +22,8 @@ export const CUSTOM_BUDGET = { min: 200, max: 50000, step: 100 } as const;
 export const CUSTOM_MAX_ANCHORS = 16;
 export const CUSTOM_NAME_MAX = 20;
 export const CUSTOM_VEHICLES: readonly VehicleId[] = ['car', 'truck', 'train'];
+/** How many levels "My levels" keeps. */
+export const MY_LEVELS_MAX = 12;
 
 export interface CustomSpec {
   name: string;
@@ -56,6 +58,13 @@ const isInt = (v: unknown): v is number => typeof v === 'number' && Number.isInt
 export function cleanName(name: string): string {
   const kept = [...name.replace(/[^\p{L}\p{N} '!?&-]/gu, '').replace(/\s+/g, ' ').trim()].slice(0, CUSTOM_NAME_MAX).join('');
   return kept.trim() || DEFAULT_CUSTOM.name;
+}
+
+/** A name for a new level that no other level in the list has: "My Level", "My Level 2", ... */
+export function freshName(taken: readonly string[]): string {
+  const used = new Set(taken);
+  if (!used.has(DEFAULT_CUSTOM.name)) return DEFAULT_CUSTOM.name;
+  for (let i = 2; ; i++) if (!used.has(`${DEFAULT_CUSTOM.name} ${i}`)) return `${DEFAULT_CUSTOM.name} ${i}`;
 }
 
 /** The four anchors every level has on the cliff edges. */

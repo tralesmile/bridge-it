@@ -3,7 +3,8 @@ import { BridgeDesign, distanceToSegment, keyOf, snap } from '../src/core/bridge
 import { levelById } from '../src/core/levels';
 import { LEVELS_PER_PAGE, isUnlocked, pageCount, pageOfIndex, starsFor } from '../src/core/scoring';
 import { Simulation } from '../src/core/simulation';
-import { sanitize } from '../src/game/save';
+import { SaveStore, sanitize } from '../src/game/save';
+import { MY_LEVELS_MAX, customId, type CustomSpec } from '../src/core/custom';
 
 const level = levelById('w1-3')!;
 
@@ -113,12 +114,20 @@ describe('save data', () => {
     expect(sanitize({ held: ['w1-1', 'w1-1', 'nope', 7] }).held).toEqual(['w1-1']);
     expect(s.sandboxWins).toEqual([]);
     // The editor draft is checked field by field; a bad one starts fresh, a too high best cost is dropped.
-    expect(s.editor.best).toBe(0);
+    expect(s.editor.levels).toHaveLength(1);
+    expect(s.editor.levels[0].best).toBe(0);
     const draft = { name: 'Hop', gap: 6, leftHeight: 1, rightHeight: 0, vehicle: 'car', materials: ['road', 'wood'], budget: 3000, anchors: [{ x: 3, y: -2 }], authorCost: 0 };
-    expect(sanitize({ editor: { draft, best: 1200 } }).editor).toEqual({ draft, best: 1200 });
-    expect(sanitize({ editor: { draft, best: 99999 } }).editor.best).toBe(0);
-    expect(sanitize({ editor: { draft: { ...draft, gap: 99 }, best: 5 } }).editor.draft.gap).toBe(8);
-    expect(sanitize({ editor: { draft: { ...draft, anchors: 'x' } } }).editor.draft.anchors).toEqual([]);
+    // Old saves (one level) become a list of one.
+    expect(sanitize({ editor: { draft, best: 1200 } }).editor).toEqual({ levels: [{ draft, best: 1200 }], current: 0 });
+    expect(sanitize({ editor: { draft, best: 99999 } }).editor.levels[0].best).toBe(0);
+    expect(sanitize({ editor: { draft: { ...draft, gap: 99 }, best: 5 } }).editor.levels[0].draft.gap).toBe(8);
+    expect(sanitize({ editor: { draft: { ...draft, anchors: 'x' } } }).editor.levels[0].draft.anchors).toEqual([]);
+    // The list: bad levels are dropped, the open level stays in range, an empty list gets one fresh level.
+    const list = sanitize({ editor: { levels: [{ draft, best: 900 }, { draft: { ...draft, gap: 99 } }, 'x', { draft: { ...draft, name: 'Two' }, best: 0 }], current: 7 } }).editor;
+    expect(list.levels.map((l) => l.draft.name)).toEqual(['Hop', 'Two']);
+    expect(list.current).toBe(1);
+    expect(sanitize({ editor: { levels: [], current: 0 } }).editor.levels).toHaveLength(1);
+    expect(sanitize({ editor: { levels: Array.from({ length: 30 }, () => ({ draft, best: 0 })), current: 0 } }).editor.levels).toHaveLength(MY_LEVELS_MAX);
     expect(sanitize({ sandboxWins: ['sandbox-6-car-flat-none', 'sandbox-6-car-flat-none', 'sandbox-7-car-flat-none', 'w1-1', 3] }).sandboxWins).toEqual(['sandbox-6-car-flat-none']);
   });
 
@@ -168,5 +177,74 @@ describe('beams between two anchors', () => {
       const sim = new Simulation(l, [...l.solution, { a: '0,0', b: '0,-2', material }]);
       expect(sim.runToEnd(), material).toBe('won');
     }
+  });
+});
+
+describe('My levels (editor list)', () => {
+  const friend: CustomSpec = { name: 'Rocky', gap: 10, leftHeight: 0, rightHeight: 1, vehicle: 'truck', materials: ['road', 'wood', 'steel'], budget: 8000, anchors: [{ x: 5, y: -3 }], authorCost: 3150 };
+
+  test('new levels get their own names, open at once and keep their own bridge', () => {
+    const s = new SaveStore();
+    const first = s.draftId;
+    s.data.designs[first] = [{ a: '0,0', b: '1,0', material: 'road' }];
+    expect(s.addEditorLevel()).toBe(true);
+    expect(s.data.editor.levels.map((l) => l.draft.name)).toEqual(['My Level', 'My Level 2']);
+    expect(s.data.editor.current).toBe(1);
+    // Same spec but another name: another id, so the first bridge is not shared.
+    expect(s.draftId).not.toBe(first);
+    s.recordDraftWin(1500);
+    expect(s.editorSlot.best).toBe(1500);
+    s.openEditorLevel(0);
+    expect(s.editorSlot.best).toBe(0);
+    expect(s.data.designs[s.draftId]).toHaveLength(1);
+    s.openEditorLevel(5);
+    expect(s.data.editor.current).toBe(0);
+  });
+
+  test('the list is capped, and the last level cannot be deleted', () => {
+    const s = new SaveStore();
+    while (s.data.editor.levels.length < MY_LEVELS_MAX) expect(s.addEditorLevel()).toBe(true);
+    expect(s.addEditorLevel()).toBe(false);
+    expect(s.addEditorLevel(friend)).toBe(false);
+    while (s.data.editor.levels.length > 1) expect(s.deleteEditorLevel(0)).toBe(true);
+    expect(s.deleteEditorLevel(0)).toBe(false);
+  });
+
+  test('deleting keeps the open level open and removes only its own bridge', () => {
+    const s = new SaveStore();
+    s.addEditorLevel();
+    s.addEditorLevel();
+    const ids = s.data.editor.levels.map((l) => customId({ ...l.draft, authorCost: 0 }));
+    for (const id of ids) s.data.designs[id] = [{ a: '0,0', b: '1,0', material: 'road' }];
+    s.openEditorLevel(2);
+    expect(s.deleteEditorLevel(0)).toBe(true);
+    expect(s.editorSlot.draft.name).toBe('My Level 3');
+    expect(s.data.designs[ids[0]]).toBeUndefined();
+    expect(s.data.designs[ids[1]]).toBeDefined();
+    expect(s.deleteEditorLevel(1)).toBe(true); // the open one: the one before it opens
+    expect(s.editorSlot.draft.name).toBe('My Level 2');
+  });
+
+  test('a copy of a friend\'s level must be crossed again and brings your bridge along', () => {
+    const s = new SaveStore();
+    s.data.designs[customId(friend)] = [{ a: '0,0', b: '1,0', material: 'road' }];
+    expect(s.addEditorLevel(friend)).toBe(true);
+    expect(s.editorSlot).toEqual({ draft: { ...friend, authorCost: 0 }, best: 0 });
+    expect(s.data.designs[s.draftId]).toEqual([{ a: '0,0', b: '1,0', material: 'road' }]);
+    // Two identical copies share a bridge; deleting one keeps it for the other.
+    s.addEditorLevel(friend);
+    expect(s.deleteEditorLevel(2)).toBe(true);
+    expect(s.data.designs[s.draftId]).toBeDefined();
+  });
+
+  test('a changed level moves its bridge but leaves a shared one in place', () => {
+    const s = new SaveStore();
+    s.addEditorLevel(friend);
+    s.addEditorLevel(friend);
+    const id = s.draftId;
+    s.data.designs[id] = [{ a: '0,0', b: '1,0', material: 'road' }];
+    s.setDraft({ ...s.editorSlot.draft, gap: 11 });
+    expect(s.data.designs[s.draftId]).toHaveLength(1);
+    expect(s.data.designs[id]).toHaveLength(1);
   });
 });

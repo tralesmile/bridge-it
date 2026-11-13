@@ -2,13 +2,39 @@ import { ACHIEVEMENTS, EMPTY_STATS, newAchievements, type AchievementInput, type
 import { DAILY_COINS, EMPTY_DAILY, canPlayDay, dateKey, isDailyId, recordCalendarWin, type DailyState } from '../core/daily';
 import { ALL_LEVELS } from '../core/levels';
 import { parseSandboxId } from '../core/sandbox';
-import { DEFAULT_CUSTOM, customId, parseCustomId, specProblem, type CustomSpec } from '../core/custom';
+import { DEFAULT_CUSTOM, MY_LEVELS_MAX, cleanName, customId, freshName, parseCustomId, specProblem, type CustomSpec } from '../core/custom';
 import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, grantSupporterItems, type ShopKind, type ShopState } from '../core/shop';
 import { EMPTY_PURCHASES, applyOwned, sanitizePurchases, type PurchaseState } from '../core/purchases';
 import type { Beam } from '../core/types';
 
 const KEY = 'bridgeit.save';
 const VERSION = 1;
+
+/** One of the player's levels, and the cheapest bridge that crossed it (0 = not crossed yet). */
+export interface EditorSlot {
+  draft: CustomSpec;
+  best: number;
+}
+
+const freshSlot = (name: string = DEFAULT_CUSTOM.name): EditorSlot => ({ draft: { ...DEFAULT_CUSTOM, name, anchors: [], materials: [...DEFAULT_CUSTOM.materials] }, best: 0 });
+
+/** The test id of a level (its id without the maker's cost). */
+const slotId = (slot: EditorSlot): string => customId({ ...slot.draft, authorCost: 0 });
+
+/** Reads one saved level through its id, which checks every field. Bad data gives undefined. */
+function readSlot(raw: unknown): EditorSlot | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const e = raw as Partial<EditorSlot>;
+  const d = e.draft && typeof e.draft === 'object' ? (e.draft as CustomSpec) : null;
+  let ok: CustomSpec | undefined;
+  try {
+    ok = d && Array.isArray(d.anchors) && Array.isArray(d.materials) && specProblem(d) === null ? parseCustomId(customId(d)) : undefined;
+  } catch {
+    ok = undefined;
+  }
+  if (!ok) return undefined;
+  return { draft: { ...ok, authorCost: 0 }, best: typeof e.best === 'number' && Number.isInteger(e.best) && e.best > 0 && e.best <= ok.budget ? e.best : 0 };
+}
 
 export interface SaveData {
   version: number;
@@ -28,14 +54,14 @@ export interface SaveData {
   held: string[];
   /** Sandbox setup ids that a vehicle crossed (for achievements; nothing else is scored). */
   sandboxWins: string[];
-  /** The player's level in the editor, and the cheapest bridge that crossed it (0 = not crossed yet). */
-  editor: { draft: CustomSpec; best: number };
+  /** "My levels": the player's levels (at least one) and the one open in the editor. */
+  editor: { levels: EditorSlot[]; current: number };
   /** Real-money purchases as last seen from the store (the store's answer always wins). */
   purchases: PurchaseState;
   settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], sandboxWins: [], editor: { draft: { ...DEFAULT_CUSTOM, anchors: [], materials: [...DEFAULT_CUSTOM.materials] }, best: 0 }, purchases: { ...EMPTY_PURCHASES }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], sandboxWins: [], editor: { levels: [freshSlot()], current: 0 }, purchases: { ...EMPTY_PURCHASES }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {
@@ -102,16 +128,19 @@ export function sanitize(raw: unknown): SaveData {
   if (Array.isArray(r.held)) base.held = [...new Set(r.held.filter((id): id is string => typeof id === 'string' && levelIds.has(id)))];
   if (Array.isArray(r.sandboxWins)) base.sandboxWins = [...new Set(r.sandboxWins.filter((id): id is string => typeof id === 'string' && parseSandboxId(id) !== undefined))];
   if (r.editor && typeof r.editor === 'object') {
-    const e = r.editor as Partial<SaveData['editor']>;
-    // Read the draft through its id, which checks every field; a bad draft starts fresh.
-    const d = e.draft && typeof e.draft === 'object' ? (e.draft as CustomSpec) : null;
-    let ok: CustomSpec | undefined;
-    try {
-      ok = d && Array.isArray(d.anchors) && Array.isArray(d.materials) && specProblem(d) === null ? parseCustomId(customId(d)) : undefined;
-    } catch {
-      ok = undefined;
+    const e = r.editor as Partial<SaveData['editor']> & Partial<EditorSlot>;
+    if (Array.isArray(e.levels)) {
+      // Bad levels are dropped; an empty list starts with one fresh level.
+      const levels = e.levels.map(readSlot).filter((l): l is EditorSlot => l !== undefined).slice(0, MY_LEVELS_MAX);
+      if (levels.length > 0) {
+        const cur = typeof e.current === 'number' && Number.isInteger(e.current) ? e.current : 0;
+        base.editor = { levels, current: Math.max(0, Math.min(levels.length - 1, cur)) };
+      }
+    } else {
+      // Saves from before "My levels" had one level: { draft, best }.
+      const one = readSlot(e);
+      if (one) base.editor = { levels: [one], current: 0 };
     }
-    if (ok) base.editor = { draft: { ...ok, authorCost: 0 }, best: typeof e.best === 'number' && Number.isInteger(e.best) && e.best > 0 && e.best <= ok.budget ? e.best : 0 };
   }
   if (r.designs && typeof r.designs === 'object') {
     for (const [k, v] of Object.entries(r.designs)) {
@@ -134,7 +163,7 @@ export function sanitize(raw: unknown): SaveData {
   return base;
 }
 
-class SaveStore {
+export class SaveStore {
   data: SaveData;
   private readonly store = storage();
 
@@ -204,27 +233,82 @@ class SaveStore {
     this.persist();
   }
 
+  /** The level open in the editor. */
+  get editorSlot(): EditorSlot {
+    const e = this.data.editor;
+    return e.levels[e.current];
+  }
+
   /** The level id the editor tests with (the draft, not crossed yet). */
   get draftId(): string {
-    return customId({ ...this.data.editor.draft, authorCost: 0 });
+    return slotId(this.editorSlot);
+  }
+
+  /** True when another level in "My levels" has the same test id (so it shares the saved bridge). */
+  private idShared(id: string, except: number): boolean {
+    return this.data.editor.levels.some((l, i) => i !== except && slotId(l) === id);
   }
 
   /** Changes the draft. The bridge moves with it; a change other than the name means it must be crossed again. */
   setDraft(draft: CustomSpec): void {
+    const e = this.data.editor;
+    const old = this.editorSlot;
     const oldId = this.draftId;
-    const sameLevel = customId({ ...draft, name: '', authorCost: 0 }) === customId({ ...this.data.editor.draft, name: '', authorCost: 0 });
-    this.data.editor = { draft: { ...draft, authorCost: 0 }, best: sameLevel ? this.data.editor.best : 0 };
+    const sameLevel = customId({ ...draft, name: '', authorCost: 0 }) === customId({ ...old.draft, name: '', authorCost: 0 });
+    e.levels[e.current] = { draft: { ...draft, authorCost: 0 }, best: sameLevel ? old.best : 0 };
     const newId = this.draftId;
     if (newId !== oldId) {
       if (this.data.designs[oldId]) this.data.designs[newId] = this.data.designs[oldId];
-      delete this.data.designs[oldId];
+      if (!this.idShared(oldId, e.current)) delete this.data.designs[oldId];
     }
     this.persist();
   }
 
+  /** Opens another of "My levels" in the editor. */
+  openEditorLevel(index: number): void {
+    const e = this.data.editor;
+    if (!Number.isInteger(index) || index < 0 || index >= e.levels.length) return;
+    e.current = index;
+    this.persist();
+  }
+
+  /**
+   * Adds a level to "My levels" and opens it: a fresh one, or a copy of a friend's level
+   * (it must be crossed again before its code can be shared). False when the list is full.
+   */
+  addEditorLevel(copyOf?: CustomSpec): boolean {
+    const e = this.data.editor;
+    if (e.levels.length >= MY_LEVELS_MAX) return false;
+    const names = e.levels.map((l) => l.draft.name);
+    const slot = copyOf ? readSlot({ draft: { ...copyOf, name: cleanName(copyOf.name), authorCost: 0 }, best: 0 }) : freshSlot(freshName(names));
+    if (!slot) return false;
+    e.levels.push(slot);
+    e.current = e.levels.length - 1;
+    if (copyOf) {
+      // Your bridge from the friend's level comes along, so you can test the copy at once.
+      const from = this.data.designs[customId(copyOf)];
+      const to = slotId(slot);
+      if (from && !this.data.designs[to]) this.data.designs[to] = from.map((b) => ({ ...b }));
+    }
+    this.persist();
+    return true;
+  }
+
+  /** Deletes one of "My levels" and its saved bridge. The last level cannot be deleted. */
+  deleteEditorLevel(index: number): boolean {
+    const e = this.data.editor;
+    if (e.levels.length <= 1 || !Number.isInteger(index) || index < 0 || index >= e.levels.length) return false;
+    const id = slotId(e.levels[index]);
+    if (!this.idShared(id, index)) delete this.data.designs[id];
+    e.levels.splice(index, 1);
+    if (e.current > index || e.current >= e.levels.length) e.current = Math.max(0, e.current - 1);
+    this.persist();
+    return true;
+  }
+
   /** A bridge crossed the draft: keep the cheapest cost (it sets the 3-star budget in the level code). */
   recordDraftWin(cost: number): void {
-    const e = this.data.editor;
+    const e = this.editorSlot;
     const c = Math.round(cost);
     if (c <= 0 || c > e.draft.budget) return;
     e.best = e.best > 0 ? Math.min(e.best, c) : c;

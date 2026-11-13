@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { roadDeck, rockLegs, warrenTruss } from '../src/core/levels';
 import {
-  CUSTOM_MAX_ANCHORS, DEFAULT_CUSTOM, anchorProblem, cleanName, customId, customLevel, customStars, decodeLevel, encodeLevel,
+  CUSTOM_MAX_ANCHORS, DEFAULT_CUSTOM, anchorProblem, cleanName, freshName, customId, customLevel, customStars, decodeLevel, encodeLevel,
   isCustomId, parseCustomId, specProblem, type CustomSpec,
 } from '../src/core/custom';
 import { anyLevel } from '../src/core/sandbox';
@@ -54,6 +54,13 @@ describe('player levels', () => {
     const many = Array.from({ length: CUSTOM_MAX_ANCHORS + 1 }, (_, i) => ({ x: (i % 10) + 1, y: i < 10 ? -4 : -5 }));
     expect(specProblem({ ...rocky, anchors: many })).toMatch(/most/);
     expect(anchorProblem(rocky, { x: 6, y: -5 })).toBeNull();
+  });
+
+  test('a new level gets a name no other level has', () => {
+    expect(freshName([])).toBe('My Level');
+    expect(freshName(['My Level'])).toBe('My Level 2');
+    expect(freshName(['My Level', 'My Level 2', 'My Level 4'])).toBe('My Level 3');
+    expect(cleanName(freshName(Array.from({ length: 11 }, (_, i) => (i === 0 ? 'My Level' : `My Level ${i + 1}`))))).toBe('My Level 12');
   });
 
   test('names are cleaned and short', () => {

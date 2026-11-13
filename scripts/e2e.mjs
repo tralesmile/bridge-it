@@ -414,7 +414,7 @@ async function run(viewport, name) {
   const ev = await page.evaluate(() => { const v = globalThis.__bridgeit.scene.getScene('editor').view(); return { ppm: v.ppm, x0: v.x0, y0: v.y0 }; });
   await click(ev.x0 + (4 + 3) * ev.ppm, ev.y0 - (-2 + 6) * ev.ppm); // rock at (4, -2)
   await page.screenshot({ path: `${OUT}/${name}-9x-editor.png` });
-  const draft = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save')).editor);
+  const draft = await page.evaluate(() => { const e = JSON.parse(localStorage.getItem('bridgeit.save')).editor; return e.levels[e.current]; });
   check(draft.draft.gap === 8 && draft.draft.budget === 5000 && JSON.stringify(draft.draft.anchors) === '[{"x":4,"y":-2}]' && draft.best === 0,
     `${name}: editor saves the draft (${JSON.stringify(draft)})`);
   const copyOff = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('editor').copyButton.alpha < 1);
@@ -436,7 +436,7 @@ async function run(viewport, name) {
   await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon !== null, null, { timeout: 30000 });
   await sleep(800);
   const edWon = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon);
-  const edAfter = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); return { score: JSON.stringify([s.coins, s.stats, s.stars]), best: s.editor.best }; });
+  const edAfter = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); return { score: JSON.stringify([s.coins, s.stats, s.stars]), best: s.editor.levels[s.editor.current].best }; });
   check(edWon === true && edAfter.best > 0 && edAfter.score === edBefore, `${name}: your bridge crosses your level, its cost is kept and nothing is scored (won ${edWon}, best ${edAfter.best})`);
   await page.screenshot({ path: `${OUT}/${name}-9x-editor-won.png` });
   await click(780, 450); // Edit level
@@ -462,6 +462,60 @@ async function run(viewport, name) {
   await page.screenshot({ path: `${OUT}/${name}-9x-editor-friend.png` });
   await page.keyboard.press('Escape'); await sleep(300);
   check(await active('editor'), `${name}: Escape on a player level goes back to the editor`);
+
+  // My levels: cross the friend's level, Edit a copy, new level, open, delete.
+  await click(640, 640);
+  await page.locator('#code-dialog textarea').fill(levelCode);
+  await page.click('#code-dialog button.ok');
+  await sleep(700);
+  await page.evaluate(() => {
+    const p = globalThis.__bridgeit.scene.getScene('play');
+    for (let x = 0; x < 8; x++) p.design.add({ x, y: 0 }, { x: x + 1, y: 0 }, 'road');
+    for (let x = 0; x < 8; x += 2) { p.design.add({ x, y: 0 }, { x: x + 1, y: 1 }, 'wood'); p.design.add({ x: x + 1, y: 1 }, { x: x + 2, y: 0 }, 'wood'); }
+    for (let x = 1; x < 7; x += 2) p.design.add({ x, y: 1 }, { x: x + 2, y: 1 }, 'wood');
+    p.design.add({ x: 4, y: 0 }, { x: 4, y: -2 }, 'wood');
+    p.afterChange();
+  });
+  const mlBeams = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').design.list.length);
+  await click(1160, 664); // GO
+  await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon !== null, null, { timeout: 30000 });
+  await sleep(800);
+  await page.screenshot({ path: `${OUT}/${name}-9x-editor-friend-won.png` });
+  await click(640, 540); // Edit a copy
+  await sleep(500);
+  const mlCopy = await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('bridgeit.save'));
+    const e = s.editor;
+    return { n: e.levels.length, cur: e.current, best: e.levels[e.current].best, cost: e.levels[e.current].draft.authorCost };
+  });
+  const mlDesign = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); return Object.values(s.designs).map((d) => d.length); });
+  check(await active('editor') && mlCopy.n === 2 && mlCopy.cur === 1 && mlCopy.best === 0 && mlCopy.cost === 0 && mlDesign.includes(mlBeams),
+    `${name}: Edit a copy adds the friend's level to My levels with your bridge, not crossed yet (${JSON.stringify(mlCopy)}, ${JSON.stringify(mlDesign)})`);
+  await click(330, 50); // My levels
+  await sleep(300);
+  await page.screenshot({ path: `${OUT}/${name}-9x-editor-mylevels.png` });
+  await click(500, 650); // + New level
+  await sleep(300);
+  const mlNew = await page.evaluate(() => { const e = JSON.parse(localStorage.getItem('bridgeit.save')).editor; return { n: e.levels.length, cur: e.current, name: e.levels[e.current].draft.name }; });
+  check(mlNew.n === 3 && mlNew.cur === 2 && mlNew.name === 'My Level 2', `${name}: New level adds a level with its own name (${JSON.stringify(mlNew)})`);
+  await click(330, 50);
+  await sleep(300);
+  await click(640 - 350 - 32, 160); // first level
+  await sleep(300);
+  const mlOpen = await page.evaluate(() => { const e = JSON.parse(localStorage.getItem('bridgeit.save')).editor; return { cur: e.current, best: e.levels[0].best, list: !!globalThis.__bridgeit.scene.getScene('editor').listLayer }; });
+  check(mlOpen.cur === 0 && mlOpen.best > 0 && !mlOpen.list, `${name}: tapping a level opens it (${JSON.stringify(mlOpen)})`);
+  await click(330, 50);
+  await sleep(300);
+  await click(640 + 350 + 135, 160); // bin of the 3rd level: first tap only asks
+  await sleep(200);
+  const mlAsk = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save')).editor.levels.length);
+  await click(640 + 350 + 135, 160);
+  await sleep(300);
+  const mlDel = await page.evaluate(() => { const e = JSON.parse(localStorage.getItem('bridgeit.save')).editor; return { n: e.levels.length, cur: e.current, list: !!globalThis.__bridgeit.scene.getScene('editor').listLayer }; });
+  check(mlAsk === 3 && mlDel.n === 2 && mlDel.cur === 0 && mlDel.list, `${name}: the bin deletes a level on the second tap (${mlAsk}, ${JSON.stringify(mlDel)})`);
+  await page.keyboard.press('Escape'); await sleep(300);
+  const mlClosed = await page.evaluate(() => !globalThis.__bridgeit.scene.getScene('editor').listLayer);
+  check(await active('editor') && mlClosed, `${name}: Escape closes My levels`);
   await page.keyboard.press('Escape'); await sleep(300);
   check(await active('menu'), `${name}: Escape in the editor goes back to the menu`);
   await page.close();

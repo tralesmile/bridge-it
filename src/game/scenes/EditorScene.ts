@@ -1,17 +1,17 @@
 import Phaser from 'phaser';
 import { BUILD_MARGIN_X, BUILD_MAX_Y, BUILD_MIN_Y } from '../../core/bridge';
 import {
-  CUSTOM_BUDGET, CUSTOM_GAP, CUSTOM_HEIGHT, CUSTOM_MAX_ANCHORS, CUSTOM_VEHICLES,
+  CUSTOM_BUDGET, CUSTOM_GAP, CUSTOM_HEIGHT, CUSTOM_MAX_ANCHORS, CUSTOM_VEHICLES, MY_LEVELS_MAX,
   anchorProblem, baseAnchors, cleanName, customId, decodeLevel, encodeLevel, type CustomSpec,
 } from '../../core/custom';
 import { MATERIALS, MATERIAL_ORDER, type MaterialId } from '../../core/materials';
 import { vehicleTextureKey } from '../../core/shop';
-import { onBack } from '../back';
+import { closeOnBack, onBack } from '../back';
 import { addBackground } from '../background';
 import { sfx } from '../audio';
 import { codeDialogOpen, showCodeDialog } from '../codeDialog';
 import { save } from '../save';
-import { C, FONT, GAME_W, hex } from '../theme';
+import { C, FONT, GAME_H, GAME_W, hex } from '../theme';
 import { button, label, panel, type Button } from '../ui';
 
 /** The picture where anchors are placed: a box on the right side of the screen. */
@@ -33,16 +33,20 @@ export class EditorScene extends Phaser.Scene {
   private nameButton!: Button;
   private copyButton!: Button;
   private toast!: Phaser.GameObjects.Text;
+  /** The "My levels" window, while it is open. */
+  private listLayer?: Phaser.GameObjects.Container;
 
   constructor() {
     super('editor');
   }
 
   private get draft(): CustomSpec {
-    return save.data.editor.draft;
+    return save.editorSlot.draft;
   }
 
-  create(): void {
+  /** `toast`: a message to show on arrival (for example "My levels is full"). `list`: open "My levels". */
+  create(data: { toast?: string; list?: boolean } = {}): void {
+    this.listLayer = undefined;
     this.values.clear();
     this.vehicleButtons = [];
     this.materialButtons.clear();
@@ -50,7 +54,8 @@ export class EditorScene extends Phaser.Scene {
     panel(this, GAME_W / 2, 395, 1240, 590);
     button(this, 110, 50, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
     onBack(this, () => this.scene.start('menu'));
-    label(this, GAME_W / 2, 50, 'Level Editor', 48, C.white).setStroke(C.ink, 10);
+    button(this, 330, 50, '📂 My levels', () => this.openList(), { width: 230, height: 52, fontSize: 22, color: C.good, shade: C.goodDark }).setName('editor-list');
+    label(this, GAME_W / 2 + 20, 50, 'Level Editor', 44, C.white).setStroke(C.ink, 10);
     this.nameButton = button(this, GAME_W - 170, 50, '', () => void this.rename(), { width: 300, height: 52, fontSize: 22, color: C.primary, shade: C.primaryDark });
 
     this.stepper('gap', 'Gap', 140, (d) => ({ gap: clamp(this.draft.gap + d, CUSTOM_GAP.min, CUSTOM_GAP.max) }), () => `${this.draft.gap} m`);
@@ -91,6 +96,67 @@ export class EditorScene extends Phaser.Scene {
     this.toast = this.add.text(GAME_W / 2, 110, '', { fontFamily: FONT, fontSize: '24px', fontStyle: 'bold', color: C.white, align: 'center' }).setOrigin(0.5).setAlpha(0).setDepth(20);
     this.toast.setStroke(C.ink, 7);
     this.refresh();
+    if (data.toast) this.showToast(data.toast);
+    if (data.list) this.openList();
+  }
+
+  /** "My levels": every saved level as a card. Tap one to open it; tap its bin twice to delete it. */
+  private openList(): void {
+    this.listLayer?.destroy();
+    const layer = this.add.container(0, 0).setDepth(30);
+    this.listLayer = layer;
+    const close = () => {
+      layer.destroy();
+      if (this.listLayer === layer) this.listLayer = undefined;
+    };
+    layer.add(this.add.rectangle(0, 0, GAME_W, GAME_H, hex(C.ink), 0.45).setOrigin(0).setInteractive());
+    layer.add(panel(this, GAME_W / 2, GAME_H / 2, 1120, 660));
+    const levels = save.data.editor.levels;
+    layer.add(label(this, GAME_W / 2, 82, `My levels (${levels.length}/${MY_LEVELS_MAX})`, 40, C.ink));
+    const note = label(this, GAME_W / 2, 590, 'Tap a level to open it.', 22, C.greyDark);
+    layer.add(note);
+    let armed = -1;
+    levels.forEach((slot, i) => {
+      const cx = GAME_W / 2 + ((i % 3) - 1) * 350;
+      const cy = 160 + Math.floor(i / 3) * 106;
+      const open = i === save.data.editor.current;
+      const d = slot.draft;
+      const info = `${d.gap} m · ${VEHICLE_SHORT[d.vehicle]} · ${slot.best > 0 ? `✓ $${slot.best.toLocaleString('en-US')}` : 'not crossed'}`;
+      const card = button(this, cx - 32, cy, `${d.name}
+${info}`, () => {
+        save.openEditorLevel(i);
+        sfx.place(0);
+        close();
+        this.refresh();
+      }, { width: 266, height: 90, fontSize: 19, color: open ? C.good : C.blue, shade: open ? C.goodDark : C.blueDark });
+      card.setSelected(open).setName(`editor-level-${i}`);
+      layer.add(card);
+      const bin = button(this, cx + 135, cy, '🗑', () => {
+        if (armed !== i) {
+          armed = i;
+          sfx.error();
+          note.setText(`Tap 🗑 again to delete "${d.name}".`).setColor(C.anchor);
+          return;
+        }
+        save.deleteEditorLevel(i);
+        this.refresh();
+        this.openList();
+      }, { width: 54, height: 90, fontSize: 22, color: C.grey, shade: C.greyDark });
+      bin.setEnabled(levels.length > 1).setName(`editor-delete-${i}`);
+      layer.add(bin);
+    });
+    const full = levels.length >= MY_LEVELS_MAX;
+    const add = button(this, GAME_W / 2 - 140, 650, full ? 'List is full' : '+ New level', () => {
+      if (!save.addEditorLevel()) return;
+      sfx.place(0);
+      close();
+      this.refresh();
+      this.showToast(`New level: ${save.editorSlot.draft.name}`);
+    }, { width: 240, height: 64, fontSize: 24, color: C.primary, shade: C.primaryDark });
+    add.setEnabled(!full).setName('editor-new');
+    layer.add(add);
+    layer.add(button(this, GAME_W / 2 + 140, 650, 'Close', close, { width: 220, height: 64, color: C.blue, shade: C.blueDark }));
+    closeOnBack(layer, close);
   }
 
   /** A row with a name, a minus button, the value and a plus button. */
@@ -136,7 +202,7 @@ export class EditorScene extends Phaser.Scene {
   }
 
   private tapGrid(sx: number, sy: number): void {
-    if (codeDialogOpen()) return;
+    if (codeDialogOpen() || this.listLayer) return;
     const p = this.gridAt(sx, sy);
     if (!p) return;
     const anchors = this.draft.anchors;
@@ -180,7 +246,7 @@ export class EditorScene extends Phaser.Scene {
       b.setColors(on ? C.good : C.grey, on ? C.goodDark : C.greyDark).setSelected(on);
     }
     this.nameButton.setLabel(`✏️ ${d.name}`);
-    const best = save.data.editor.best;
+    const best = save.editorSlot.best;
     this.status.setText(best > 0 ? `Crossed for $${best.toLocaleString('en-US')} ✓\nCopy the code for a friend.` : 'Not crossed yet.\nTest it: your bridge must cross first.');
     this.status.setColor(best > 0 ? C.goodDark : C.greyDark);
     this.copyButton.setEnabled(best > 0);
@@ -234,7 +300,7 @@ export class EditorScene extends Phaser.Scene {
   }
 
   private async copyCode(): Promise<void> {
-    const best = save.data.editor.best;
+    const best = save.editorSlot.best;
     if (best <= 0) return;
     const code = encodeLevel({ ...this.draft, authorCost: best });
     try {

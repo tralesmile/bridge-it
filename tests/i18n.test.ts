@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { MATERIALS } from '../src/core/materials';
 import { VEHICLES } from '../src/core/vehicles';
+import { SHOP_ITEMS } from '../src/core/shop';
+import { statRows } from '../src/core/stats';
 import { LANGS, LANG_NAMES, TEXTS, isLang, nextLang, pickLang, translate, twoLines, type TextKey } from '../src/core/i18n';
 
 const vars = (s: string): string[] => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
@@ -31,6 +33,18 @@ describe('languages', () => {
     for (const m of Object.values(MATERIALS)) expect(TEXTS.en[`mat.${m.id}` as TextKey]).toBe(m.name);
     for (const v of Object.values(VEHICLES)) expect(TEXTS.en[`vehicle.${v.id}` as TextKey]).toBe(v.name);
     expect(translate('en', 'play.nextStar', { cost: '1,200', next: '900' })).toBe('Cost $1,200 · next star at $900');
+  });
+
+  test('shop and stats: every item and stat row has a text, English matches the core names', () => {
+    for (const item of SHOP_ITEMS) {
+      expect(TEXTS.en[`item.${item.id}` as TextKey], item.id).toBe(item.name);
+      // Item names fit a shop card (the label also shrinks, but keep them short).
+      for (const lang of LANGS) expect(TEXTS[lang][`item.${item.id}` as TextKey].length, `${lang} ${item.id}`).toBeLessThanOrEqual(12);
+    }
+    const rows = statRows({ stars: {}, bestCost: {}, stats: { attempts: 0, fails: 0, broken: 0, hints: 0 }, coins: 0, achievements: 0, achievementsTotal: 1, dailyStreak: 0, dailyBest: 0, levels: [], worlds: [] });
+    for (const r of rows) expect(TEXTS.en[`stats.${r.key}` as TextKey], r.key).toBe(r.label);
+    for (const lang of LANGS) for (const k of ['shop.inUse', 'shop.use', 'shop.supporter'] as TextKey[]) expect(TEXTS[lang][k].length, `${lang} ${k}`).toBeLessThanOrEqual(12);
+    expect(translate('de', 'shop.needCoins', { n: 30 })).toBe('Dir fehlen 30 Münzen.');
   });
 
   test('translate fills in names and keeps unknown ones', () => {

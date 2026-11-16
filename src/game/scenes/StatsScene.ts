@@ -7,6 +7,8 @@ import { addBackground } from '../background';
 import { save } from '../save';
 import { C, GAME_W, hex } from '../theme';
 import { button, label, panel } from '../ui';
+import { t } from '../i18n';
+import type { TextKey } from '../../core/i18n';
 
 const ROW_H = 54;
 const COL_W = 560;
@@ -20,9 +22,9 @@ export class StatsScene extends Phaser.Scene {
   create(): void {
     addBackground(this);
     panel(this, GAME_W / 2, 400, 1240, 600);
-    button(this, 110, 60, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    button(this, 110, 60, t('common.back'), () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
     onBack(this, () => this.scene.start('menu'));
-    label(this, GAME_W / 2, 60, 'Stats', 52, C.white).setStroke(C.ink, 10);
+    label(this, GAME_W / 2, 60, t('stats.title'), 52, C.white).setStroke(C.ink, 10);
 
     const d = save.data;
     const rows = statRows({
@@ -45,7 +47,10 @@ export class StatsScene extends Phaser.Scene {
       const g = this.add.graphics({ x, y });
       g.fillStyle(hex(i % 2 === 0 ? C.white : '#f1edf6'), 1);
       g.fillRoundedRect(-COL_W / 2, -ROW_H / 2 + 4, COL_W, ROW_H - 8, 12);
-      label(this, x - COL_W / 2 + 24, y, r.label, 24, C.greyDark).setOrigin(0, 0.5);
+      const name = label(this, x - COL_W / 2 + 24, y, t(`stats.${r.key}` as TextKey), 24, C.greyDark).setOrigin(0, 0.5);
+      // Long labels in some languages shrink to leave room for the value.
+      const room = COL_W - 48 - 130;
+      if (name.width > room) name.setScale(room / name.width);
       label(this, x + COL_W / 2 - 24, y, r.value, 26, C.ink).setOrigin(1, 0.5);
     });
   }

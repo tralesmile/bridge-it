@@ -46,6 +46,9 @@ export interface StatsInput {
 }
 
 export interface StatRow {
+  /** Text key of the label (`stats.<key>`), for the player's language. */
+  key: string;
+  /** English label. */
   label: string;
   value: string;
 }
@@ -66,19 +69,19 @@ export function statRows(i: StatsInput): StatRow[] {
     return ls.length > 0 && ls.every((l) => (i.stars[l.id] ?? 0) > 0);
   }).length;
   return [
-    { label: 'Levels done', value: `${done.length} / ${i.levels.length}` },
-    { label: 'Perfect levels', value: `${perfect}` },
-    { label: 'Stars', value: `${stars} / ${i.levels.length * 3}` },
-    { label: 'Worlds done', value: `${worldsDone} / ${i.worlds.length}` },
-    { label: 'Attempts (GO)', value: num(attempts) },
-    { label: 'Wins', value: num(wins) },
-    { label: 'Win rate', value: rate },
-    { label: 'Fails', value: num(fails) },
-    { label: 'Beams broken', value: num(broken) },
-    { label: 'Hints used', value: num(hints) },
-    { label: 'Best bridges cost', value: `$${num(spent)}` },
-    { label: 'Coins', value: num(i.coins) },
-    { label: 'Achievements', value: `${i.achievements} / ${i.achievementsTotal}` },
-    { label: 'Daily streak (best)', value: `${i.dailyStreak} (${i.dailyBest})` },
+    { key: 'levelsDone', label: 'Levels done', value: `${done.length} / ${i.levels.length}` },
+    { key: 'perfect', label: 'Perfect levels', value: `${perfect}` },
+    { key: 'stars', label: 'Stars', value: `${stars} / ${i.levels.length * 3}` },
+    { key: 'worldsDone', label: 'Worlds done', value: `${worldsDone} / ${i.worlds.length}` },
+    { key: 'attempts', label: 'Attempts (GO)', value: num(attempts) },
+    { key: 'wins', label: 'Wins', value: num(wins) },
+    { key: 'winRate', label: 'Win rate', value: rate },
+    { key: 'fails', label: 'Fails', value: num(fails) },
+    { key: 'broken', label: 'Beams broken', value: num(broken) },
+    { key: 'hints', label: 'Hints used', value: num(hints) },
+    { key: 'spent', label: 'Best bridges cost', value: `$${num(spent)}` },
+    { key: 'coins', label: 'Coins', value: num(i.coins) },
+    { key: 'achievements', label: 'Achievements', value: `${i.achievements} / ${i.achievementsTotal}` },
+    { key: 'daily', label: 'Daily streak (best)', value: `${i.dailyStreak} (${i.dailyBest})` },
   ];
 }

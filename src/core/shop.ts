@@ -86,15 +86,17 @@ export function grantSupporterItems(owned: readonly string[]): string[] {
   return [...owned, ...SUPPORTER_ITEMS.filter((id) => !owned.includes(id))];
 }
 
-export type BuyResult = { ok: true; state: ShopState } | { ok: false; error: string };
+/** Why a buy failed: `code` picks the text in the player's language, `need` is the coins still missing. */
+export type BuyError = { code: 'unknown' | 'owned' | 'supporter' | 'coins'; need?: number };
+export type BuyResult = { ok: true; state: ShopState } | { ok: false; error: string; code: BuyError['code']; need?: number };
 
 /** Buys an item and puts it on. Never changes the state it is given. */
 export function buy(state: ShopState, id: string): BuyResult {
   const item = itemById(id);
-  if (!item) return { ok: false, error: 'Unknown item.' };
-  if (isOwned(state, id)) return { ok: false, error: 'You have it already.' };
-  if (item.supporter) return { ok: false, error: 'Only in the Supporter pack.' };
-  if (state.coins < item.price) return { ok: false, error: `You need ${item.price - state.coins} more coins.` };
+  if (!item) return { ok: false, error: 'Unknown item.', code: 'unknown' };
+  if (isOwned(state, id)) return { ok: false, error: 'You have it already.', code: 'owned' };
+  if (item.supporter) return { ok: false, error: 'Only in the Supporter pack.', code: 'supporter' };
+  if (state.coins < item.price) return { ok: false, error: `You need ${item.price - state.coins} more coins.`, code: 'coins', need: item.price - state.coins };
   return {
     ok: true,
     state: { coins: state.coins - item.price, owned: [...state.owned, id], equipped: { ...state.equipped, [item.kind]: id } },

@@ -354,6 +354,18 @@ async function run(viewport, name) {
   check(dePlay.includes('LOS!') && dePlay.includes('Straße') && dePlay.includes('Löschen') && dePlay.includes('Zurück') && dePlay.includes('Code einfügen')
     && deLoss.includes('Geschafft!') && deLoss.includes('Verbessern') && deLoss.includes('Brücken-Code kopieren'),
     `${name}: the play scene and its win panel are in German (${JSON.stringify([dePlay.slice(0, 12), deLoss.slice(-4)])})`);
+  // Shop and Stats in German (the save is still the German one; nothing is bought).
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('play').scene.start('shop'); });
+  await sleep(500);
+  const deShop = await sceneTexts('shop');
+  if (name === 'desktop') await page.screenshot({ path: `${OUT}/${name}-9l-shop-de.png` });
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('shop').scene.start('stats'); });
+  await sleep(400);
+  const deStats = await sceneTexts('stats');
+  if (name === 'desktop') await page.screenshot({ path: `${OUT}/${name}-9l-stats-de.png` });
+  check(deShop.includes('Laden') && deShop.includes('Straßenfarbe') && deShop.includes('Himmel') && deShop.includes('Aktiv') && deShop.includes('◀ Zurück')
+    && deStats.includes('Statistik') && deStats.includes('Versuche (LOS)') && deStats.includes('Tagesserie (beste)') && !deStats.some((t) => /NaN|undefined|stats\./.test(t)),
+    `${name}: Shop and Stats are in German (${JSON.stringify([deShop.slice(0, 8), deStats.slice(0, 6)])})`);
   await page.evaluate((raw) => { localStorage.setItem('bridgeit.save', raw); }, saveBeforeDe);
   await setLang(null);
 

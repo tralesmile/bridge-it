@@ -31,7 +31,7 @@ describe('shop', () => {
   });
 
   test('cannot buy without enough coins, twice, or an unknown item', () => {
-    expect(buy({ ...start, coins: 10 }, 'paint-sky')).toEqual({ ok: false, error: 'You need 30 more coins.' });
+    expect(buy({ ...start, coins: 10 }, 'paint-sky')).toEqual({ ok: false, error: 'You need 30 more coins.', code: 'coins', need: 30 });
     const r = buy(start, 'paint-sky');
     if (!r.ok) throw new Error('buy failed');
     expect(buy(r.state, 'paint-sky').ok).toBe(false);
@@ -90,7 +90,7 @@ describe('shop', () => {
     expect(SUPPORTER_ITEMS).toEqual(['paint-rosegold']);
     const rich = { ...start, coins: 5000 };
     expect(isOwned(rich, 'paint-rosegold')).toBe(false);
-    expect(buy(rich, 'paint-rosegold')).toEqual({ ok: false, error: 'Only in the Supporter pack.' });
+    expect(buy(rich, 'paint-rosegold')).toEqual({ ok: false, error: 'Only in the Supporter pack.', code: 'supporter' });
     expect(equip(rich, 'paint-rosegold')).toBe(rich);
     // An edited save that wears it without owning it falls back to Classic.
     expect(equipped({ owned: [], equipped: { ...DEFAULT_EQUIPPED, paint: 'paint-rosegold' } }, 'paint').id).toBe('paint-classic');

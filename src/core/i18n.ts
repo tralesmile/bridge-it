@@ -5,6 +5,7 @@
  */
 
 import { PLAY_EN, PLAY_TEXTS } from './texts/play';
+import { SCREENS_EN, SCREENS_TEXTS } from './texts/screens';
 
 export const LANGS = ['en', 'de', 'es', 'pt', 'fr', 'tr', 'ru', 'mk'] as const;
 export type Lang = (typeof LANGS)[number];
@@ -65,7 +66,7 @@ const EN_BASE = {
   'daily.note': 'Only today counts for the streak and coins. Old days are just for fun.',
 } as const;
 
-const EN = { ...EN_BASE, ...PLAY_EN };
+const EN = { ...EN_BASE, ...PLAY_EN, ...SCREENS_EN };
 
 export type TextKey = keyof typeof EN;
 type Table = Record<TextKey, string>;
@@ -381,7 +382,7 @@ const MK: BaseTable = {
 };
 
 const BASE: Record<Lang, BaseTable> = { en: EN_BASE, de: DE, es: ES, pt: PT, fr: FR, tr: TR, ru: RU, mk: MK };
-export const TEXTS: Record<Lang, Table> = Object.fromEntries(LANGS.map((l) => [l, { ...BASE[l], ...PLAY_TEXTS[l] }])) as Record<Lang, Table>;
+export const TEXTS: Record<Lang, Table> = Object.fromEntries(LANGS.map((l) => [l, { ...BASE[l], ...PLAY_TEXTS[l], ...SCREENS_TEXTS[l] }])) as Record<Lang, Table>;
 
 export const isLang = (v: unknown): v is Lang => typeof v === 'string' && (LANGS as readonly string[]).includes(v);
 

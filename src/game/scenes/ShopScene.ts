@@ -6,6 +6,8 @@ import { addBackground } from '../background';
 import { save } from '../save';
 import { C, GAME_W, hex } from '../theme';
 import { store } from '../store';
+import { t } from '../i18n';
+import type { TextKey } from '../../core/i18n';
 import { announceAchievements, button, label, openSupport, panel } from '../ui';
 
 const CARD_W = 136;
@@ -24,13 +26,13 @@ export class ShopScene extends Phaser.Scene {
   create(): void {
     addBackground(this);
     panel(this, GAME_W / 2, 400, 1240, 600);
-    button(this, 110, 60, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    button(this, 110, 60, t('common.back'), () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
     onBack(this, () => this.scene.start('menu'));
-    label(this, GAME_W / 2, 60, 'Shop', 52, C.white).setStroke(C.ink, 10);
+    label(this, GAME_W / 2, 60, t('shop.title'), 52, C.white).setStroke(C.ink, 10);
     this.add.image(GAME_W - 190, 60, 'coin').setScale(1.1);
     label(this, GAME_W - 165, 60, `${save.data.coins}`, 34, C.white).setOrigin(0, 0.5).setStroke(C.ink, 8);
 
-    label(this, GAME_W / 2, 118, 'Paint for your car, truck and train', 24, C.ink);
+    label(this, GAME_W / 2, 118, t('shop.paint'), 24, C.ink);
     // The supporter paint shows only where it can be had (app with a store) or once it is owned.
     this.row(SHOP_ITEMS.filter((i) => i.kind === 'paint' && (!i.supporter || store.available() || isOwned(save.shop, i.id))), 212);
     // Road colours and car shapes share the middle row, each with its own title.
@@ -38,14 +40,14 @@ export class ShopScene extends Phaser.Scene {
     const groupW = middle.map((g) => g.length * CARD_W + (g.length - 1) * GAP);
     const totalW = groupW[0] + groupW[1] + GROUP_GAP;
     let left = GAME_W / 2 - totalW / 2;
-    ['Road colour', 'Car shape (car levels)'].forEach((title, i) => {
+    [t('shop.road'), t('shop.shape')].forEach((title, i) => {
       label(this, left + groupW[i] / 2, 307, title, 24, C.ink);
       this.row(middle[i], 401, left + groupW[i] / 2);
       left += groupW[i] + GROUP_GAP;
     });
-    label(this, GAME_W / 2, 496, 'Wood and steel colour', 24, C.ink);
+    label(this, GAME_W / 2, 496, t('shop.frame'), 24, C.ink);
     this.row(SHOP_ITEMS.filter((i) => i.kind === 'frame'), 590);
-    label(this, GAME_W / 2, 684, 'Earn coins with new stars. Looks only: the bridge works the same.', 20, C.greyDark);
+    label(this, GAME_W / 2, 684, t('shop.note'), 20, C.greyDark).setWordWrapWidth(1180).setAlign('center');
 
     this.toast = label(this, GAME_W / 2, 400, '', 34, C.white).setStroke(C.ink, 8).setDepth(20).setAlpha(0);
     announceAchievements(this);
@@ -111,9 +113,9 @@ export class ShopScene extends Phaser.Scene {
       g.fillStyle(hex(C.ink), 1);
       for (const [px, py] of [[-48, -22], [0, -58], [48, -22], [0, -22]]) g.fillCircle(px, py, 4);
     }
-    label(this, x, y + 2, item.name, 21, C.ink);
+    fitText(label(this, x, y + 2, t(`item.${item.id}` as TextKey), 21, C.ink), CARD_W - 12);
     if (item.supporter) label(this, x + CARD_W / 2 - 18, y - CARD_H / 2 + 18, '♥', 22, C.primary);
-    const text = worn ? 'In use' : owned ? 'Use' : item.supporter ? 'Supporter' : `${item.price}`;
+    const text = worn ? t('shop.inUse') : owned ? t('shop.use') : item.supporter ? t('shop.supporter') : `${item.price}`;
     const canAfford = !item.supporter && save.data.coins >= item.price;
     const colors = worn ? { color: C.good, shade: C.goodDark } : owned ? { color: C.blue, shade: C.blueDark } : item.supporter ? { color: C.gold, shade: C.primaryDark, textColor: C.ink } : canAfford ? { color: C.primary, shade: C.primaryDark } : { color: C.grey, shade: C.greyDark };
     const b = button(this, x, y + 44, text, () => this.choose(item), { width: 112, height: 44, fontSize: item.supporter && !owned ? 18 : 22, ...colors });
@@ -140,7 +142,7 @@ export class ShopScene extends Phaser.Scene {
     }
     const error = save.buyItem(item.id);
     if (error) {
-      this.say(error);
+      this.say(error.code === 'coins' ? t('shop.needCoins', { n: error.need ?? 0 }) : error.code === 'supporter' ? t('shop.onlySupporter') : t('shop.owned'));
       return;
     }
     sfx.coin();
@@ -153,4 +155,9 @@ export class ShopScene extends Phaser.Scene {
     this.tweens.killTweensOf(this.toast);
     this.tweens.add({ targets: this.toast, alpha: 0, delay: 1400, duration: 400 });
   }
+}
+
+/** Shrinks a text so it is at most `max` pixels wide (long item names in some languages). */
+function fitText(text: Phaser.GameObjects.Text, max: number): void {
+  if (text.width > max) text.setScale(max / text.width);
 }

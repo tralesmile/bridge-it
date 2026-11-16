@@ -4,7 +4,7 @@ import { DAILY_COINS, EMPTY_DAILY, canPlayDay, dateKey, isDailyId, recordCalenda
 import { ALL_LEVELS } from '../core/levels';
 import { parseSandboxId } from '../core/sandbox';
 import { DEFAULT_CUSTOM, MY_LEVELS_MAX, addFriendStars, isCustomId, staleCustomDesigns, copyName, customId, freshName, friendStarsOf, parseCustomId, readFriendStars, specProblem, type CustomSpec, type FriendStars } from '../core/custom';
-import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, grantSupporterItems, type ShopKind, type ShopState } from '../core/shop';
+import { DEFAULT_EQUIPPED, SHOP_ITEMS, buy, equip, grantSupporterItems, type BuyError, type ShopKind, type ShopState } from '../core/shop';
 import { EMPTY_PURCHASES, applyOwned, sanitizePurchases, type PurchaseState } from '../core/purchases';
 import type { Beam } from '../core/types';
 
@@ -373,9 +373,9 @@ export class SaveStore {
   }
 
   /** Buys and puts on a shop item. Returns an error text when it cannot. */
-  buyItem(id: string): string | null {
+  buyItem(id: string): BuyError | null {
     const r = buy(this.shop, id);
-    if (!r.ok) return r.error;
+    if (!r.ok) return { code: r.code, need: r.need };
     this.applyShop(r.state);
     return null;
   }

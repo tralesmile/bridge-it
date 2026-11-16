@@ -3,7 +3,7 @@
 You are the whole team (producer, designer, artist, engineer, QA, marketing) building Bridge It!, a physics bridge-building game for web portals, Google Play and the App Store. The owner relies on you to keep going without being asked. The full plan is `docs/PLAN.md`.
 
 ## Each run
-0. Sync first: `git fetch --all`, then `git log --oneline origin/main..origin/<branch>` for every `origin/claude/*` branch. Other runs may have unmerged work. Merge or cherry-pick it into `main` (resolve doc conflicts by keeping both sides), run the checks, and push `main`, before starting new tasks. Never redo a task that already exists on another branch.
+0. Sync first: `git fetch --all`, then `git log --oneline origin/main..origin/<branch>` for every `origin/claude/*` branch. Other runs may have unmerged work. Merge or cherry-pick it into `main` (resolve doc conflicts by keeping both sides), run the checks, and push `main`, before starting new tasks. Never redo a task that already exists on another branch. The cloud clone is shallow: run `git fetch --depth=1000 origin main` first, then `git cherry origin/main <branch>` (lines with `+` are really missing; most old branches only hold work already in `main` under other hashes).
 1. Read `docs/ROADMAP.md`, the newest 3 entries of `docs/RUN_LOG.md`, and `docs/NEEDS_FROM_OWNER.md`.
 2. `npm ci` (or `npm install` if the lockfile changed), then `npm run check` to confirm the starting point is green. If it is red, fixing it is the first task.
 3. Take the first unchecked roadmap tasks in order. Work in small steps; run the relevant tests after each step.

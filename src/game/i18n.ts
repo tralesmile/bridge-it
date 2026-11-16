@@ -1,4 +1,4 @@
-import { pickLang, translate, type Lang, type TextKey } from '../core/i18n';
+import { fromEnglish, pickLang, translate, type Lang, type TextKey } from '../core/i18n';
 import type { VehicleId } from '../core/types';
 import { save } from './save';
 
@@ -16,6 +16,9 @@ export function currentLang(): Lang {
 
 /** Game text in the player's language. */
 export const t = (key: TextKey, vars?: Record<string, string | number>): string => translate(currentLang(), key, vars);
+
+/** An English text from the core (a problem message) in the player's language. */
+export const tEn = (english: string): string => fromEnglish(currentLang(), english);
 
 /** A world's name in the player's language (world ids 1 to 5 have a text). */
 export function worldName(id: number): string {

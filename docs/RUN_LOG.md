@@ -2,6 +2,21 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-16 — Run 48
+**Done**
+- Synced: only old branches unmerged (their work is already in `main`; `git cherry` shows only duplicate font and hill-seam fixes). Note: the clone is shallow; `git fetch --depth=1000 origin main` first, or every branch looks unmerged.
+- Shop and Stats in 8 languages: item names (`item.<id>`), stat rows carry a `key`, `buy` errors carry a `code` (and `need` for coins). Long item names and stat labels shrink to fit. Texts in `src/core/texts/screens.ts`.
+- Sandbox setup and Level Editor in 8 languages: rows, choices, steppers, materials, mode buttons, My levels list, toasts, dialogs. Core problem texts are translated by their English text (`fromEnglish` in `src/core/i18n.ts`, `tEn` in the game), so `src/core/custom.ts` did not change. Texts in `src/core/texts/editor.ts`. The editor mode hint shrinks to stay in the panel (Russian ran off the edge).
+
+**Verified**
+- `npm run check` green (603 tests; new: every shop item and stat row has a text and English matches the core names, every editor problem text has a translation, `fromEnglish` fills numbers). `npm run e2e` exit 0, no FAIL after each task (new: German Shop, Stats, Sandbox and Level Editor). Screenshots checked: German shop and stats; probe screenshots of the editor and sandbox in ru, mk and es.
+
+**Lessons**
+- A shallow clone makes `git cherry` report every old commit as unmerged; deepen `main` before judging branches.
+- e2e output lands in the file in big chunks; wait for the `exit` line (an `until grep -q "^exit"` loop) instead of counting PASS lines.
+- Translating core messages by their English text (`fromEnglish`) avoids touching tested core code; add a test that each such message has a translation, so a reworded core text is caught.
+- Probe screenshots in ru/mk find overflow fast: Cyrillic words are long and the system font is wider than Fredoka.
+
 ## 2026-11-13 — Run 47
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`); skipped.

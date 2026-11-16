@@ -6,6 +6,7 @@
 
 import { PLAY_EN, PLAY_TEXTS } from './texts/play';
 import { SCREENS_EN, SCREENS_TEXTS } from './texts/screens';
+import { EDITOR_EN, EDITOR_TEXTS } from './texts/editor';
 
 export const LANGS = ['en', 'de', 'es', 'pt', 'fr', 'tr', 'ru', 'mk'] as const;
 export type Lang = (typeof LANGS)[number];
@@ -66,7 +67,7 @@ const EN_BASE = {
   'daily.note': 'Only today counts for the streak and coins. Old days are just for fun.',
 } as const;
 
-const EN = { ...EN_BASE, ...PLAY_EN, ...SCREENS_EN };
+const EN = { ...EN_BASE, ...PLAY_EN, ...SCREENS_EN, ...EDITOR_EN };
 
 export type TextKey = keyof typeof EN;
 type Table = Record<TextKey, string>;
@@ -382,7 +383,29 @@ const MK: BaseTable = {
 };
 
 const BASE: Record<Lang, BaseTable> = { en: EN_BASE, de: DE, es: ES, pt: PT, fr: FR, tr: TR, ru: RU, mk: MK };
-export const TEXTS: Record<Lang, Table> = Object.fromEntries(LANGS.map((l) => [l, { ...BASE[l], ...PLAY_TEXTS[l], ...SCREENS_TEXTS[l] }])) as Record<Lang, Table>;
+export const TEXTS: Record<Lang, Table> = Object.fromEntries(LANGS.map((l) => [l, { ...BASE[l], ...PLAY_TEXTS[l], ...SCREENS_TEXTS[l], ...EDITOR_TEXTS[l] }])) as Record<Lang, Table>;
+
+/**
+ * The text in `lang` for an English text from the core (for example a problem from `src/core/custom.ts`).
+ * Numbers in the English text fill the {names} of a matching template. Unknown texts come back as they are.
+ */
+export function fromEnglish(lang: Lang, english: string): string {
+  const en = TEXTS.en;
+  for (const key of Object.keys(en) as TextKey[]) {
+    const template = en[key];
+    if (template === english) return translate(lang, key);
+    if (!template.includes('{')) continue;
+    const names: string[] = [];
+    const pattern = template.split(/(\{\w+\})/).map((part) => {
+      const m = /^\{(\w+)\}$/.exec(part);
+      if (m) { names.push(m[1]); return '(.+?)'; }
+      return part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }).join('');
+    const hit = new RegExp(`^${pattern}$`).exec(english);
+    if (hit) return translate(lang, key, Object.fromEntries(names.map((n, i) => [n, hit[i + 1]])));
+  }
+  return english;
+}
 
 export const isLang = (v: unknown): v is Lang => typeof v === 'string' && (LANGS as readonly string[]).includes(v);
 

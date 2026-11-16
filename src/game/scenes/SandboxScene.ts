@@ -4,7 +4,8 @@ import {
   sandboxId, sandboxLevel, type SandboxOptions,
 } from '../../core/sandbox';
 import { vehicleTextureKey } from '../../core/shop';
-import { VEHICLES } from '../../core/vehicles';
+import type { TextKey } from '../../core/i18n';
+import { t, vehicleName } from '../i18n';
 import { onBack } from '../back';
 import { addBackground } from '../background';
 import { sfx } from '../audio';
@@ -15,8 +16,8 @@ import { button, label, panel, type Button } from '../ui';
 /** The last setup, so "New setup" and Back open with the same choices. */
 let current: SandboxOptions = { ...DEFAULT_SANDBOX };
 
-const BANK_NAMES: Record<string, string> = { flat: 'Same height', lower: 'Lower', higher: 'Higher' };
-const HELP_NAMES: Record<string, string> = { none: 'Nothing', rocks: 'Rocks', posts: 'High posts', both: 'Both' };
+const BANK_NAMES = (b: string): string => t(`sandbox.${b}` as TextKey);
+const HELP_NAMES = (h: string): string => t(`sandbox.${h}` as TextKey);
 
 /** Sandbox setup: pick a gap, a vehicle, the far bank and helper anchors, then build anything. */
 export class SandboxScene extends Phaser.Scene {
@@ -30,27 +31,28 @@ export class SandboxScene extends Phaser.Scene {
   create(): void {
     addBackground(this);
     panel(this, GAME_W / 2, 400, 1100, 600);
-    button(this, 110, 60, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    button(this, 110, 60, t('common.back'), () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
     onBack(this, () => this.scene.start('menu'));
-    label(this, GAME_W / 2, 60, 'Sandbox', 52, C.white).setStroke(C.ink, 10);
-    label(this, GAME_W / 2, 130, 'Every material, no money limit, no stars. Just build!', 24, C.greyDark);
+    label(this, GAME_W / 2, 60, t('menu.sandbox'), 52, C.white).setStroke(C.ink, 10);
+    label(this, GAME_W / 2, 130, t('sandbox.intro'), 24, C.greyDark);
 
-    this.row('Gap', 195, SANDBOX_GAPS.map((g) => [`${g} m`, () => ({ ...current, gap: g })] as const), (o) => `${o.gap} m`);
-    this.row('Vehicle', 275, SANDBOX_VEHICLES.map((v) => [VEHICLES[v].name, () => ({ ...current, vehicle: v })] as const), (o) => VEHICLES[o.vehicle].name);
-    this.row('Far side', 355, SANDBOX_BANKS.map((b) => [BANK_NAMES[b], () => ({ ...current, bank: b })] as const), (o) => BANK_NAMES[o.bank]);
-    this.row('Helpers', 435, SANDBOX_HELPS.map((h) => [HELP_NAMES[h], () => ({ ...current, help: h })] as const), (o) => HELP_NAMES[o.help]);
+    this.row('Gap', t('sandbox.gap'), 195, SANDBOX_GAPS.map((g) => [`${g} m`, () => ({ ...current, gap: g })] as const), (o) => `${o.gap} m`);
+    this.row('Vehicle', t('sandbox.vehicle'), 275, SANDBOX_VEHICLES.map((v) => [vehicleName(v), () => ({ ...current, vehicle: v })] as const), (o) => vehicleName(o.vehicle));
+    this.row('Far side', t('sandbox.bank'), 355, SANDBOX_BANKS.map((b) => [BANK_NAMES(b), () => ({ ...current, bank: b })] as const), (o) => BANK_NAMES(o.bank));
+    this.row('Helpers', t('sandbox.helpers'), 435, SANDBOX_HELPS.map((h) => [HELP_NAMES(h), () => ({ ...current, help: h })] as const), (o) => HELP_NAMES(o.help));
 
     this.preview = this.add.graphics();
     this.drawPreview();
-    const go = button(this, GAME_W / 2 + 380, 600, 'Build ▶', () => this.scene.start('play', { levelId: sandboxId(current) }), {
+    const go = button(this, GAME_W / 2 + 380, 600, t('sandbox.build'), () => this.scene.start('play', { levelId: sandboxId(current) }), {
       width: 220, height: 76, fontSize: 32, color: C.good, shade: C.goodDark,
     });
     go.setName('sandbox-build');
   }
 
   /** One row of choices; the chosen one is green with a white ring. */
-  private row(title: string, y: number, choices: ReadonlyArray<readonly [string, () => SandboxOptions]>, chosen: (o: SandboxOptions) => string): void {
-    label(this, 170, y, title, 28, C.ink).setOrigin(0, 0.5);
+  private row(id: string, title: string, y: number, choices: ReadonlyArray<readonly [string, () => SandboxOptions]>, chosen: (o: SandboxOptions) => string): void {
+    const head = label(this, 170, y, title, 28, C.ink).setOrigin(0, 0.5);
+    if (head.width > 150) head.setScale(150 / head.width);
     const buttons: Array<[string, Button]> = [];
     const paint = () => {
       for (const [text, b] of buttons) {
@@ -65,7 +67,7 @@ export class SandboxScene extends Phaser.Scene {
         paint();
         this.drawPreview();
       }, { width: 176, height: 58, fontSize: 24 });
-      b.setName(`sandbox-${title}-${i}`);
+      b.setName(`sandbox-${id}-${i}`);
       buttons.push([text, b]);
     });
     paint();

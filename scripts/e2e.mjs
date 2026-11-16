@@ -366,6 +366,18 @@ async function run(viewport, name) {
   check(deShop.includes('Laden') && deShop.includes('Straßenfarbe') && deShop.includes('Himmel') && deShop.includes('Aktiv') && deShop.includes('◀ Zurück')
     && deStats.includes('Statistik') && deStats.includes('Versuche (LOS)') && deStats.includes('Tagesserie (beste)') && !deStats.some((t) => /NaN|undefined|stats\./.test(t)),
     `${name}: Shop and Stats are in German (${JSON.stringify([deShop.slice(0, 8), deStats.slice(0, 6)])})`);
+  // Sandbox setup and Level Editor in German.
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('stats').scene.start('sandbox'); });
+  await sleep(400);
+  const deSandbox = await sceneTexts('sandbox');
+  if (name === 'desktop') await page.screenshot({ path: `${OUT}/${name}-9l-sandbox-de.png` });
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('sandbox').scene.start('editor'); });
+  await sleep(500);
+  const deEditor = await sceneTexts('editor');
+  if (name === 'desktop') await page.screenshot({ path: `${OUT}/${name}-9l-editor-de.png` });
+  check(deSandbox.includes('Sandkasten') && deSandbox.includes('Gleich hoch') && deSandbox.includes('Muh-Auto') && deSandbox.includes('Bauen ▶')
+    && deEditor.includes('Level-Editor') && deEditor.includes('Linke Klippe') && deEditor.includes('Laster') && deEditor.includes('Testen ▶') && deEditor.includes('Holz'),
+    `${name}: Sandbox and Level Editor are in German (${JSON.stringify([deSandbox.slice(0, 8), deEditor.slice(0, 10)])})`);
   await page.evaluate((raw) => { localStorage.setItem('bridgeit.save', raw); }, saveBeforeDe);
   await setLang(null);
 

@@ -4,7 +4,9 @@ import {
   CUSTOM_BUDGET, CUSTOM_GAP, CUSTOM_GOAL, CUSTOM_HEIGHT, CUSTOM_MAX_ANCHORS, CUSTOM_MAX_LANES, CUSTOM_VEHICLES, LANE_WIDTH, MY_LEVELS_MAX,
   anchorProblem, baseAnchors, cleanName, customId, decodeLevel, encodeLevel, goalOf, inLane, laneProblem, lanesOf, type CustomSpec,
 } from '../../core/custom';
-import { MATERIALS, MATERIAL_ORDER, type MaterialId } from '../../core/materials';
+import { MATERIAL_ORDER, type MaterialId } from '../../core/materials';
+import type { TextKey } from '../../core/i18n';
+import { t, tEn } from '../i18n';
 import { vehicleTextureKey } from '../../core/shop';
 import { closeOnBack, onBack } from '../back';
 import { addBackground } from '../background';
@@ -58,32 +60,32 @@ export class EditorScene extends Phaser.Scene {
     this.tapMode = 'rock';
     addBackground(this);
     panel(this, GAME_W / 2, 395, 1240, 590);
-    button(this, 110, 50, '◀ Back', () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
+    button(this, 110, 50, t('common.back'), () => this.scene.start('menu'), { width: 160, height: 52, fontSize: 24, color: C.blue, shade: C.blueDark });
     onBack(this, () => this.scene.start('menu'));
-    button(this, 330, 50, '📂 My levels', () => this.openList(), { width: 230, height: 52, fontSize: 22, color: C.good, shade: C.goodDark }).setName('editor-list');
-    label(this, GAME_W / 2 + 20, 50, 'Level Editor', 44, C.white).setStroke(C.ink, 10);
+    button(this, 330, 50, t('editor.list'), () => this.openList(), { width: 230, height: 52, fontSize: 22, color: C.good, shade: C.goodDark }).setName('editor-list');
+    label(this, GAME_W / 2 + 20, 50, t('editor.title'), 44, C.white).setStroke(C.ink, 10);
     this.nameButton = button(this, GAME_W - 170, 50, '', () => void this.rename(), { width: 300, height: 52, fontSize: 22, color: C.primary, shade: C.primaryDark });
 
-    this.stepper('gap', 'Gap', 140, (d) => ({ gap: clamp(this.draft.gap + d, CUSTOM_GAP.min, CUSTOM_GAP.max) }), () => `${this.draft.gap} m`);
-    this.stepper('left', 'Left cliff', 205, (d) => ({ leftHeight: clamp(this.draft.leftHeight + d, CUSTOM_HEIGHT.min, CUSTOM_HEIGHT.max) }), () => signed(this.draft.leftHeight));
-    this.stepper('right', 'Right cliff', 270, (d) => ({ rightHeight: clamp(this.draft.rightHeight + d, CUSTOM_HEIGHT.min, CUSTOM_HEIGHT.max) }), () => signed(this.draft.rightHeight));
-    this.stepper('money', 'Money', 335, (d) => {
+    this.stepper('gap', t('sandbox.gap'), 140, (d) => ({ gap: clamp(this.draft.gap + d, CUSTOM_GAP.min, CUSTOM_GAP.max) }), () => `${this.draft.gap} m`);
+    this.stepper('left', t('editor.left'), 205, (d) => ({ leftHeight: clamp(this.draft.leftHeight + d, CUSTOM_HEIGHT.min, CUSTOM_HEIGHT.max) }), () => signed(this.draft.leftHeight));
+    this.stepper('right', t('editor.right'), 270, (d) => ({ rightHeight: clamp(this.draft.rightHeight + d, CUSTOM_HEIGHT.min, CUSTOM_HEIGHT.max) }), () => signed(this.draft.rightHeight));
+    this.stepper('money', t('editor.money'), 335, (d) => {
       const b = this.draft.budget;
       return { budget: clamp(b + d * MONEY_STEP(b, d > 0), CUSTOM_BUDGET.min, CUSTOM_BUDGET.max) };
     }, () => `$${this.draft.budget.toLocaleString('en-US')}`);
 
-    label(this, 60, 400, 'Vehicle', 24, C.ink).setOrigin(0, 0.5);
+    fitWidth(label(this, 60, 400, t('sandbox.vehicle'), 24, C.ink), 120).setOrigin(0, 0.5);
     CUSTOM_VEHICLES.forEach((v, i) => {
-      const b = button(this, 245 + i * 112, 400, VEHICLE_SHORT[v], () => this.change({ vehicle: v }), { width: 104, height: 48, fontSize: 18 });
+      const b = button(this, 245 + i * 112, 400, t(`short.${v}` as TextKey), () => this.change({ vehicle: v }), { width: 104, height: 48, fontSize: 18 });
       b.setName(`editor-vehicle-${v}`);
       this.vehicleButtons.push(b);
     });
 
-    label(this, 60, 462, 'Materials', 24, C.ink).setOrigin(0, 0.5);
+    fitWidth(label(this, 60, 462, t('editor.materials'), 24, C.ink), 120).setOrigin(0, 0.5);
     MATERIAL_ORDER.forEach((m, i) => {
       const x = 245 + (i % 3) * 112;
       const y = 462 + Math.floor(i / 3) * 56;
-      const b = button(this, x, y, MATERIALS[m].name, () => this.toggleMaterial(m), { width: 104, height: 48, fontSize: 18 });
+      const b = button(this, x, y, t(`mat.${m}` as TextKey), () => this.toggleMaterial(m), { width: 104, height: 48, fontSize: 18 });
       b.setName(`editor-material-${m}`);
       this.materialButtons.set(m, b);
     });
@@ -91,8 +93,8 @@ export class EditorScene extends Phaser.Scene {
     this.picture = this.add.graphics();
     const hit = this.add.zone(BOX.left, BOX.top, BOX.width, BOX.height).setOrigin(0).setInteractive();
     hit.on('pointerdown', (p: Phaser.Input.Pointer) => this.tapGrid(p.x, p.y));
-    this.stepper('goal', 'Flag', 578, (d) => ({ goal: clamp(goalOf(this.draft) + d, CUSTOM_GOAL.min, CUSTOM_GOAL.max) }), () => `${goalOf(this.draft)} m`);
-    const modes = [['rock', '🪨 Rocks'], ['lane', '🚢 Ship lanes']] as const;
+    this.stepper('goal', t('editor.flag'), 578, (d) => ({ goal: clamp(goalOf(this.draft) + d, CUSTOM_GOAL.min, CUSTOM_GOAL.max) }), () => `${goalOf(this.draft)} m`);
+    const modes = [['rock', t('editor.rocks')], ['lane', t('editor.lanes')]] as const;
     modes.forEach(([mode, text], i) => {
       const b = button(this, BOX.left + 95 + i * 200, 578, text, () => this.setTapMode(mode), { width: 190, height: 44, fontSize: 19 });
       b.setName(`editor-mode-${mode}`);
@@ -101,10 +103,10 @@ export class EditorScene extends Phaser.Scene {
     this.modeHint = label(this, BOX.left + 400, 578, '', 19, C.greyDark).setOrigin(0, 0.5);
 
     this.status = this.add.text(60, 640, '', { fontFamily: FONT, fontSize: '22px', fontStyle: 'bold', color: C.greyDark, wordWrap: { width: 470 } }).setOrigin(0, 0.5);
-    button(this, 640, 640, 'Paste code', () => void this.pasteCode(), { width: 190, height: 60, fontSize: 22, color: C.grey, shade: C.greyDark }).setName('editor-paste');
-    this.copyButton = button(this, 860, 640, 'Copy level code', () => void this.copyCode(), { width: 230, height: 60, fontSize: 22, color: C.blue, shade: C.blueDark });
+    button(this, 640, 640, t('play.paste'), () => void this.pasteCode(), { width: 190, height: 60, fontSize: 22, color: C.grey, shade: C.greyDark }).setName('editor-paste');
+    this.copyButton = button(this, 860, 640, t('editor.copy'), () => void this.copyCode(), { width: 230, height: 60, fontSize: 22, color: C.blue, shade: C.blueDark });
     this.copyButton.setName('editor-copy');
-    button(this, 1120, 640, 'Test ▶', () => this.scene.start('play', { levelId: save.draftId }), { width: 200, height: 70, fontSize: 30, color: C.good, shade: C.goodDark }).setName('editor-test');
+    button(this, 1120, 640, t('editor.test'), () => this.scene.start('play', { levelId: save.draftId }), { width: 200, height: 70, fontSize: 30, color: C.good, shade: C.goodDark }).setName('editor-test');
 
     this.toast = this.add.text(GAME_W / 2, 110, '', { fontFamily: FONT, fontSize: '24px', fontStyle: 'bold', color: C.white, align: 'center' }).setOrigin(0.5).setAlpha(0).setDepth(20);
     this.toast.setStroke(C.ink, 7);
@@ -125,8 +127,8 @@ export class EditorScene extends Phaser.Scene {
     layer.add(this.add.rectangle(0, 0, GAME_W, GAME_H, hex(C.ink), 0.45).setOrigin(0).setInteractive());
     layer.add(panel(this, GAME_W / 2, GAME_H / 2, 1120, 660));
     const levels = save.data.editor.levels;
-    layer.add(label(this, GAME_W / 2, 82, `My levels (${levels.length}/${MY_LEVELS_MAX})`, 40, C.ink));
-    const note = label(this, GAME_W / 2, 590, 'Tap a level to open it. 🔗 copies the code of a crossed level.', 22, C.greyDark);
+    layer.add(label(this, GAME_W / 2, 82, t('editor.myLevels', { n: levels.length, max: MY_LEVELS_MAX }), 40, C.ink));
+    const note = label(this, GAME_W / 2, 590, t('editor.listNote'), 22, C.greyDark);
     layer.add(note);
     let armed = -1;
     levels.forEach((slot, i) => {
@@ -134,7 +136,7 @@ export class EditorScene extends Phaser.Scene {
       const cy = 160 + Math.floor(i / 3) * 106;
       const open = i === save.data.editor.current;
       const d = slot.draft;
-      const info = `${d.gap} m${lanesOf(d).length > 0 ? ' 🚢' : ''} · ${VEHICLE_SHORT[d.vehicle]} · ${slot.best > 0 ? `✓ $${slot.best.toLocaleString('en-US')}` : 'not crossed'}`;
+      const info = `${d.gap} m${lanesOf(d).length > 0 ? ' 🚢' : ''} · ${t(`short.${d.vehicle}` as TextKey)} · ${slot.best > 0 ? `✓ $${slot.best.toLocaleString('en-US')}` : t('editor.notCrossed')}`;
       const card = button(this, cx - 32, cy, `${d.name}
 ${info}`, () => {
         save.openEditorLevel(i);
@@ -154,7 +156,7 @@ ${info}`, () => {
         if (armed !== i) {
           armed = i;
           sfx.error();
-          note.setText(`Tap 🗑 again to delete "${d.name}".`).setColor(C.anchor);
+          note.setText(t('editor.deleteAgain', { name: d.name })).setColor(C.anchor);
           return;
         }
         save.deleteEditorLevel(i);
@@ -165,22 +167,22 @@ ${info}`, () => {
       layer.add(bin);
     });
     const full = levels.length >= MY_LEVELS_MAX;
-    const add = button(this, GAME_W / 2 - 140, 650, full ? 'List is full' : '+ New level', () => {
+    const add = button(this, GAME_W / 2 - 140, 650, full ? t('editor.full') : t('editor.new'), () => {
       if (!save.addEditorLevel()) return;
       sfx.place(0);
       close();
       this.refresh();
-      this.showToast(`New level: ${save.editorSlot.draft.name}`);
+      this.showToast(t('editor.newToast', { name: save.editorSlot.draft.name }));
     }, { width: 240, height: 64, fontSize: 24, color: C.primary, shade: C.primaryDark });
     add.setEnabled(!full).setName('editor-new');
     layer.add(add);
-    layer.add(button(this, GAME_W / 2 + 140, 650, 'Close', close, { width: 220, height: 64, color: C.blue, shade: C.blueDark }));
+    layer.add(button(this, GAME_W / 2 + 140, 650, t('common.close'), close, { width: 220, height: 64, color: C.blue, shade: C.blueDark }));
     closeOnBack(layer, close);
   }
 
   /** A row with a name, a minus button, the value and a plus button. */
   private stepper(key: string, title: string, y: number, next: (delta: number) => Partial<CustomSpec>, text: () => string): void {
-    label(this, 60, y, title, 24, C.ink).setOrigin(0, 0.5);
+    fitWidth(label(this, 60, y, title, 24, C.ink).setOrigin(0, 0.5), 150);
     button(this, 245, y, '−', () => this.change(next(-1)), { width: 60, height: 50, fontSize: 30, color: C.blue, shade: C.blueDark }).setName(`editor-${key}-minus`);
     const value = label(this, 357, y, text(), 26, C.ink);
     button(this, 469, y, '+', () => this.change(next(1)), { width: 60, height: 50, fontSize: 30, color: C.blue, shade: C.blueDark }).setName(`editor-${key}-plus`);
@@ -211,7 +213,7 @@ ${info}`, () => {
   private toggleMaterial(m: MaterialId): void {
     if (m === 'road') {
       sfx.error();
-      this.showToast('Every level needs road.');
+      this.showToast(t('editor.needRoad'));
       return;
     }
     const has = this.draft.materials.includes(m);
@@ -243,12 +245,12 @@ ${info}`, () => {
     const bad = anchorProblem(this.draft, p);
     if (bad) {
       sfx.error();
-      this.showToast(bad);
+      this.showToast(tEn(bad));
       return;
     }
     if (anchors.length >= CUSTOM_MAX_ANCHORS) {
       sfx.error();
-      this.showToast(`At most ${CUSTOM_MAX_ANCHORS} rocks.`);
+      this.showToast(t('editor.maxRocks', { n: CUSTOM_MAX_ANCHORS }));
       return;
     }
     this.change({ anchors: [...anchors, p] });
@@ -265,17 +267,17 @@ ${info}`, () => {
     }
     const fail = (text: string) => {
       sfx.error();
-      this.showToast(text);
+      this.showToast(tEn(text));
     };
-    if (d.gap < LANE_WIDTH) return fail(`A ship lane needs a gap of ${LANE_WIDTH} m or more.`);
-    if (lanes.length >= CUSTOM_MAX_LANES) return fail(`At most ${CUSTOM_MAX_LANES} ship lanes.`);
+    if (d.gap < LANE_WIDTH) return fail(t('editor.laneGap', { n: LANE_WIDTH }));
+    if (lanes.length >= CUSTOM_MAX_LANES) return fail(t('editor.maxLanes', { n: CUSTOM_MAX_LANES }));
     const x0 = clamp(x - LANE_WIDTH / 2, 0, d.gap - LANE_WIDTH);
     const bad = laneProblem(d, x0);
     if (bad) return fail(bad);
-    if (d.anchors.some((a) => inLane({ lanes: [x0] }, a.x))) return fail('Move the rocks out of the lane first.');
+    if (d.anchors.some((a) => inLane({ lanes: [x0] }, a.x))) return fail(t('editor.rocksInLane'));
     const withPiston = d.materials.includes('piston');
     this.change({ lanes: [...lanes, x0].sort((a, b) => a - b), materials: MATERIAL_ORDER.filter((m) => m === 'piston' || d.materials.includes(m)) });
-    if (!withPiston) this.showToast('Piston added: drawbridges need it.');
+    if (!withPiston) this.showToast(t('editor.pistonAdded'));
   }
 
   /** Pixels per metre and the screen point of grid (−3, −6), so the whole build area fits the box. */
@@ -303,10 +305,12 @@ ${info}`, () => {
       const on = this.tapMode === mode;
       b.setColors(on ? C.good : C.grey, on ? C.goodDark : C.greyDark).setSelected(on);
     }
-    this.modeHint.setText(this.tapMode === 'rock' ? 'Tap: add or remove a rock.' : `Tap: add or remove a ${LANE_WIDTH} m lane.`);
+    this.modeHint.setText(this.tapMode === 'rock' ? t('editor.tapRock') : t('editor.tapLane', { n: LANE_WIDTH }));
+    // The hint sits right of the mode buttons; long texts shrink to stay inside the panel.
+    fitWidth(this.modeHint.setScale(1), BOX.left + BOX.width - (BOX.left + 400) - 4);
     this.nameButton.setLabel(`✏️ ${d.name}`);
     const best = save.editorSlot.best;
-    this.status.setText(best > 0 ? `Crossed for $${best.toLocaleString('en-US')} ✓\nCopy the code for a friend.` : 'Not crossed yet.\nTest it: your bridge must cross first.');
+    this.status.setText(best > 0 ? t('editor.crossed', { cost: best.toLocaleString('en-US') }) : t('editor.notYet'));
     this.status.setColor(best > 0 ? C.goodDark : C.greyDark);
     this.copyButton.setEnabled(best > 0);
     this.drawPicture();
@@ -372,7 +376,7 @@ ${info}`, () => {
 
   private async rename(): Promise<void> {
     if (codeDialogOpen()) return;
-    const text = await showCodeDialog({ title: 'Name your level:', value: this.draft.name, okLabel: 'OK' });
+    const text = await showCodeDialog({ title: t('editor.namePrompt'), value: this.draft.name, okLabel: 'OK' });
     if (text === null || !this.scene.isActive()) return;
     const name = cleanName(text);
     if (name !== this.draft.name) this.change({ name });
@@ -385,21 +389,21 @@ ${info}`, () => {
     try {
       await navigator.clipboard.writeText(code);
       sfx.place(0);
-      tell(`Code of "${slot.draft.name}" copied! Send it to a friend.`);
+      tell(t('editor.codeCopied', { name: slot.draft.name }));
     } catch {
-      await showCodeDialog({ title: 'Copy this level code:', value: code, readOnly: true });
+      await showCodeDialog({ title: t('editor.copyPrompt'), value: code, readOnly: true });
     }
   }
 
   /** A friend's level code: play it now. */
   private async pasteCode(): Promise<void> {
     if (codeDialogOpen()) return;
-    const text = await showCodeDialog({ title: 'Paste a level code here:', okLabel: 'Play' });
+    const text = await showCodeDialog({ title: t('editor.pastePrompt'), okLabel: t('editor.play') });
     if (!text || !this.scene.isActive()) return;
     const r = decodeLevel(text);
     if (!r.ok) {
       sfx.error();
-      this.showToast(r.error);
+      this.showToast(tEn(r.error));
       return;
     }
     this.scene.start('play', { levelId: customId(r.spec) });
@@ -412,6 +416,11 @@ ${info}`, () => {
   }
 }
 
-const VEHICLE_SHORT: Record<string, string> = { car: 'Car', truck: 'Truck', train: 'Train' };
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 const signed = (h: number): string => (h > 0 ? `+${h} m` : `${h} m`);
+
+/** Shrinks a label so it is at most `max` pixels wide (long words in some languages). */
+function fitWidth(text: Phaser.GameObjects.Text, max: number): Phaser.GameObjects.Text {
+  if (text.width > max) text.setScale(max / text.width);
+  return text;
+}

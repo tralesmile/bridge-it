@@ -130,7 +130,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
   - [x] World select, level select and the daily calendar use `t()`; world names translated (`worldName`, `twoLines` splits them for the cards); calendar day and month names come from `Intl.DateTimeFormat`. The streak line is now "🔥 Daily streak: N" (no plural forms needed)
   - [x] Play scene uses `t()`: tool bar (material names), GO/Edit, toasts, pause, every result panel, loss tips, share code errors (`code` in `decodeBridge`), vehicle names (`vehicleName`). Texts in `src/core/texts/play.ts`, merged into the tables. Dollar amounts keep "$1,250" in every language
   - [x] Shop and Stats use `t()`: item names (`item.<id>`), stat rows (`key` in `statRows`), buy errors (`code` in `buy`). Texts in `src/core/texts/screens.ts`
-  - [ ] Move the other screens to `t()`: sandbox, editor, achievement names and texts, level names and tips
+  - [x] Sandbox setup and Level Editor use `t()`; core problem texts (`src/core/custom.ts`) are found by their English text with `fromEnglish` (numbers fill the {names}). Texts in `src/core/texts/editor.ts`. Long labels shrink to fit
+  - [ ] Move the rest to `t()`: achievement names and texts, level names and tips, the default level name "My Level"
   - [ ] A rounded font with Cyrillic for ru and mk (Fredoka has none; today the system font is used). An OFL font from npm, e.g. Nunito or Comfortaa, only its Cyrillic part, checked against the 8 MB limit
   - [ ] Ask the owner (Macedonian speaker) to read the mk text; a native check of the other languages before launch
   - [ ] Store texts in the 8 languages (M9)

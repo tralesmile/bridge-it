@@ -1,4 +1,5 @@
 import { fromEnglish, pickLang, translate, type Lang, type TextKey } from '../core/i18n';
+import type { Achievement } from '../core/achievements';
 import type { VehicleId } from '../core/types';
 import { save } from './save';
 
@@ -38,3 +39,13 @@ export function dateNames(lang: Lang = currentLang()): { weekday: (d: Date) => s
 
 /** A vehicle's name in the player's language ("Moo Car"). */
 export const vehicleName = (id: VehicleId): string => t(`vehicle.${id}`);
+
+/** The text key of an achievement ("ach.first-win"; world goals share "ach.world" and "ach.perfect"). */
+const achKey = (a: Achievement): string => (a.world !== undefined ? `ach.${a.id.startsWith('perfect') ? 'perfect' : 'world'}` : `ach.${a.id}`);
+
+/** An achievement's name in the player's language. */
+export const achName = (a: Achievement): string => t(achKey(a) as TextKey, a.world !== undefined ? { world: worldName(a.world) } : {});
+
+/** An achievement's goal text in the player's language. */
+export const achText = (a: Achievement): string => t(`${achKey(a)}.text` as TextKey, a.world !== undefined ? { world: worldName(a.world) } : {});
+

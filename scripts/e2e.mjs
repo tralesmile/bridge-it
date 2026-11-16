@@ -378,6 +378,14 @@ async function run(viewport, name) {
   check(deSandbox.includes('Sandkasten') && deSandbox.includes('Gleich hoch') && deSandbox.includes('Muh-Auto') && deSandbox.includes('Bauen ▶')
     && deEditor.includes('Level-Editor') && deEditor.includes('Linke Klippe') && deEditor.includes('Laster') && deEditor.includes('Testen ▶') && deEditor.includes('Holz'),
     `${name}: Sandbox and Level Editor are in German (${JSON.stringify([deSandbox.slice(0, 8), deEditor.slice(0, 10)])})`);
+  // Trophies in German: names, goal texts and world goals with the German world name.
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('editor').scene.start('trophies'); });
+  await sleep(400);
+  const deTrophies = await sceneTexts('trophies');
+  if (name === 'desktop') await page.screenshot({ path: `${OUT}/${name}-9l-trophies-de.png` });
+  check(deTrophies.includes('Erfolge') && deTrophies.some((t) => t.endsWith('Erste Überfahrt')) && deTrophies.includes('Bring ein Fahrzeug zur Flagge.')
+    && deTrophies.some((t) => t.endsWith('Farmtal geschafft')) && !deTrophies.some((t) => /ach\.|undefined|\{world\}/.test(t)),
+    `${name}: Trophies are in German (${JSON.stringify(deTrophies.slice(0, 6))})`);
   await page.evaluate((raw) => { localStorage.setItem('bridgeit.save', raw); }, saveBeforeDe);
   await setLang(null);
 

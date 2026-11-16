@@ -4,7 +4,7 @@ import { closeOnBack } from './back';
 import { platform } from './platform';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { save } from './save';
-import { currentLang, t } from './i18n';
+import { achName, currentLang, t } from './i18n';
 import { LANG_NAMES, nextLang, type TextKey } from '../core/i18n';
 import { store, type BuyResult, type RestoreResult } from './store';
 import { PRODUCTS, owns } from '../core/purchases';
@@ -268,7 +268,10 @@ export function openSupport(scene: Phaser.Scene, onClose: () => void = () => und
 export function announceAchievements(scene: Phaser.Scene, delay = 0): void {
   const ids = save.checkAchievements();
   // Many at once (an old save, or a big win): one banner, not a long queue.
-  const banners = ids.length > 2 ? [`${ids.length} new achievements!`] : ids.map((id) => ACHIEVEMENTS.find((x) => x.id === id)?.name ?? '');
+  const banners = ids.length > 2 ? [t('ach.many', { n: ids.length })] : ids.map((id) => {
+          const a = ACHIEVEMENTS.find((x) => x.id === id);
+          return a ? achName(a) : '';
+        });
   banners.forEach((name, n) => {
     const box = scene.add.container(1280 / 2, -60).setDepth(60);
     const g = scene.add.graphics();
@@ -276,7 +279,7 @@ export function announceAchievements(scene: Phaser.Scene, delay = 0): void {
     g.fillRoundedRect(-260, -36 + 6, 520, 72, 20);
     g.fillStyle(hex(C.gold), 1);
     g.fillRoundedRect(-260, -36, 520, 72, 20);
-    box.add([g, label(scene, 0, -12, '🏆 Achievement!', 20, C.ink), label(scene, 0, 14, name, 26, C.ink)]);
+    box.add([g, label(scene, 0, -12, t('ach.banner'), 20, C.ink), label(scene, 0, 14, name, 26, C.ink)]);
     const still = save.data.settings.reducedMotion;
     scene.tweens.add({
       targets: box,

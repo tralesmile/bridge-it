@@ -2,7 +2,7 @@ import { onBack } from '../back';
 import Phaser from 'phaser';
 import { ACHIEVEMENTS, TROPHY_PAGE, pageItems } from '../../core/achievements';
 import { addBackground } from '../background';
-import { t } from '../i18n';
+import { achName, achText, t } from '../i18n';
 import { save } from '../save';
 import { sfx } from '../audio';
 import { C, FONT, GAME_W, hex } from '../theme';
@@ -84,16 +84,21 @@ export class TrophyScene extends Phaser.Scene {
       const g = this.add.graphics({ x, y });
       g.fillStyle(hex(done ? C.gold : C.white), 1);
       g.fillRoundedRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 16);
-      const title = label(this, x, y - 32, `${done ? '🏆' : '🔒'} ${a.name}`, 19, done ? C.ink : C.greyDark);
+      const title = label(this, x, y - 32, `${done ? '🏆' : '🔒'} ${achName(a)}`, 19, done ? C.ink : C.greyDark);
       // Long names shrink to fit inside the card.
       if (title.width > CARD_W - 16) title.setScale((CARD_W - 16) / title.width);
+      const [have, need] = a.progress(input);
+      const bar = !done && need > 1;
+      // The goal text sits between the title and the progress bar (or the card bottom);
+      // long texts (German, Russian) get a smaller font until they fit.
+      const room = bar ? 48 : 64;
       const text = this.add
-        .text(x, y + 2, a.text, { fontFamily: FONT, fontSize: '16px', color: done ? C.ink : C.greyDark, align: 'center', wordWrap: { width: CARD_W - 20 } })
+        .text(x, y + (bar ? 5 : 13), achText(a), { fontFamily: FONT, fontSize: '16px', color: done ? C.ink : C.greyDark, align: 'center', wordWrap: { width: CARD_W - 20 } })
         .setOrigin(0.5);
+      for (let size = 15; text.height > room && size >= 12; size--) text.setFontSize(size);
       layer.add([g, title, text]);
-      if (!done) {
-        const [have, need] = a.progress(input);
-        if (need > 1) {
+      if (bar) {
+        {
           // Progress bar with the count beside it.
           const w = CARD_W - 100;
           const left = -CARD_W / 2 + 16;

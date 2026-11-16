@@ -3,6 +3,7 @@ import { MATERIALS } from '../src/core/materials';
 import { VEHICLES } from '../src/core/vehicles';
 import { SHOP_ITEMS } from '../src/core/shop';
 import { statRows } from '../src/core/stats';
+import { ACHIEVEMENTS } from '../src/core/achievements';
 import { LANGS, LANG_NAMES, TEXTS, isLang, nextLang, pickLang, translate, twoLines, type TextKey } from '../src/core/i18n';
 
 const vars = (s: string): string[] => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
@@ -74,5 +75,23 @@ describe('languages', () => {
       const name = TEXTS[lang][`world.${w}` as TextKey];
       for (const line of twoLines(name).split('\n')) expect(line.length, `${lang} ${name}`).toBeLessThanOrEqual(15);
     }
+  });
+});
+
+describe('achievement texts', () => {
+  const key = (a: (typeof ACHIEVEMENTS)[number]) => (a.world !== undefined ? `ach.${a.id.startsWith('perfect') ? 'perfect' : 'world'}` : `ach.${a.id}`);
+  test('every achievement has a name and text, and English matches the core list', () => {
+    for (const a of ACHIEVEMENTS) {
+      const world: Record<string, string> = a.world !== undefined ? { world: translate('en', `world.${a.world}` as TextKey) } : {};
+      expect(translate('en', key(a) as TextKey, world), a.id).toBe(a.name);
+      expect(translate('en', `${key(a)}.text` as TextKey, world), a.id).toBe(a.text);
+      for (const lang of LANGS) {
+        expect(TEXTS[lang][key(a) as TextKey], `${lang} ${a.id}`).toBeTruthy();
+        expect(TEXTS[lang][`${key(a)}.text` as TextKey], `${lang} ${a.id}`).toBeTruthy();
+      }
+    }
+  });
+  test('world goals know their world', () => {
+    expect(ACHIEVEMENTS.filter((a) => a.world !== undefined).map((a) => a.id)).toEqual(['world-1', 'world-2', 'world-3', 'world-4', 'perfect-1', 'perfect-2', 'perfect-3', 'perfect-4']);
   });
 });

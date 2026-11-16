@@ -39,6 +39,8 @@ export interface Achievement {
   id: string;
   name: string;
   text: string;
+  /** The world of a world goal (finish or perfect), for its translated name. */
+  world?: number;
   /** Progress as [done, needed]; unlocked when done >= needed. */
   progress: (i: AchievementInput) => [number, number];
 }
@@ -50,6 +52,7 @@ const totalStars = (i: AchievementInput) => i.levels.reduce((n, l) => n + (i.sta
 function finishWorld(world: number, name: string): Achievement {
   return {
     id: `world-${world}`,
+    world,
     name: `${name} done`,
     text: `Cross every level in ${name}.`,
     progress: (i) => {
@@ -62,6 +65,7 @@ function finishWorld(world: number, name: string): Achievement {
 function perfectWorld(world: number, name: string): Achievement {
   return {
     id: `perfect-${world}`,
+    world,
     name: `Perfect ${name}`,
     text: `Get 3 stars on every level in ${name}.`,
     progress: (i) => {

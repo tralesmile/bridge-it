@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { toolIndexForKey } from '../../core/a11y';
 import { BUILD_MARGIN_X, BUILD_MAX_Y, BUILD_MIN_Y, BridgeDesign, distance, keyOf, pointOf, snap, type AddResult } from '../../core/bridge';
 import { DAILY_PREFIX, isDailyId } from '../../core/daily';
 import { anyLevel, isSandboxId } from '../../core/sandbox';
@@ -538,6 +539,13 @@ export class PlayScene extends Phaser.Scene {
     });
     this.input.keyboard?.on('keydown-SPACE', () => {
       if (!codeDialogOpen()) this.toggleSim();
+    });
+    // Number keys pick a tool (1 = the first button), so the game can be built from the keyboard too.
+    this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
+      if (codeDialogOpen() || e.ctrlKey || e.metaKey || e.altKey) return;
+      const tools = [...this.toolButtons.keys()];
+      const i = toolIndexForKey(e.key, tools.length);
+      if (i >= 0 && this.toolButtons.get(tools[i])?.visible) this.selectTool(tools[i]);
     });
   }
 

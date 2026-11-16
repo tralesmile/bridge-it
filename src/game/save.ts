@@ -65,7 +65,16 @@ export interface SaveData {
   settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean; lang?: Lang; /** Set once when the device runs the test slowly (`src/core/perf.ts`): fewer particles. */ lowFx?: boolean; /** The player set Low effects by hand; the automatic check leaves it alone. */ lowFxSet?: boolean };
 }
 
-const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], sandboxWins: [], editor: { levels: [freshSlot()], current: 0 }, friendStars: [], purchases: { ...EMPTY_PURCHASES }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
+/** The device asks for less motion (an OS setting); a new save starts with Reduced motion on then. */
+function deviceReducedMotion(): boolean {
+  try {
+    return globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+  } catch {
+    return false;
+  }
+}
+
+const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], sandboxWins: [], editor: { levels: [freshSlot()], current: 0 }, friendStars: [], purchases: { ...EMPTY_PURCHASES }, settings: { sound: true, music: true, reducedMotion: deviceReducedMotion(), shake: true } });
 
 /** Storage may be blocked (private mode, iframes on portals), so every access is guarded. */
 interface Storage {

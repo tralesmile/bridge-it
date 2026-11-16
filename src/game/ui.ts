@@ -9,7 +9,7 @@ import { LANG_NAMES, nextLang, type TextKey } from '../core/i18n';
 import { store, type BuyResult, type RestoreResult } from './store';
 import { track } from './analytics';
 import { PRODUCTS, owns } from '../core/purchases';
-import { C, FONT, hex } from './theme';
+import { C, FONT, hex, outlineOf } from './theme';
 
 export interface ButtonOptions {
   width?: number;
@@ -42,6 +42,12 @@ export function button(scene: Phaser.Scene, x: number, y: number, label: string,
     .text(0, -3, label, { fontFamily: FONT, fontSize: `${opts.fontSize ?? 28}px`, fontStyle: 'bold', color: opts.textColor ?? C.white, align: 'center' })
     .setOrigin(0.5);
   text.setShadow(0, 2, 'rgba(0,0,0,0.25)', 0);
+  // White labels get a dark outline: many button colours (green, orange, wood) are too light for white text alone.
+  const light = (opts.textColor ?? C.white) === C.white;
+  const outline = (sh: string): void => {
+    if (light) text.setStroke(outlineOf(sh), (opts.fontSize ?? 28) >= 24 ? 4 : 3);
+  };
+  outline(shade);
   // Long words (other languages) shrink to fit inside the button.
   const fit = (): void => {
     text.setScale(1);
@@ -98,6 +104,7 @@ export function button(scene: Phaser.Scene, x: number, y: number, label: string,
   container.setColors = (c: string, sh: string) => {
     color = c;
     shade = sh;
+    outline(sh);
     draw(false);
     return container;
   };

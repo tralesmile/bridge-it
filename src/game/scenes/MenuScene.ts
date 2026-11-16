@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { ALL_LEVELS } from '../../core/levels';
 import { vehicleTextureKey } from '../../core/shop';
 import { addBackground } from '../background';
-import { t } from '../i18n';
+import { syncPageLang, t } from '../i18n';
 import { save } from '../save';
 import { C, FONT, GAME_W } from '../theme';
 import { announceAchievements, button, label, openSettings } from '../ui';
@@ -13,6 +13,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create(data: { settings?: boolean } = {}): void {
+    syncPageLang();
     addBackground(this);
 
     const title = this.add

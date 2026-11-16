@@ -18,6 +18,15 @@ export function currentLang(): Lang {
   }
 }
 
+/** Tells the page (screen readers, browser translate) which language the game shows. */
+export function syncPageLang(): void {
+  try {
+    document.documentElement.lang = currentLang();
+  } catch {
+    // No document (unit tests).
+  }
+}
+
 /** Game text in the player's language. */
 export const t = (key: TextKey, vars?: Record<string, string | number>): string => translate(currentLang(), key, vars);
 

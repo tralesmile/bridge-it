@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-16 — Run 52
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Accessibility review (`docs/ACCESSIBILITY.md`). Fixes: white button labels get a dark outline (`outlineOf` in `src/game/theme.ts`), because white on green GO, orange, wood, steel and the Sunny paint was under 3:1 contrast. Number keys pick tools in the play scene (`toolIndexForKey` in `src/core/a11y.ts`). A new save starts with Less motion on when the device asks for reduced motion. The page `lang` follows the game language (`syncPageLang`). Known gaps added to the roadmap (tap-tap beam mode, bigger trophy text, rope pattern).
+
+**Verified**
+- `npm run check` green (626 tests; new `tests/a11y.test.ts`: WCAG contrast reference values, outline contrast at least 4.5:1 for every button colour and shop paint, tool keys). `npm run e2e` exit 0, no FAIL (new: the page language follows all 8 languages; number keys 2, 9, 1 pick erase, nothing, road). Screenshots checked: play scene and Settings with outlined labels.
+
+**Lessons**
+- Measure before restyling: a 10-line `npx tsx -e` contrast table over the theme colours showed exactly which buttons failed, and the same numbers became the test.
+- A long e2e wait: one `until grep -q "^exit"` loop in a background Bash is enough; a second Monitor on the same file only adds noise.
+
 ## 2026-11-16 — Run 51
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

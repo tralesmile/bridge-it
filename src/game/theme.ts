@@ -55,6 +55,9 @@ export function mix(a: string, b: string, t: number): number {
 /** A darker '#rrggbb' of a colour (for button shades). */
 export const shadeOf = (c: string): string => `#${mix(c, '#000000', 0.25).toString(16).padStart(6, '0')}`;
 
+/** A dark outline for white text on a button: the shade pulled halfway to ink, so light labels stay readable on light buttons. */
+export const outlineOf = (shade: string): string => `#${mix(shade, C.ink, 0.5).toString(16).padStart(6, '0')}`;
+
 /** World metres to screen pixels. */
 export const PX_PER_M = 48;
 export const GAME_W = 1280;

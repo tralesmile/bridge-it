@@ -76,11 +76,12 @@ async function run(viewport, name) {
     const texts = await menuTexts();
     const lang = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save')).settings.lang);
     const open = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('menu').children.list.some((o) => o.depth === 50));
-    langs.push({ lang, play: texts.find((t) => /^\p{Lu}+$/u.test(t) && t.length > 3) ?? '', open });
+    langs.push({ lang, play: texts.find((t) => /^\p{Lu}+$/u.test(t) && t.length > 3) ?? '', open, page: await page.evaluate(() => document.documentElement.lang) });
     if (name === 'desktop' && (lang === 'de' || lang === 'ru' || lang === 'mk')) await page.screenshot({ path: `${OUT}/${name}-1d-settings-${lang}.png` });
   }
   check(JSON.stringify(langs.map((l) => l.lang)) === '["de","es","pt","fr","tr","ru","mk","en"]' && langs[0].play === 'SPIELEN' && langs[6].play === 'ИГРАЈ' && langs[7].play === 'PLAY' && langs.every((l) => l.open),
     `${name}: the language button goes through 8 languages and the menu text follows (${JSON.stringify(langs)})`);
+  check(langs.every((l) => l.page === l.lang), `${name}: the page language follows the game language (${langs.map((l) => l.page).join(',')})`);
   check(enTexts.includes('PLAY') && enTexts.includes('Build it. Break it. Laugh. Try again.'), `${name}: the menu starts in English in an English browser`);
   await click(640, 610);
   await sleep(200);
@@ -101,6 +102,13 @@ async function run(viewport, name) {
   await click(310, 280);
   check(await active('play'), `${name}: level 1 opens`);
   await sleep(400);
+  // Number keys pick tools: 2 is the second button, 1 goes back to the first (road).
+  const toolKeys = [];
+  for (const key of ['2', '9', '1']) {
+    await page.keyboard.press(key);
+    toolKeys.push(await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').tool));
+  }
+  check(toolKeys[0] !== 'road' && toolKeys[1] === toolKeys[0] && toolKeys[2] === 'road', `${name}: number keys pick tools (${toolKeys})`);
   // Level 1: gap 0..2, origin x = 640 - 48 = 592, ground y = 390.
   await drag(592, 390, 688, 390);
   const beams = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').design.list.length);

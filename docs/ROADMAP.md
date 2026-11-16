@@ -143,7 +143,10 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Automatic low-effects mode on slow devices: `FrameWatch` (`src/core/perf.ts`) judges the median frame time of 90 frames while a bridge is tested; under 40 fps it sets `settings.lowFx` for good, and break, splash and confetti particles drop to a third (`fxCount`)
 - [x] Low effects switch in Settings (8 languages): a hand choice sets `lowFxSet`, and the automatic check then leaves it alone. The Settings window is a bit taller for the fifth row
 - [ ] Check on a real cheap phone whether drawing the beams also needs to be lighter in low effects (owner phone test)
-- [ ] Accessibility review
+- [x] Accessibility review (`docs/ACCESSIBILITY.md`): white button labels get a dark outline (contrast tested in `tests/a11y.test.ts` for every button colour and paint); number keys pick tools; a new save follows the device's reduce-motion setting; the page `lang` follows the game language
+- [ ] Tap-tap beam mode (tap one point, then the other) for players who cannot drag well; a Settings switch
+- [ ] Bigger trophy goal text (fewer cards per page) and a "Bigger text" option
+- [ ] A pattern on rope beams so wood and rope differ by more than colour and width
 
 ## M9 Store and marketing assets
 - [ ] Screenshot generator script (renders store screenshots from the game)

@@ -27,6 +27,7 @@ Things only you can do. Each scheduled run adds to this list; nothing here block
 - [ ] AdMob asks for an `app-ads.txt` file on the developer website listed in the stores. You need a simple website (a free GitHub Pages site is fine); Claude can write the file once you have the AdMob publisher id.
 - [ ] RevenueCat account (free until real earnings). Create products in Google Play Console and App Store Connect as one-time (non-consumable) purchases: `remove_ads` ($3.99) and `supporter_pack` ($9.99). In RevenueCat add the two products, the entitlements `no_ads` (both products) and `supporter` (supporter pack only), then send Claude the public Android and iOS SDK keys. Until then the purchase buttons stay hidden in the app.
 - [ ] Codemagic account (free) linked to the GitHub repo. The build steps are already in `codemagic.yaml`. In Codemagic add: an App Store Connect API key named `bridge-it-asc` (after the Apple account), and an Android upload keystore named `bridge-it-upload` (Codemagic can make one; keep a backup, a lost key is hard to replace).
+- [ ] GameAnalytics account (free), when you want to see how players do (which levels they fail, how many use hints). Create a game for Android and one for iOS and send Claude the game key and secret key of each. The game already collects the events; nothing is sent until then.
 - [ ] Ask a local accountant about registering (sole proprietor or DOO) and VAT on foreign digital sales.
 
 ## Marketing (from milestone M2)

@@ -60,13 +60,13 @@ describe('platform adapters', () => {
     p.loadingDone();
     p.gameplayStart();
     p.gameplayStart();
-    await p.commercialBreak(); // too early: nothing
+    expect(await p.commercialBreak()).toBe(false); // too early: nothing
     expect(calls).toEqual(['init', 'loaded', 'start']);
     c.t += 6 * MIN;
-    await p.commercialBreak();
+    expect(await p.commercialBreak()).toBe(true);
     expect(calls).toEqual(['init', 'loaded', 'start', 'stop', 'break', 'start']);
     expect(c.paused).toEqual([true, false]);
-    await p.commercialBreak(); // just had one
+    expect(await p.commercialBreak()).toBe(false); // just had one
     expect(calls.filter((x) => x === 'break')).toHaveLength(1);
     expect(await p.rewardedAd()).toBe(true);
   });

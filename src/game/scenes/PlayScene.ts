@@ -25,6 +25,7 @@ import { FrameWatch, fxCount } from '../../core/perf';
 import { copyWord, levelName, levelTip, t, vehicleName } from '../i18n';
 import type { TextKey } from '../../core/i18n';
 import { announceAchievements, button, label, panel, type Button } from '../ui';
+import { track } from '../analytics';
 
 type Tool = MaterialId | 'erase';
 type Mode = 'build' | 'sim' | 'result';
@@ -632,6 +633,11 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
+  /** Normal and Daily levels; not the sandbox, player levels or stress tests. */
+  private get scored(): boolean {
+    return !this.sandbox && !this.custom && !this.stress;
+  }
+
   private hintAllowed(): boolean {
     return !this.stress && !this.sandbox && !this.custom && (save.data.fails[this.level.id] ?? 0) >= HINT_AFTER_FAILS;
   }
@@ -651,6 +657,8 @@ export class PlayScene extends Phaser.Scene {
     platform.gameplayStop();
     const ok = await platform.rewardedAd();
     platform.gameplayStart();
+    if (!save.data.purchases.noAds) track({ type: 'ad', ad: 'rewarded', result: ok ? 'reward' : 'no-reward' });
+    track({ type: 'hint', level: this.level.id, given: ok });
     if (!ok) {
       this.showToast(t('play.noHint'));
       return;
@@ -825,6 +833,7 @@ export class PlayScene extends Phaser.Scene {
     this.breaksSeen = 0;
     this.splashed = false;
     this.placeStreak = 0;
+    if (this.scored) track({ type: 'level', status: 'start', level: this.level.id });
     sfx.go();
     this.sailBoats();
     this.goButton.setLabel(t('play.edit'));
@@ -873,7 +882,7 @@ export class PlayScene extends Phaser.Scene {
   override update(time: number, delta: number): void {
     if (this.mode !== 'sim' || !this.sim || this.pauseLayer) return;
     const sim = this.sim;
-    if (!this.lowFx && this.frameWatch.push(delta) === 'slow') {
+    if (!this.lowFx && !save.data.settings.lowFxSet && this.frameWatch.push(delta) === 'slow') {
       // A slow device: fewer particles from now on, also in later visits.
       save.data.settings.lowFx = true;
       save.persist();
@@ -981,10 +990,12 @@ export class PlayScene extends Phaser.Scene {
         daily = save.recordDaily(this.level.id.slice(DAILY_PREFIX.length));
         coins = daily.coins;
       } else coins = save.recordWin(this.level.id, stars, cost);
+      track({ type: 'level', status: 'complete', level: this.level.id, cost, stars });
       sfx.win(stars);
       this.time.delayedCall(350, () => this.showWin(stars, cost, coins, daily));
     } else {
       save.recordFail(this.level.id);
+      track({ type: 'level', status: 'fail', level: this.level.id, reason: sim.lossReason ?? 'fell' });
       this.weakBeams = sim.beamStates
         .filter((s) => s.broken || s.stress > 0.8)
         .map((s) => ({ a: pointOf(s.beam.a), b: pointOf(s.beam.b) }));
@@ -1062,7 +1073,7 @@ export class PlayScene extends Phaser.Scene {
     layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 145, t('play.improve'), () => this.stopSim(), { width: 220, height: 70, color: C.blue, shade: C.blueDark }));
     layer.add(
       button(this, GAME_W / 2 + 140, GAME_H / 2 + 145, nxt ? t('play.next') : daily ? t('play.done') : t('play.levels'), async () => {
-        await platform.commercialBreak();
+        track({ type: 'ad', ad: 'interstitial', result: (await platform.commercialBreak()) ? 'shown' : 'skipped' });
         if (nxt) this.scene.start('play', { levelId: nxt.id });
         else this.leave();
       }, { width: 220, height: 70, color: C.good, shade: C.goodDark }),

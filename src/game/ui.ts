@@ -7,6 +7,7 @@ import { save } from './save';
 import { achName, currentLang, t } from './i18n';
 import { LANG_NAMES, nextLang, type TextKey } from '../core/i18n';
 import { store, type BuyResult, type RestoreResult } from './store';
+import { track } from './analytics';
 import { PRODUCTS, owns } from '../core/purchases';
 import { C, FONT, hex } from './theme';
 
@@ -125,7 +126,6 @@ export function panel(scene: Phaser.Scene, x: number, y: number, w: number, h: n
   return g;
 }
 
-/** Settings window with on/off switches. Shows on top of any scene; `onClose` runs when it closes. */
 /**
  * Settings window. `onLang` runs after the player picks another language (the menu restarts
  * so its text changes, and opens this window again).
@@ -135,17 +135,18 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
   const H = 720;
   const layer = scene.add.container(0, 0).setDepth(50);
   const shade = scene.add.rectangle(0, 0, W, H, hex(C.ink), 0.45).setOrigin(0).setInteractive();
-  layer.add([shade, panel(scene, W / 2, H / 2, 620, 600)]);
-  layer.add(label(scene, W / 2, H / 2 - 220, t('settings.title'), 48, C.ink).setName('settings-title'));
-  const rows: Array<{ key: 'sound' | 'music' | 'reducedMotion' | 'shake'; text: TextKey }> = [
+  layer.add([shade, panel(scene, W / 2, H / 2, 620, 640)]);
+  layer.add(label(scene, W / 2, H / 2 - 255, t('settings.title'), 48, C.ink).setName('settings-title'));
+  const rows: Array<{ key: 'sound' | 'music' | 'reducedMotion' | 'shake' | 'lowFx'; text: TextKey }> = [
     { key: 'sound', text: 'settings.sound' },
     { key: 'shake', text: 'settings.shake' },
     { key: 'reducedMotion', text: 'settings.motion' },
     { key: 'music', text: 'settings.music' },
+    { key: 'lowFx', text: 'settings.lowFx' },
   ];
   // In the app with a store, rows move up to make room for the purchases button.
   const shop = store.available();
-  const rowY = (i: number): number => (shop ? H / 2 - 160 + i * 62 : H / 2 - 140 + i * 70);
+  const rowY = (i: number): number => (shop ? H / 2 - 190 + i * 58 : H / 2 - 180 + i * 64);
   // Long words in some languages shrink to fit beside the buttons.
   const rowLabel = (y: number, text: string): Phaser.GameObjects.Text => {
     const l = label(scene, W / 2 - 270, y, text, 30, C.ink).setOrigin(0, 0.5);
@@ -159,6 +160,8 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
     const colors = (): ButtonOptions => (save.data.settings[row.key] ? { color: C.good, shade: C.goodDark } : { color: C.greyDark, shade: C.ink });
     const b = button(scene, W / 2 + 190, y, text(), () => {
       save.data.settings[row.key] = !save.data.settings[row.key];
+      // Chosen by hand: the automatic slow-device check no longer changes it.
+      if (row.key === 'lowFx') save.data.settings.lowFxSet = true;
       save.persist();
       b.setLabel(text());
       b.setColors(colors().color ?? C.good, colors().shade ?? C.goodDark);
@@ -180,14 +183,14 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
     }, { width: 210, height: 54, fontSize: 22, color: C.blue, shade: C.blueDark }).setName('settings-lang'));
   }
   if (shop) {
-    layer.add(button(scene, W / 2, H / 2 + 150, t(save.data.purchases.noAds ? 'settings.support' : 'settings.removeAds'), () => openSupport(scene), { width: 330, height: 56, fontSize: 24, color: C.gold, shade: C.primaryDark, textColor: C.ink }));
+    layer.add(button(scene, W / 2, H / 2 + 165, t(save.data.purchases.noAds ? 'settings.support' : 'settings.removeAds'), () => openSupport(scene), { width: 330, height: 56, fontSize: 24, color: C.gold, shade: C.primaryDark, textColor: C.ink }));
   }
   // App in the EU and UK: the player must be able to change their ad consent at any time.
   const privacy = platform.hasPrivacyOptions();
   if (privacy) {
-    layer.add(button(scene, W / 2 - 125, H / 2 + 230, t('settings.privacy'), () => void platform.privacyOptions(), { width: 250, height: 66, fontSize: 22, color: C.greyDark, shade: C.ink }));
+    layer.add(button(scene, W / 2 - 125, H / 2 + 250, t('settings.privacy'), () => void platform.privacyOptions(), { width: 250, height: 66, fontSize: 22, color: C.greyDark, shade: C.ink }));
   }
-  layer.add(button(scene, privacy ? W / 2 + 140 : W / 2, H / 2 + 230, t('common.close'), () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
+  layer.add(button(scene, privacy ? W / 2 + 140 : W / 2, H / 2 + 250, t('common.close'), () => layer.destroy(), { width: 220, height: 66, color: C.blue, shade: C.blueDark }));
   closeOnBack(layer, () => layer.destroy());
 }
 
@@ -225,6 +228,7 @@ export function openSupport(scene: Phaser.Scene, onClose: () => void = () => und
       b.setEnabled(false);
       status.setText('Opening the store...');
       const result = await store.buy(p.id);
+      track({ type: 'purchase', product: p.id, result });
       if (!layer.active) return;
       status.setText(BUY_TEXT[result]);
       for (const fn of buys) fn();

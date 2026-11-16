@@ -2,6 +2,20 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-16 — Run 51
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Low effects switch in Settings (8 languages). Tapping it sets `settings.lowFxSet`, so the automatic slow-device check never changes a hand choice. The Settings window is 40 px taller with tighter rows to fit the fifth row (also with the app's purchase button).
+- Analytics events (no sending yet): `src/core/analytics.ts` maps game events to GameAnalytics ids (progression `Start/Complete/Fail:w1:2`, the cost as value on a win; design events `hint:given|refused:...`, `ad:interstitial:shown|skipped`, `ad:rewarded:reward|no-reward`, `purchase:<product>:<result>`) and keeps a capped queue. `track` in `src/game/analytics.ts`; only scored levels and Daily Bridges are tracked. `platform.commercialBreak()` now returns whether an ad was asked for. Owner task: GameAnalytics account and keys.
+
+**Verified**
+- `npm run check` green (622 tests; new `tests/analytics.test.ts`: id parts, allowed letters, queue limit; platform test checks the break result). `npm run flavours` passes (no new network requests). `npm run e2e` exit 0, no FAIL (new: the Low effects switch saves and marks the hand choice; level 1 start and complete reach the event queue; a sandbox test adds no events). Screenshots checked: Settings in en and ru with the new row.
+
+**Lessons**
+- A new Settings row moves every row; the e2e clicks use fixed y values, so write the formula in the comment next to each click (`360 - 180 + 2 * 64`).
+- The e2e page reloads between parts (language and save setups), so in-memory things like the event list start empty again; compare counts within one part only.
+- Keep analytics behind a capped queue with no sender until keys exist: the web builds stay free of network requests and the game code does not change when the sender comes.
+
 ## 2026-11-16 — Run 50
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

@@ -38,18 +38,27 @@ async function run(viewport, name) {
   // Settings: open, turn "Less motion" on, close, check it is saved.
   await click(1180, 60);
   await page.screenshot({ path: `${OUT}/${name}-1b-settings.png` });
-  await click(830, 360); // Less motion is the third row (y = 360 - 140 + 2 * 70)
+  await click(830, 308); // Less motion is the third row (y = 360 - 180 + 2 * 64)
   const still = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.reducedMotion);
-  await click(830, 360); // switch back
-  await click(640, 590);
+  await click(830, 308); // switch back
+  await click(640, 610);
   check(still === true, `${name}: settings switch saves (reducedMotion ${still})`);
-  // Music is the fourth row (y = 430). Turn it off and on again.
+  // Music is the fourth row (y = 372). Turn it off and on again.
   await click(1180, 60);
-  await click(830, 430);
+  await click(830, 372);
   const music = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.music);
-  await click(830, 430);
-  await click(640, 590);
+  await click(830, 372);
+  await click(640, 610);
   check(music === false, `${name}: music switch saves (music ${music})`);
+  // Low effects is the fifth row (y = 436): on by hand, then off; the hand choice is kept.
+  await click(1180, 60);
+  await click(830, 436);
+  const fxOn = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings);
+  await click(830, 436);
+  const fxOff = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings);
+  await click(640, 610);
+  check(fxOn?.lowFx === true && fxOn?.lowFxSet === true && fxOff?.lowFx === false && fxOff?.lowFxSet === true,
+    `${name}: the Low effects switch saves and marks the choice as made by hand (${JSON.stringify([fxOn?.lowFx, fxOff?.lowFx, fxOff?.lowFxSet])})`);
   // Language: the browser's English first; each tap on the language button picks the next one,
   // the menu restarts in it with Settings open again. 8 taps come back to English.
   const menuTexts = () => page.evaluate(() => {
@@ -73,7 +82,7 @@ async function run(viewport, name) {
   check(JSON.stringify(langs.map((l) => l.lang)) === '["de","es","pt","fr","tr","ru","mk","en"]' && langs[0].play === 'SPIELEN' && langs[6].play === 'ИГРАЈ' && langs[7].play === 'PLAY' && langs.every((l) => l.open),
     `${name}: the language button goes through 8 languages and the menu text follows (${JSON.stringify(langs)})`);
   check(enTexts.includes('PLAY') && enTexts.includes('Build it. Break it. Laugh. Try again.'), `${name}: the menu starts in English in an English browser`);
-  await click(640, 590);
+  await click(640, 610);
   await sleep(200);
   await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('menu').scene.start('trophies'); });
   await sleep(200);
@@ -114,6 +123,8 @@ async function run(viewport, name) {
   await sleep(1200);
   const stars = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').stars?.['w1-1'] ?? 0);
   check(stars >= 1, `${name}: crossing level 1 earns stars (got ${stars})`);
+  const gaEvents = await page.evaluate(() => (globalThis.__bridgeitEvents ?? []).map((e) => e.event_id));
+  check(gaEvents.includes('Start:w1:1') && gaEvents.includes('Complete:w1:1'), `${name}: level 1 start and complete go to the analytics queue (${JSON.stringify(gaEvents)})`);
   const cheaper = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').lastCheaper);
   check(Number.isInteger(cheaper) && cheaper >= 1 && cheaper <= 99, `${name}: win panel shows "cheaper than X% of players" (${cheaper})`);
   await page.screenshot({ path: `${OUT}/${name}-5-result.png` });
@@ -536,12 +547,15 @@ async function run(viewport, name) {
   check(sb.id === 'sandbox-6-car-flat-none' && sb.tools === 7 && sb.beams === 14, `${name}: sandbox level opens with every material and the saved bridge (${JSON.stringify(sb)})`);
   await page.screenshot({ path: `${OUT}/${name}-9v-sandbox-build.png` });
   const sbBefore = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); return JSON.stringify([s.coins, s.stats, s.fails, s.stars]); });
+  const sbEventsBefore = await page.evaluate(() => (globalThis.__bridgeitEvents ?? []).length);
   await click(1160, 664); // GO
   await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon !== null, null, { timeout: 30000 });
   await sleep(600);
   const sbWon = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').lastSandboxWon);
   const sbAfter = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); return JSON.stringify([s.coins, s.stats, s.fails, s.stars]); });
   check(sbWon === true && sbBefore === sbAfter, `${name}: the sandbox truss crosses and nothing is scored (won ${sbWon}, save same ${sbBefore === sbAfter})`);
+  const sbEventsAfter = await page.evaluate(() => (globalThis.__bridgeitEvents ?? []).length);
+  check(sbEventsAfter === sbEventsBefore, `${name}: sandbox tests send no level events (${sbEventsBefore} -> ${sbEventsAfter})`);
   const sbAch = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); return { wins: s.sandboxWins.length, has: s.sandboxWins.includes('sandbox-6-car-flat-none'), tinkerer: s.achievements.includes('sandbox-5') }; });
   check(sbAch.wins === 5 && sbAch.has && sbAch.tinkerer, `${name}: the sandbox win is saved and the 5th setup earns Tinkerer (${JSON.stringify(sbAch)})`);
   await page.screenshot({ path: `${OUT}/${name}-9v-sandbox-won.png` });

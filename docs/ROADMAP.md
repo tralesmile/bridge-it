@@ -138,8 +138,11 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
   - [ ] Ask the owner (Macedonian speaker) to read the mk text; a native check of the other languages before launch
   - [ ] Store texts in the 8 languages (M9)
 - [ ] GameAnalytics events (level start, complete, fail, hint, ad, purchase)
+  - [x] Events in the game: `src/core/analytics.ts` turns them into GameAnalytics ids (`Start:w1:2`, `Complete:w1:2` with the cost, `hint:given:w1:4`, `ad:interstitial:shown`, `purchase:remove_ads:bought`) and keeps a capped queue; `track` in `src/game/analytics.ts`. Only scored levels (not sandbox, player levels or stress tests). `commercialBreak` now says if an ad was asked for. Nothing is sent yet
+  - [ ] Sender (after the owner's GameAnalytics account): the GameAnalytics REST API or SDK in the app build only, after ad consent; web portals use their own stats (keep the web builds free of extra network requests)
 - [x] Automatic low-effects mode on slow devices: `FrameWatch` (`src/core/perf.ts`) judges the median frame time of 90 frames while a bridge is tested; under 40 fps it sets `settings.lowFx` for good, and break, splash and confetti particles drop to a third (`fxCount`)
-- [ ] Low effects, later: a Settings switch to turn it off or on by hand (8 languages); check on a real cheap phone whether drawing the beams also needs to be lighter
+- [x] Low effects switch in Settings (8 languages): a hand choice sets `lowFxSet`, and the automatic check then leaves it alone. The Settings window is a bit taller for the fifth row
+- [ ] Check on a real cheap phone whether drawing the beams also needs to be lighter in low effects (owner phone test)
 - [ ] Accessibility review
 
 ## M9 Store and marketing assets

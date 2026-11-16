@@ -18,8 +18,11 @@ export interface Platform {
   gameplayStop(): void;
   /** Shows a rewarded ad. Resolves true only if the player earned the reward. */
   rewardedAd(): Promise<boolean>;
-  /** A break between levels. Resolves when the game may continue. Skipped in the first 5 minutes. */
-  commercialBreak(): Promise<void>;
+  /**
+   * A break between levels. Resolves when the game may continue: true if an ad was asked for,
+   * false if the break was skipped (first 5 minutes, too soon after the last one, Remove ads).
+   */
+  commercialBreak(): Promise<boolean>;
   /** True when the player must be able to change their ad consent (EU and UK, in the app). */
   hasPrivacyOptions(): boolean;
   /** Opens the ad consent form again (Settings, "Privacy choices"). */
@@ -78,8 +81,8 @@ abstract class BasePlatform implements Platform {
     this.sdkStop();
   }
 
-  async commercialBreak(): Promise<void> {
-    if (this.noAds || !breakAllowed(this.clock, this.hooks.now())) return;
+  async commercialBreak(): Promise<boolean> {
+    if (this.noAds || !breakAllowed(this.clock, this.hooks.now())) return false;
     this.clock.lastBreak = this.hooks.now();
     const was = this.playing;
     this.gameplayStop();
@@ -91,6 +94,7 @@ abstract class BasePlatform implements Platform {
       this.hooks.pause(false);
       if (was) this.gameplayStart();
     }
+    return true;
   }
 }
 

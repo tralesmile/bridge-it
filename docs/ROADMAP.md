@@ -144,7 +144,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Low effects switch in Settings (8 languages): a hand choice sets `lowFxSet`, and the automatic check then leaves it alone. The Settings window is a bit taller for the fifth row
 - [ ] Check on a real cheap phone whether drawing the beams also needs to be lighter in low effects (owner phone test)
 - [x] Accessibility review (`docs/ACCESSIBILITY.md`): white button labels get a dark outline (contrast tested in `tests/a11y.test.ts` for every button colour and paint); number keys pick tools; a new save follows the device's reduce-motion setting; the page `lang` follows the game language
-- [ ] Tap-tap beam mode (tap one point, then the other) for players who cannot drag well; a Settings switch
+- [x] Tap-tap beam mode: Settings switch "Tap beams" (`settings.tapBeam`, 8 languages). Tap a joint (a ring marks it, the preview follows the pointer), then tap the end point; the same joint again cancels; changing tool or GO cancels. Dragging still works. Settings rows are 56 px apart now (seven rows)
 - [ ] Bigger trophy goal text (fewer cards per page) and a "Bigger text" option
 - [ ] A pattern on rope beams so wood and rope differ by more than colour and width
 

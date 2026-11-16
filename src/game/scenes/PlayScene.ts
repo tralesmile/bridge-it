@@ -437,6 +437,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private selectTool(tool: Tool): void {
+    this.cancelDrag(); // a half-made tap-tap beam ends when the tool changes
     this.tool = tool;
     for (const [t, b] of this.toolButtons) b.setSelected(t === tool);
   }
@@ -487,6 +488,14 @@ export class PlayScene extends Phaser.Scene {
       if (p.y > GAME_H - 100 || p.y < 90) return; // tool bars
       sfx.unlock();
       const w = this.toWorld(p.x, p.y);
+      // Tap-tap mode: the start point is chosen; this tap picks the end point (the same point cancels).
+      if (this.dragFrom && this.tool !== 'erase') {
+        const from = this.dragFrom;
+        const to = this.reachablePoint(from, w, this.tool);
+        this.cancelDrag();
+        if (keyOf(from) !== keyOf(to)) this.placeBeam(from, to);
+        return;
+      }
       if (this.tool === 'erase') {
         if (this.design.removeNear(w)) {
           sfx.erase();
@@ -507,6 +516,12 @@ export class PlayScene extends Phaser.Scene {
     });
 
     this.input.on(Phaser.Input.Events.POINTER_MOVE, (p: Phaser.Input.Pointer) => {
+      // Tap-tap mode with a mouse: the preview follows the pointer after the first tap.
+      if (this.dragPointerId === null && this.dragFrom && this.tool !== 'erase' && this.mode === 'build') {
+        this.dragTo = this.reachablePoint(this.dragFrom, this.toWorld(p.x, p.y), this.tool);
+        this.redrawPreview();
+        return;
+      }
       if (p.id !== this.dragPointerId || !this.dragFrom || this.tool === 'erase') return;
       this.dragTo = this.reachablePoint(this.dragFrom, this.toWorld(p.x, p.y), this.tool);
       this.redrawPreview();
@@ -518,18 +533,16 @@ export class PlayScene extends Phaser.Scene {
       const to = this.dragTo;
       this.cancelDrag();
       if (!from || !to || this.tool === 'erase' || this.mode !== 'build') return;
-      if (keyOf(from) === keyOf(to)) return;
-      const result: AddResult = this.design.add(from, to, this.tool);
-      if (result.ok) {
-        this.placeStreak++;
-        sfx.place(this.placeStreak);
-        haptic('light');
-        this.afterChange();
-      } else {
-        this.placeStreak = 0;
-        sfx.error();
-        this.showToast(reasonText(result.reason));
+      if (keyOf(from) === keyOf(to)) {
+        // A tap on a joint: with tap-tap mode on, it stays chosen as the start point.
+        if (save.data.settings.tapBeam) {
+          this.dragFrom = from;
+          this.dragTo = from;
+          this.redrawPreview();
+        }
+        return;
       }
+      this.placeBeam(from, to);
     };
     this.input.on(Phaser.Input.Events.POINTER_UP, finish);
     this.input.on(Phaser.Input.Events.POINTER_UP_OUTSIDE, finish);
@@ -547,6 +560,21 @@ export class PlayScene extends Phaser.Scene {
       const i = toolIndexForKey(e.key, tools.length);
       if (i >= 0 && this.toolButtons.get(tools[i])?.visible) this.selectTool(tools[i]);
     });
+  }
+
+  private placeBeam(from: Point, to: Point): void {
+    if (this.tool === 'erase') return;
+    const result: AddResult = this.design.add(from, to, this.tool);
+    if (result.ok) {
+      this.placeStreak++;
+      sfx.place(this.placeStreak);
+      haptic('light');
+      this.afterChange();
+    } else {
+      this.placeStreak = 0;
+      sfx.error();
+      this.showToast(reasonText(result.reason));
+    }
   }
 
   private cancelDrag(): void {
@@ -814,7 +842,13 @@ export class PlayScene extends Phaser.Scene {
     const g = this.previewG;
     g.clear();
     if (!this.dragFrom || !this.dragTo || this.tool === 'erase') return;
-    if (keyOf(this.dragFrom) === keyOf(this.dragTo)) return;
+    if (keyOf(this.dragFrom) === keyOf(this.dragTo)) {
+      // Only a start point so far (tap-tap mode): a ring shows where the beam begins.
+      const start = this.toScreen(this.dragFrom);
+      g.lineStyle(4, hex(C.good), 1);
+      g.strokeCircle(start.x, start.y, 12);
+      return;
+    }
     const check = this.design.canAdd(this.dragFrom, this.dragTo, this.tool);
     this.strokeBeam(g, this.dragFrom, this.dragTo, this.tool, 0, 0.75);
     const end = this.toScreen(this.dragTo);

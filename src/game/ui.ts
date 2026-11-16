@@ -144,16 +144,17 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
   const shade = scene.add.rectangle(0, 0, W, H, hex(C.ink), 0.45).setOrigin(0).setInteractive();
   layer.add([shade, panel(scene, W / 2, H / 2, 620, 640)]);
   layer.add(label(scene, W / 2, H / 2 - 255, t('settings.title'), 48, C.ink).setName('settings-title'));
-  const rows: Array<{ key: 'sound' | 'music' | 'reducedMotion' | 'shake' | 'lowFx'; text: TextKey }> = [
+  const rows: Array<{ key: 'sound' | 'music' | 'reducedMotion' | 'shake' | 'lowFx' | 'tapBeam'; text: TextKey }> = [
     { key: 'sound', text: 'settings.sound' },
     { key: 'shake', text: 'settings.shake' },
     { key: 'reducedMotion', text: 'settings.motion' },
     { key: 'music', text: 'settings.music' },
     { key: 'lowFx', text: 'settings.lowFx' },
+    { key: 'tapBeam', text: 'settings.tapBeam' },
   ];
   // In the app with a store, rows move up to make room for the purchases button.
   const shop = store.available();
-  const rowY = (i: number): number => (shop ? H / 2 - 190 + i * 58 : H / 2 - 180 + i * 64);
+  const rowY = (i: number): number => (shop ? H / 2 - 195 + i * 50 : H / 2 - 180 + i * 56);
   // Long words in some languages shrink to fit beside the buttons.
   const rowLabel = (y: number, text: string): Phaser.GameObjects.Text => {
     const l = label(scene, W / 2 - 270, y, text, 30, C.ink).setOrigin(0, 0.5);
@@ -174,7 +175,7 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
       b.setColors(colors().color ?? C.good, colors().shade ?? C.goodDark);
       sfx.unlock();
       onChange();
-    }, { width: 130, height: 54, fontSize: 24, ...colors() });
+    }, { width: 130, height: shop ? 46 : 52, fontSize: 24, ...colors() });
     layer.add(b);
   });
   // Language: each tap moves to the next one. Only where the screen can show the new text at once.
@@ -187,7 +188,7 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
       sfx.unlock();
       layer.destroy();
       onLang();
-    }, { width: 210, height: 54, fontSize: 22, color: C.blue, shade: C.blueDark }).setName('settings-lang'));
+    }, { width: 210, height: shop ? 46 : 52, fontSize: 22, color: C.blue, shade: C.blueDark }).setName('settings-lang'));
   }
   if (shop) {
     layer.add(button(scene, W / 2, H / 2 + 165, t(save.data.purchases.noAds ? 'settings.support' : 'settings.removeAds'), () => openSupport(scene), { width: 330, height: 56, fontSize: 24, color: C.gold, shade: C.primaryDark, textColor: C.ink }));

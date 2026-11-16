@@ -38,27 +38,33 @@ async function run(viewport, name) {
   // Settings: open, turn "Less motion" on, close, check it is saved.
   await click(1180, 60);
   await page.screenshot({ path: `${OUT}/${name}-1b-settings.png` });
-  await click(830, 308); // Less motion is the third row (y = 360 - 180 + 2 * 64)
+  await click(830, 292); // Less motion is the third row (y = 360 - 180 + 2 * 56)
   const still = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.reducedMotion);
-  await click(830, 308); // switch back
+  await click(830, 292); // switch back
   await click(640, 610);
   check(still === true, `${name}: settings switch saves (reducedMotion ${still})`);
-  // Music is the fourth row (y = 372). Turn it off and on again.
+  // Music is the fourth row (y = 348). Turn it off and on again.
   await click(1180, 60);
-  await click(830, 372);
+  await click(830, 348);
   const music = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.music);
-  await click(830, 372);
+  await click(830, 348);
   await click(640, 610);
   check(music === false, `${name}: music switch saves (music ${music})`);
-  // Low effects is the fifth row (y = 436): on by hand, then off; the hand choice is kept.
+  // Low effects is the fifth row (y = 404): on by hand, then off; the hand choice is kept.
   await click(1180, 60);
-  await click(830, 436);
+  await click(830, 404);
   const fxOn = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings);
-  await click(830, 436);
+  await click(830, 404);
   const fxOff = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings);
   await click(640, 610);
   check(fxOn?.lowFx === true && fxOn?.lowFxSet === true && fxOff?.lowFx === false && fxOff?.lowFxSet === true,
     `${name}: the Low effects switch saves and marks the choice as made by hand (${JSON.stringify([fxOn?.lowFx, fxOff?.lowFx, fxOff?.lowFxSet])})`);
+  // Tap beams is the sixth row (y = 460): it stays on for the rest of this run (dragging still works).
+  await click(1180, 60);
+  await click(830, 460);
+  const tapSet = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.tapBeam);
+  await click(640, 610);
+  check(tapSet === true, `${name}: the Tap beams switch saves (${tapSet})`);
   // Language: the browser's English first; each tap on the language button picks the next one,
   // the menu restarts in it with Settings open again. 8 taps come back to English.
   const menuTexts = () => page.evaluate(() => {
@@ -71,7 +77,7 @@ async function run(viewport, name) {
   await click(1180, 60);
   const langs = [];
   for (let i = 0; i < 8; i++) {
-    await click(810, 500);
+    await click(810, 516); // Language is the seventh row (y = 360 - 180 + 6 * 56)
     await sleep(250);
     const texts = await menuTexts();
     const lang = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save')).settings.lang);
@@ -113,6 +119,16 @@ async function run(viewport, name) {
   await drag(592, 390, 688, 390);
   const beams = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').design.list.length);
   check(beams === 1, `${name}: dragging builds one road beam (got ${beams})`);
+  // Tap-tap mode: tap a joint (it stays chosen), tap a free point (beam placed); the same joint twice cancels.
+  await page.keyboard.press('Control+z'); // remove the dragged beam, build it again by tapping
+  await click(592, 390);
+  const pend = await page.evaluate(() => { const p = globalThis.__bridgeit.scene.getScene('play'); return p.dragFrom !== null; });
+  await click(688, 390);
+  const tapBeams = await page.evaluate(() => { const p = globalThis.__bridgeit.scene.getScene('play'); return { n: p.design.list.length, pending: p.dragFrom !== null }; });
+  await click(592, 390);
+  await click(592, 390);
+  const cancelled = await page.evaluate(() => { const p = globalThis.__bridgeit.scene.getScene('play'); return { n: p.design.list.length, pending: p.dragFrom !== null }; });
+  check(pend && tapBeams.n === 1 && !tapBeams.pending && cancelled.n === 1 && !cancelled.pending, `${name}: tap-tap builds a beam and the same joint twice cancels (${JSON.stringify([pend, tapBeams, cancelled])})`);
   await page.screenshot({ path: `${OUT}/${name}-3-built.png` });
 
   await click(1160, 664);

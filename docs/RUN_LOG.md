@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-16 — Run 53
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Tap-tap beam mode for players who cannot drag well: Settings switch "Tap beams" (8 languages, saved as `settings.tapBeam`). First tap on a joint keeps it chosen (ring), the preview follows the pointer, the second tap places the beam; the same joint twice, a tool change or GO cancels. Dragging still works. Settings rows moved to 56 px spacing (50 px with the purchase button) to fit seven rows.
+
+**Verified**
+- `npm run check` green (626 tests). `npm run e2e` exit 0, no FAIL (new: Tap beams switch saves; tap a joint then the end point builds a beam, the same joint twice cancels). Screenshot checked: Settings with seven rows.
+
+**Lessons**
+- A new Settings row again moved every click in the e2e; the comments now give each row's formula (`360 - 180 + i * 56`).
+- Keep the e2e's switch for a new setting on for the rest of the run when the old way still works: it tests both ways at no extra cost.
+
 ## 2026-11-16 — Run 52
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

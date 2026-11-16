@@ -7,12 +7,15 @@ Newest first. Every run adds: what was done, how it was verified, and lessons fo
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.
 - Daily Bridge names in 8 languages: `src/core/texts/daily.ts` has 10 adjectives (one form per gender) and 10 place words (with their gender) per language, and whether the adjective comes first ("Sonnige Schlucht") or after ("Valle soleado"). `dailyNameParts` in `src/core/daily.ts` gives the word indexes for a day; English names did not change. `levelName` in the game uses it for Daily ids.
 - The "(copy)" word of copied player levels in 8 languages (`COPY_WORD`); a copy of a copy gets one tag, also when the first copy was made in another language.
+- Automatic low-effects mode: `FrameWatch` in `src/core/perf.ts` skips 30 warm-up frames, then takes the median of 90 frames while a bridge is tested. Under 40 fps it sets `settings.lowFx` (kept in the save), and break sparks, wood chips, the splash and the confetti drop to a third (`fxCount`). A manual Settings switch is a new roadmap task.
 
 **Verified**
 - `npm run check` green (new `tests/i18nDaily.test.ts`: word counts, every name two words and at most 24 letters, English names match the levels, German and Russian gender forms, copy words are valid names). `npm run e2e` exit 0, no FAIL (new: the German Daily title "Heute: Glücklicher Übergang"). Probe screenshot: the longest Russian Daily title fits between Paste code and the cost.
+- Low effects: unit tests (fast is ok, slow is slow, said once, warm-up and long pauses ignored, median ignores a few slow frames, a third of the particles). e2e: the German level 1 win runs with `lowFx` on, and the flag stays in the save.
 
 **Lessons**
 - For generated names in gendered languages, store the noun's gender and every adjective form; picking by index keeps the same day the same in every language without changing the random draw.
+- Phaser reuses a scene object: per-visit state in a field initializer (like the frame watch) must be reset in `init`.
 - `npx tsx -e "..."` is a quick way to print core values (like the longest name in each language) before writing a test.
 
 ## 2026-11-16 — Run 49

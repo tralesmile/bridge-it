@@ -344,7 +344,11 @@ async function run(viewport, name) {
   check(cyrFont, `${name}: the Cyrillic font is loaded`);
   // The play scene in German: tool bar, GO, and the win panel of the saved level 1 bridge (the save is put back after).
   const saveBeforeDe = await page.evaluate(() => localStorage.getItem('bridgeit.save'));
+  // Low effects on for this part (a slow device would set it): the win and its confetti must still work.
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); s.settings.lowFx = true; localStorage.setItem('bridgeit.save', JSON.stringify(s)); });
   await setLang('de');
+  const lowFxLoaded = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('menu').registry && JSON.parse(localStorage.getItem('bridgeit.save')).settings.lowFx === true);
+  check(lowFxLoaded, `${name}: the low-effects flag stays in the save`);
   await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('menu').scene.start('play', { levelId: 'w1-1' }); });
   await sleep(600);
   const dePlay = await sceneTexts('play');

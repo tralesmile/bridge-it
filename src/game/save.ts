@@ -62,7 +62,7 @@ export interface SaveData {
   /** Real-money purchases as last seen from the store (the store's answer always wins). */
   purchases: PurchaseState;
   /** `lang` is missing until the player picks one; the browser language is used until then. */
-  settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean; lang?: Lang };
+  settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean; lang?: Lang; /** Set once when the device runs the test slowly (`src/core/perf.ts`): fewer particles. */ lowFx?: boolean };
 }
 
 const fresh = (): SaveData => ({ version: VERSION, stars: {}, bestCost: {}, designs: {}, coins: 0, fails: {}, owned: [], equipped: { ...DEFAULT_EQUIPPED }, achievements: [], stats: { ...EMPTY_STATS }, daily: { ...EMPTY_DAILY, played: [] }, held: [], sandboxWins: [], editor: { levels: [freshSlot()], current: 0 }, friendStars: [], purchases: { ...EMPTY_PURCHASES }, settings: { sound: true, music: true, reducedMotion: false, shake: true } });
@@ -165,6 +165,7 @@ export function sanitize(raw: unknown): SaveData {
     base.settings.reducedMotion = r.settings.reducedMotion === true;
     base.settings.shake = r.settings.shake !== false;
     if (isLang(r.settings.lang)) base.settings.lang = r.settings.lang;
+    if (r.settings.lowFx === true) base.settings.lowFx = true;
   }
   return base;
 }

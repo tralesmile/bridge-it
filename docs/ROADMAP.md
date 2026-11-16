@@ -138,7 +138,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
   - [ ] Ask the owner (Macedonian speaker) to read the mk text; a native check of the other languages before launch
   - [ ] Store texts in the 8 languages (M9)
 - [ ] GameAnalytics events (level start, complete, fail, hint, ad, purchase)
-- [ ] Automatic low-effects mode on slow devices
+- [x] Automatic low-effects mode on slow devices: `FrameWatch` (`src/core/perf.ts`) judges the median frame time of 90 frames while a bridge is tested; under 40 fps it sets `settings.lowFx` for good, and break, splash and confetti particles drop to a third (`fxCount`)
+- [ ] Low effects, later: a Settings switch to turn it off or on by hand (8 languages); check on a real cheap phone whether drawing the beams also needs to be lighter
 - [ ] Accessibility review
 
 ## M9 Store and marketing assets

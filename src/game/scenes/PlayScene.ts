@@ -21,6 +21,7 @@ import { C, FONT, GAME_H, GAME_W, PX_PER_M, hex, mix, shadeOf } from '../theme';
 import { closeOnBack, onBack } from '../back';
 import { haptic } from '../native';
 import { codeDialogOpen, showCodeDialog } from '../codeDialog';
+import { FrameWatch, fxCount } from '../../core/perf';
 import { copyWord, levelName, levelTip, t, vehicleName } from '../i18n';
 import type { TextKey } from '../../core/i18n';
 import { announceAchievements, button, label, panel, type Button } from '../ui';
@@ -111,6 +112,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   init(data: { levelId?: string; stress?: boolean }): void {
+    this.frameWatch = new FrameWatch();
     const found = anyLevel(data.levelId ?? '') ?? levelById('w1-1');
     if (!found) throw new Error('No levels defined');
     // Stress Test: the same level and saved bridge with the next heavier vehicle.
@@ -862,9 +864,20 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
+  /** Watches frame times during tests (one watch per scene visit); slow frames turn on low effects. */
+  private frameWatch = new FrameWatch();
+  private get lowFx(): boolean {
+    return save.data.settings.lowFx === true;
+  }
+
   override update(time: number, delta: number): void {
     if (this.mode !== 'sim' || !this.sim || this.pauseLayer) return;
     const sim = this.sim;
+    if (!this.lowFx && this.frameWatch.push(delta) === 'slow') {
+      // A slow device: fewer particles from now on, also in later visits.
+      save.data.settings.lowFx = true;
+      save.persist();
+    }
     if (time > this.slowMoUntil) this.timeScale = Math.min(1, this.timeScale + delta / 400);
     // Clamp long frames (tab switch, slow phone) so physics never explodes.
     this.accumulator += (Math.min(delta, 50) / 1000) * this.timeScale;
@@ -880,7 +893,7 @@ export class PlayScene extends Phaser.Scene {
     if (!this.splashed && sim.vehicle.y < WATER_Y + 0.3) {
       this.splashed = true;
       const s = this.toScreen({ x: sim.vehicle.x, y: WATER_Y });
-      this.puffs.explode(16, s.x, s.y);
+      this.puffs.explode(fxCount(16, this.lowFx), s.x, s.y);
       sfx.splash();
       haptic('heavy');
     }
@@ -893,13 +906,13 @@ export class PlayScene extends Phaser.Scene {
       const s = this.toScreen(e.at);
       if (e.type === 'latch') {
         // The drawbridge locked onto the far side: a small spark and a clunk, no slow motion.
-        this.sparks.explode(8, s.x, s.y);
+        this.sparks.explode(fxCount(8, this.lowFx), s.x, s.y);
         sfx.place(0);
         continue;
       }
       this.breaksSeen++;
-      if (e.material === 'wood') this.chips.explode(14, s.x, s.y);
-      else this.sparks.explode(18, s.x, s.y);
+      if (e.material === 'wood') this.chips.explode(fxCount(14, this.lowFx), s.x, s.y);
+      else this.sparks.explode(fxCount(18, this.lowFx), s.x, s.y);
       sfx.snap(e.material);
       haptic('heavy');
       if (save.data.settings.shake && !save.data.settings.reducedMotion) this.cameras.main.shake(180, 0.006);
@@ -1072,7 +1085,7 @@ export class PlayScene extends Phaser.Scene {
       emitting: false,
     });
     fx.setDepth(9);
-    fx.explode(20 + stars * 20);
+    fx.explode(fxCount(20 + stars * 20, this.lowFx));
     this.time.delayedCall(3200, () => fx.destroy());
   }
 

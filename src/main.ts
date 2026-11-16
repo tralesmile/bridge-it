@@ -1,4 +1,5 @@
 import '@fontsource-variable/fredoka/wght.css';
+import './fonts/nunito-cyrillic.css';
 import Phaser from 'phaser';
 import { BootScene } from './game/scenes/BootScene';
 import { LevelSelectScene } from './game/scenes/LevelSelectScene';
@@ -17,7 +18,13 @@ import { setupBackKeys } from './game/native';
 async function loadFont(): Promise<void> {
   try {
     await Promise.race([
-      Promise.all([document.fonts.load('700 24px "Fredoka Variable"'), document.fonts.load('400 24px "Fredoka Variable"')]),
+      Promise.all([
+        document.fonts.load('700 24px "Fredoka Variable"'),
+        document.fonts.load('400 24px "Fredoka Variable"'),
+        // The sample letters make the browser fetch the Cyrillic file now, so ru and mk text never draws in a system font.
+        document.fonts.load('700 24px "Nunito Cyrillic"', 'Жж'),
+        document.fonts.load('400 24px "Nunito Cyrillic"', 'Жж'),
+      ]),
       new Promise((r) => setTimeout(r, 2000)),
     ]);
   } catch {

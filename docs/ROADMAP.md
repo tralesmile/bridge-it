@@ -134,7 +134,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
   - [x] Achievements use `t()`: `ach.<id>` and `ach.<id>.text`; world goals share `ach.world` / `ach.perfect` with {world} (`world` field in `ACHIEVEMENTS`). Texts in `src/core/texts/achievements.ts`. Long goal texts get a smaller font to fit the card
   - [x] Level names and start tips by level id (`src/core/texts/levels.ts`, `levelName` / `levelTip` in the game), the Daily Bridge tip, and the new level name ("Mein Level"; an untouched first level is renamed when the editor opens). Long tips shrink to one line
   - [ ] Still English: Daily Bridge names (made from two word lists; adjectives need gender in many languages), and the "(copy)" ending of copied level names
-  - [ ] A rounded font with Cyrillic for ru and mk (Fredoka has none; today the system font is used). An OFL font from npm, e.g. Nunito or Comfortaa, only its Cyrillic part, checked against the 8 MB limit
+  - [x] A rounded font with Cyrillic for ru and mk: Nunito (OFL, `@fontsource-variable/nunito`), only its Cyrillic file (21 KB) as "Nunito Cyrillic" in `src/fonts/nunito-cyrillic.css`, second in the `FONT` stack; loaded before the game starts. Licence in `docs/FONT_LICENSE_Nunito_OFL.txt`
   - [ ] Ask the owner (Macedonian speaker) to read the mk text; a native check of the other languages before launch
   - [ ] Store texts in the 8 languages (M9)
 - [ ] GameAnalytics events (level start, complete, fail, hint, ad, purchase)

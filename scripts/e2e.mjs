@@ -339,6 +339,9 @@ async function run(viewport, name) {
   check(ruWorlds.includes('Выбери мир') && ruWorlds.includes('Ферма в\nдолине') && ruWorlds.includes('Скоро') && ruLevels.includes('Рельсы каньона') && ruLevels.includes('◀ Назад')
     && ruDaily.includes('Календарь') && ruDaily.some((t) => t.startsWith('Сегодня\n')),
     `${name}: world select, level select and calendar are in Russian (${JSON.stringify([ruWorlds.slice(0, 6), ruLevels.slice(0, 2), ruDaily.slice(0, 3)])})`);
+  // Russian and Macedonian letters use the bundled Nunito Cyrillic font (Fredoka has none), loaded before the game starts.
+  const cyrFont = await page.evaluate(() => document.fonts.check('700 24px "Nunito Cyrillic"', 'Жж') && [...document.fonts].some((f) => f.family.includes('Nunito Cyrillic') && f.status === 'loaded'));
+  check(cyrFont, `${name}: the Cyrillic font is loaded`);
   // The play scene in German: tool bar, GO, and the win panel of the saved level 1 bridge (the save is put back after).
   const saveBeforeDe = await page.evaluate(() => localStorage.getItem('bridgeit.save'));
   await setLang('de');

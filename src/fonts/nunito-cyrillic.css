@@ -1,0 +1,13 @@
+/*
+ * Nunito (SIL Open Font Licence, docs/FONT_LICENSE_Nunito_OFL.txt), Cyrillic letters only.
+ * Fredoka has no Cyrillic, so Russian and Macedonian letters come from this rounded font.
+ * The unicode-range means the browser only uses it for those letters.
+ */
+@font-face {
+  font-family: 'Nunito Cyrillic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 1000;
+  src: url(../../node_modules/@fontsource-variable/nunito/files/nunito-cyrillic-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}

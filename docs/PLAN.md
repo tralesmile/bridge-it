@@ -63,7 +63,7 @@ Bridge It! is built by a two-member team: you (owner: accounts, money, final dec
 
 - **Style:** "chunky toy world": rounded shapes, soft shadows, a light rim highlight, warm saturated colours.
 - **Colours:** one palette in `src/game/theme.ts`. Each world gets its own sky gradient, and bridges always contrast with the background.
-- **Type:** Fredoka (free SIL Open Font licence), bundled locally so no external requests are made (portals prefer that). The fallback is a rounded system font.
+- **Type:** Fredoka (free SIL Open Font licence), with Nunito's Cyrillic letters for Russian and Macedonian (also OFL), bundled locally so no external requests are made (portals prefer that). The fallback is a rounded system font.
 - **Components:** chunky buttons with a pressed state, cream panels, star rows, toast messages, a cost bar with star ticks.
 - **Motion:** squash and stretch on taps, Back.easeOut for rewards, 1.1 s slow motion on the first break, and small screen shakes that can be switched off.
 - **Touch:** every target is at least 48 px on a phone, and drags start only from visible joints.
@@ -145,7 +145,7 @@ Bridge It! is built by a two-member team: you (owner: accounts, money, final dec
 | --- | --- | --- |
 | Engine, physics, tools | Phaser, Planck.js, Vite, VS Code | Never |
 | Art | Drawn in code by Claude | A hit needs a mascot redesign |
-| Font | Fredoka (SIL Open Font licence) | Never |
+| Font | Fredoka and Nunito Cyrillic (SIL Open Font licence) | Never |
 | Sound effects | Synthesized in code | Never |
 | Music | CC0 loops (OpenGameArt, Pixabay Music) | A hit needs a signature theme |
 | Hosting | Cloudflare Pages or GitHub Pages | Never |

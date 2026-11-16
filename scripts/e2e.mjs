@@ -389,6 +389,11 @@ async function run(viewport, name) {
   check(deTrophies.includes('Erfolge') && deTrophies.some((t) => t.endsWith('Erste Überfahrt')) && deTrophies.includes('Bring ein Fahrzeug zur Flagge.')
     && deTrophies.some((t) => t.endsWith('Farmtal geschafft')) && !deTrophies.some((t) => /ach\.|undefined|\{world\}/.test(t)),
     `${name}: Trophies are in German (${JSON.stringify(deTrophies.slice(0, 6))})`);
+  // A Daily Bridge name in German, with the adjective matching the noun (2026-04-23 is "Lucky Crossing").
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('trophies').scene.start('play', { levelId: 'daily-2026-04-23' }); });
+  await sleep(500);
+  const deDaily = await sceneTexts('play');
+  check(deDaily.includes('Heute: Glücklicher Übergang'), `${name}: the Daily Bridge name is in German (${JSON.stringify(deDaily.slice(0, 3))})`);
   await page.evaluate((raw) => { localStorage.setItem('bridgeit.save', raw); }, saveBeforeDe);
   await setLang(null);
 

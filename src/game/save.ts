@@ -306,11 +306,11 @@ export class SaveStore {
     if (changed) this.persist();
   }
 
-  addEditorLevel(copyOf?: CustomSpec, base?: string): boolean {
+  addEditorLevel(copyOf?: CustomSpec, base?: string, copyWord?: string): boolean {
     const e = this.data.editor;
     if (e.levels.length >= MY_LEVELS_MAX) return false;
     const names = e.levels.map((l) => l.draft.name);
-    const slot = copyOf ? readSlot({ draft: { ...copyOf, name: copyName(copyOf.name, names), authorCost: 0 }, best: 0 }) : freshSlot(freshName(names, base));
+    const slot = copyOf ? readSlot({ draft: { ...copyOf, name: copyName(copyOf.name, names, copyWord), authorCost: 0 }, best: 0 }) : freshSlot(freshName(names, base));
     if (!slot) return false;
     e.levels.push(slot);
     e.current = e.levels.length - 1;

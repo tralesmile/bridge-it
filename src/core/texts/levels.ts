@@ -2,7 +2,7 @@
  * Level names and start tips in 8 languages, by level id: [name, tip]. A level without a tip has
  * only a name. Tests check every language has every level, English matches `src/core/levels.ts`,
  * and a tip is there exactly when the English level has one.
- * Daily Bridge names stay English (made from word lists); its tip is `DAILY_TIP`.
+ * Daily Bridge names come from word lists (`src/core/texts/daily.ts`); its tip is `DAILY_TIP`.
  */
 import type { Lang } from '../i18n';
 

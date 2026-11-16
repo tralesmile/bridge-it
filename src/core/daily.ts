@@ -3,6 +3,7 @@
  * Levels come from a fixed list of tested variants (each one has a solution that wins),
  * so a random day can never give an unsolvable level. Pure code, no clock: pass in the date key.
  */
+import { DAILY_WORDS, dailyNameIn } from './texts/daily';
 import { beam, build, fanRopes, hangerRopes, hangers, leaf, levelById, rockLegs, rockPosts, roadDeck, warrenTruss, type LevelEntry, type LevelSpec } from './levels';
 
 /** 'YYYY-MM-DD' for a date in the player's own time zone. */
@@ -64,17 +65,32 @@ export const DAILY_VARIANTS: DailyVariant[] = [
   { world: 4, spec: { gap: 8, materials: ['road', 'wood', 'piston'], extraAnchors: [{ x: 4, y: 0 }, { x: 9, y: 0 }], shipLane: { x0: 4, x1: 8 }, solution: (g) => [...roadDeck(0, 4), ...warrenTruss(0, 4), ...leaf(g, -1)], slack: 1.25 } },
 ];
 
-const FIRST = ['Sunny', 'Misty', 'Windy', 'Rainy', 'Quiet', 'Golden', 'Frosty', 'Lucky', 'Sleepy', 'Happy'];
-const SECOND = ['Creek', 'Gap', 'Gorge', 'Valley', 'River', 'Pass', 'Ravine', 'Brook', 'Canyon', 'Crossing'];
+const ADJECTIVES = DAILY_WORDS.en.adjectives.length;
+const PLACES = DAILY_WORDS.en.places.length;
 
 export const DAILY_PREFIX = 'daily-';
 export const isDailyId = (id: string): boolean => id.startsWith(DAILY_PREFIX);
 
-/** The level for a date key. Same key, same level, on every device. */
-export function dailyLevel(key: string): LevelEntry {
+/** The variant and the name words for a date key (the random numbers are drawn in this order). */
+function pick(key: string): { variant: DailyVariant; adjective: number; place: number } {
   const r = rng(hash(key));
   const variant = DAILY_VARIANTS[Math.floor(r() * DAILY_VARIANTS.length)];
-  const name = `${FIRST[Math.floor(r() * FIRST.length)]} ${SECOND[Math.floor(r() * SECOND.length)]}`;
+  const adjective = Math.floor(r() * ADJECTIVES);
+  const place = Math.floor(r() * PLACES);
+  return { variant, adjective, place };
+}
+
+/** The adjective and place indexes of a Daily Bridge name ('daily-YYYY-MM-DD' id), for its name in other languages. */
+export function dailyNameParts(id: string): { adjective: number; place: number } | undefined {
+  if (!isDailyId(id)) return undefined;
+  const { adjective, place } = pick(id.slice(DAILY_PREFIX.length));
+  return { adjective, place };
+}
+
+/** The level for a date key. Same key, same level, on every device. */
+export function dailyLevel(key: string): LevelEntry {
+  const { variant, adjective, place } = pick(key);
+  const name = dailyNameIn('en', adjective, place);
   const [level] = build(variant.world, [{ ...variant.spec, name, tip: 'A new bridge every day. Come back tomorrow!' }]);
   return { ...level, id: `${DAILY_PREFIX}${key}`, index: 0 };
 }

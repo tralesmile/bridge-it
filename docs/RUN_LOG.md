@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-16 — Run 50
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Daily Bridge names in 8 languages: `src/core/texts/daily.ts` has 10 adjectives (one form per gender) and 10 place words (with their gender) per language, and whether the adjective comes first ("Sonnige Schlucht") or after ("Valle soleado"). `dailyNameParts` in `src/core/daily.ts` gives the word indexes for a day; English names did not change. `levelName` in the game uses it for Daily ids.
+- The "(copy)" word of copied player levels in 8 languages (`COPY_WORD`); a copy of a copy gets one tag, also when the first copy was made in another language.
+
+**Verified**
+- `npm run check` green (new `tests/i18nDaily.test.ts`: word counts, every name two words and at most 24 letters, English names match the levels, German and Russian gender forms, copy words are valid names). `npm run e2e` exit 0, no FAIL (new: the German Daily title "Heute: Glücklicher Übergang"). Probe screenshot: the longest Russian Daily title fits between Paste code and the cost.
+
+**Lessons**
+- For generated names in gendered languages, store the noun's gender and every adjective form; picking by index keeps the same day the same in every language without changing the random draw.
+- `npx tsx -e "..."` is a quick way to print core values (like the longest name in each language) before writing a test.
+
 ## 2026-11-16 — Run 49
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

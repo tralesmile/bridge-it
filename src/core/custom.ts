@@ -3,6 +3,7 @@ import { checksum, fromB64, toB64 } from './codec';
 import { build, roadDeck, type LevelEntry } from './levels';
 import { MATERIAL_ORDER, type MaterialId } from './materials';
 import type { Point, VehicleId } from './types';
+import { COPY_WORD } from './texts/daily';
 
 /**
  * Player-made levels. A level is small enough to live in its id ("custom-<data>"), so the same
@@ -90,15 +91,18 @@ export function freshName(taken: readonly string[], base: string = DEFAULT_CUSTO
   for (let i = 2; ; i++) if (!used.has(`${base} ${i}`)) return `${base} ${i}`;
 }
 
+/** A copy tag in any language at the end of a name, so a copy of a copy does not get two tags. */
+const COPY_TAG = new RegExp(` \\((?:${Object.values(COPY_WORD).join('|')})(?: \\d+)?\\)$`, 'u');
+
 /**
  * The name for a copy of a friend's level: "Big Gap (copy)", then "Big Gap (copy 2)", ...
- * The friend's name is cut so the whole name stays inside 20 characters.
+ * `word` is the copy word in the player's language. The friend's name is cut so the whole name stays inside 20 characters.
  */
-export function copyName(name: string, taken: readonly string[]): string {
-  const base = cleanName(name).replace(/ \(copy(?: \d+)?\)$/, '');
+export function copyName(name: string, taken: readonly string[], word = 'copy'): string {
+  const base = cleanName(name).replace(COPY_TAG, '');
   const used = new Set(taken);
   for (let i = 1; ; i++) {
-    const tag = i === 1 ? ' (copy)' : ` (copy ${i})`;
+    const tag = i === 1 ? ` (${word})` : ` (${word} ${i})`;
     const out = cleanName([...base].slice(0, CUSTOM_NAME_MAX - tag.length).join('').trim() + tag);
     if (!used.has(out)) return out;
   }

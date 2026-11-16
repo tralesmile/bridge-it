@@ -21,7 +21,7 @@ import { C, FONT, GAME_H, GAME_W, PX_PER_M, hex, mix, shadeOf } from '../theme';
 import { closeOnBack, onBack } from '../back';
 import { haptic } from '../native';
 import { codeDialogOpen, showCodeDialog } from '../codeDialog';
-import { levelName, levelTip, t, vehicleName } from '../i18n';
+import { copyWord, levelName, levelTip, t, vehicleName } from '../i18n';
 import type { TextKey } from '../../core/i18n';
 import { announceAchievements, button, label, panel, type Button } from '../ui';
 
@@ -1123,7 +1123,7 @@ export class PlayScene extends Phaser.Scene {
       // A friend's level goes into "My levels" as a new level (your bridge comes along).
       layer.add(button(this, GAME_W / 2, GAME_H / 2 + 180, t('play.editCopy'), () => {
         const spec = parseCustomId(this.level.id);
-        const added = spec !== undefined && save.addEditorLevel(spec);
+        const added = spec !== undefined && save.addEditorLevel(spec, undefined, copyWord());
         this.scene.start('editor', added ? { toast: t('play.copyAdded') } : { toast: t('play.listFull'), list: true });
       }, { width: 300, height: 58, fontSize: 24, color: C.good, shade: C.goodDark }));
     }

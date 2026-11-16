@@ -21,7 +21,7 @@ import { C, FONT, GAME_H, GAME_W, PX_PER_M, hex, mix, shadeOf } from '../theme';
 import { closeOnBack, onBack } from '../back';
 import { haptic } from '../native';
 import { codeDialogOpen, showCodeDialog } from '../codeDialog';
-import { t, vehicleName } from '../i18n';
+import { levelName, levelTip, t, vehicleName } from '../i18n';
 import type { TextKey } from '../../core/i18n';
 import { announceAchievements, button, label, panel, type Button } from '../ui';
 
@@ -161,8 +161,8 @@ export class PlayScene extends Phaser.Scene {
     this.createHud();
     this.redraw();
     this.bindInput();
-    const tip = this.stress ? t('play.stressTip', { vehicle: vehicleName(this.level.vehicle) }) : this.level.tip;
-    this.showToast(tip ?? t('play.levelToast', { n: this.level.index, name: this.level.name }), 3500);
+    const tip = this.stress ? t('play.stressTip', { vehicle: vehicleName(this.level.vehicle) }) : levelTip(this.level);
+    this.showToast(tip ?? t('play.levelToast', { n: this.level.index, name: levelName(this.level) }), 3500);
     // If the app is hidden during a drive, wait for a tap so the player does not miss the collapse.
     const onHidden = (): void => {
       if (this.mode === 'sim' && !this.pauseLayer) this.showPause();
@@ -377,9 +377,9 @@ export class PlayScene extends Phaser.Scene {
     this.buildUi.push(this.pasteButton);
     const name = this.sandbox
       ? t('play.titleSandbox', { gap: this.level.gapEnd - this.level.gapStart, vehicle: vehicleName(this.level.vehicle) })
-      : isDailyId(this.level.id) ? t('play.titleDaily', { name: this.level.name })
-      : this.custom ? (this.isDraft ? t('play.titleMine', { name: this.level.name }) : t('play.titlePlayer', { name: this.level.name }) + friendBest(this.level.id)) : `${this.level.index}. ${this.level.name}`;
-    const title = label(this, GAME_W / 2, 40, this.stress ? t('play.titleStress', { name: this.level.name }) : name, 34, C.white);
+      : isDailyId(this.level.id) ? t('play.titleDaily', { name: levelName(this.level) })
+      : this.custom ? (this.isDraft ? t('play.titleMine', { name: levelName(this.level) }) : t('play.titlePlayer', { name: levelName(this.level) }) + friendBest(this.level.id)) : `${this.level.index}. ${levelName(this.level)}`;
+    const title = label(this, GAME_W / 2, 40, this.stress ? t('play.titleStress', { name: levelName(this.level) }) : name, 34, C.white);
     title.setStroke(C.ink, 8);
 
     this.costBar = this.add.graphics();
@@ -468,7 +468,9 @@ export class PlayScene extends Phaser.Scene {
 
   private showToast(text: string, ms = 1600): void {
     if (!text) return;
-    this.toast.setText(text).setAlpha(1).setY(100);
+    this.toast.setScale(1).setText(text).setAlpha(1).setY(100);
+    // Long tips (French, Spanish) shrink to stay on one line inside the screen.
+    if (this.toast.width > GAME_W - 40) this.toast.setScale((GAME_W - 40) / this.toast.width);
     this.tweens.killTweensOf(this.toast);
     this.tweens.add({ targets: this.toast, alpha: 0, y: 92, delay: ms, duration: 400 });
   }

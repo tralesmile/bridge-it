@@ -1,5 +1,7 @@
 import { fromEnglish, pickLang, translate, type Lang, type TextKey } from '../core/i18n';
 import type { Achievement } from '../core/achievements';
+import { DAILY_TIP, NEW_LEVEL_NAME, levelNameIn, levelTipIn } from '../core/texts/levels';
+import { isDailyId } from '../core/daily';
 import type { VehicleId } from '../core/types';
 import { save } from './save';
 
@@ -49,3 +51,11 @@ export const achName = (a: Achievement): string => t(achKey(a) as TextKey, a.wor
 /** An achievement's goal text in the player's language. */
 export const achText = (a: Achievement): string => t(`${achKey(a)}.text` as TextKey, a.world !== undefined ? { world: worldName(a.world) } : {});
 
+/** A level's name in the player's language (player and Daily levels keep their own name). */
+export const levelName = (level: { id: string; name: string }): string => levelNameIn(currentLang(), level.id, level.name);
+
+/** A level's start tip in the player's language. */
+export const levelTip = (level: { id: string; tip?: string }): string | undefined => (isDailyId(level.id) ? DAILY_TIP[currentLang()] : levelTipIn(currentLang(), level.id, level.tip));
+
+/** The name a new level gets in the Level Editor. */
+export const newLevelName = (): string => NEW_LEVEL_NAME[currentLang()];

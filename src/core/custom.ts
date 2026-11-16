@@ -84,10 +84,10 @@ export function cleanName(name: string): string {
 }
 
 /** A name for a new level that no other level in the list has: "My Level", "My Level 2", ... */
-export function freshName(taken: readonly string[]): string {
+export function freshName(taken: readonly string[], base: string = DEFAULT_CUSTOM.name): string {
   const used = new Set(taken);
-  if (!used.has(DEFAULT_CUSTOM.name)) return DEFAULT_CUSTOM.name;
-  for (let i = 2; ; i++) if (!used.has(`${DEFAULT_CUSTOM.name} ${i}`)) return `${DEFAULT_CUSTOM.name} ${i}`;
+  if (!used.has(base)) return base;
+  for (let i = 2; ; i++) if (!used.has(`${base} ${i}`)) return `${base} ${i}`;
 }
 
 /**

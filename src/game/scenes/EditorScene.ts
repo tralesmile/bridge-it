@@ -6,7 +6,7 @@ import {
 } from '../../core/custom';
 import { MATERIAL_ORDER, type MaterialId } from '../../core/materials';
 import type { TextKey } from '../../core/i18n';
-import { t, tEn } from '../i18n';
+import { newLevelName, t, tEn } from '../i18n';
 import { vehicleTextureKey } from '../../core/shop';
 import { closeOnBack, onBack } from '../back';
 import { addBackground } from '../background';
@@ -52,6 +52,7 @@ export class EditorScene extends Phaser.Scene {
 
   /** `toast`: a message to show on arrival (for example "My levels is full"). `list`: open "My levels". */
   create(data: { toast?: string; list?: boolean } = {}): void {
+    save.nameFreshLevels(newLevelName());
     this.listLayer = undefined;
     this.values.clear();
     this.vehicleButtons = [];
@@ -168,7 +169,7 @@ ${info}`, () => {
     });
     const full = levels.length >= MY_LEVELS_MAX;
     const add = button(this, GAME_W / 2 - 140, 650, full ? t('editor.full') : t('editor.new'), () => {
-      if (!save.addEditorLevel()) return;
+      if (!save.addEditorLevel(undefined, newLevelName())) return;
       sfx.place(0);
       close();
       this.refresh();

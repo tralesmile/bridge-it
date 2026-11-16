@@ -290,11 +290,27 @@ export class SaveStore {
    * Adds a level to "My levels" and opens it: a fresh one, or a copy of a friend's level
    * (it must be crossed again before its code can be shared). False when the list is full.
    */
-  addEditorLevel(copyOf?: CustomSpec): boolean {
+  /**
+   * Gives untouched new levels ("My Level", nothing changed, no bridge, never crossed) the name
+   * in the player's language. Changed levels keep their name, so no id or saved bridge changes.
+   */
+  nameFreshLevels(base: string): void {
+    const e = this.data.editor;
+    const blank = JSON.stringify(freshSlot().draft);
+    let changed = false;
+    e.levels.forEach((slot, i) => {
+      if (base === DEFAULT_CUSTOM.name || slot.best !== 0 || JSON.stringify(slot.draft) !== blank || this.data.designs[slotId(slot)]) return;
+      slot.draft = { ...slot.draft, name: freshName(e.levels.filter((_, j) => j !== i).map((l) => l.draft.name), base) };
+      changed = true;
+    });
+    if (changed) this.persist();
+  }
+
+  addEditorLevel(copyOf?: CustomSpec, base?: string): boolean {
     const e = this.data.editor;
     if (e.levels.length >= MY_LEVELS_MAX) return false;
     const names = e.levels.map((l) => l.draft.name);
-    const slot = copyOf ? readSlot({ draft: { ...copyOf, name: copyName(copyOf.name, names), authorCost: 0 }, best: 0 }) : freshSlot(freshName(names));
+    const slot = copyOf ? readSlot({ draft: { ...copyOf, name: copyName(copyOf.name, names), authorCost: 0 }, best: 0 }) : freshSlot(freshName(names, base));
     if (!slot) return false;
     e.levels.push(slot);
     e.current = e.levels.length - 1;

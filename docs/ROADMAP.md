@@ -131,7 +131,9 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
   - [x] Play scene uses `t()`: tool bar (material names), GO/Edit, toasts, pause, every result panel, loss tips, share code errors (`code` in `decodeBridge`), vehicle names (`vehicleName`). Texts in `src/core/texts/play.ts`, merged into the tables. Dollar amounts keep "$1,250" in every language
   - [x] Shop and Stats use `t()`: item names (`item.<id>`), stat rows (`key` in `statRows`), buy errors (`code` in `buy`). Texts in `src/core/texts/screens.ts`
   - [x] Sandbox setup and Level Editor use `t()`; core problem texts (`src/core/custom.ts`) are found by their English text with `fromEnglish` (numbers fill the {names}). Texts in `src/core/texts/editor.ts`. Long labels shrink to fit
-  - [ ] Move the rest to `t()`: achievement names and texts, level names and tips, the default level name "My Level"
+  - [x] Achievements use `t()`: `ach.<id>` and `ach.<id>.text`; world goals share `ach.world` / `ach.perfect` with {world} (`world` field in `ACHIEVEMENTS`). Texts in `src/core/texts/achievements.ts`. Long goal texts get a smaller font to fit the card
+  - [x] Level names and start tips by level id (`src/core/texts/levels.ts`, `levelName` / `levelTip` in the game), the Daily Bridge tip, and the new level name ("Mein Level"; an untouched first level is renamed when the editor opens). Long tips shrink to one line
+  - [ ] Still English: Daily Bridge names (made from two word lists; adjectives need gender in many languages), and the "(copy)" ending of copied level names
   - [ ] A rounded font with Cyrillic for ru and mk (Fredoka has none; today the system font is used). An OFL font from npm, e.g. Nunito or Comfortaa, only its Cyrillic part, checked against the 8 MB limit
   - [ ] Ask the owner (Macedonian speaker) to read the mk text; a native check of the other languages before launch
   - [ ] Store texts in the 8 languages (M9)

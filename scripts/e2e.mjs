@@ -351,7 +351,7 @@ async function run(viewport, name) {
   await sleep(800);
   const deLoss = await sceneTexts('play');
   if (name === 'desktop') await page.screenshot({ path: `${OUT}/${name}-9l-win-de.png` });
-  check(dePlay.includes('LOS!') && dePlay.includes('Straße') && dePlay.includes('Löschen') && dePlay.includes('Zurück') && dePlay.includes('Code einfügen')
+  check(dePlay.includes('LOS!') && dePlay.includes('1. Erste Überfahrt') && dePlay.includes('Zieh von einem roten Anker, um eine Straße zu bauen.') && dePlay.includes('Straße') && dePlay.includes('Löschen') && dePlay.includes('Zurück') && dePlay.includes('Code einfügen')
     && deLoss.includes('Geschafft!') && deLoss.includes('Verbessern') && deLoss.includes('Brücken-Code kopieren'),
     `${name}: the play scene and its win panel are in German (${JSON.stringify([dePlay.slice(0, 12), deLoss.slice(-4)])})`);
   // Shop and Stats in German (the save is still the German one; nothing is bought).

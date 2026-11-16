@@ -2,6 +2,20 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-16 — Run 49
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Achievements in 8 languages: names, goal texts, the banner. World goals use one text with {world}, so German can say "Farmtal perfekt". Goal texts that need 3 lines get a smaller font so they stay between the title and the progress bar.
+- Level names and start tips in 8 languages (60 names, 48 tips), the Daily Bridge tip, and the new level name in the editor. Long tips shrink to one line in the play scene.
+
+**Verified**
+- `npm run check` green (609 tests; new: English achievement and level texts match the core lists, every language has every level, a tip exactly where English has one, new level names are valid names). `npm run e2e` exit 0, no FAIL after each task (new: German Trophies, German level 1 title and tip). Screenshots checked: Trophies in de, ru, mk, en; level select in mk; level 4-1 tip in ru and fr; editor in fr.
+
+**Lessons**
+- To commit one finished task while the next one is half done: stage the first task's files, then `git stash push --keep-index -u -- <other files>`, check, commit, `git stash pop`. A file shared by both tasks needs a temporary copy without the second part.
+- Text keyed by a stable id (level id) is easier to test than text keyed by English: a test compares English with the core list, and a renamed level shows up at once.
+- Russian and German goal texts often need 3 lines where English needs 2; let the text shrink rather than make every card bigger.
+
 ## 2026-11-16 — Run 48
 **Done**
 - Synced: only old branches unmerged (their work is already in `main`; `git cherry` shows only duplicate font and hill-seam fixes). Note: the clone is shallow; `git fetch --depth=1000 origin main` first, or every branch looks unmerged.

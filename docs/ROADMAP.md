@@ -155,9 +155,9 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Trailer capture script (`npm run trailer` after a build: `scripts/trailer.mjs` records 5 webm clips at 1280x720 into the git-ignored `trailer-clips/`: each builds the stored solution beam by beam, then GO. Owner can cut them into a video)
 - [x] Store texts (`docs/STORE_TEXTS.md`, English draft), privacy policy draft (`docs/PRIVACY_POLICY.md`; owner fills name, contact and date)
 - [x] Store texts in 7 more languages (`docs/STORE_TEXTS_I18N.md`: short line, subtitle, keywords, portal line, full description; lengths checked against the store limits; not checked by native speakers)
-- [ ] Press kit (logo, screenshots, fact sheet)
+- [x] Press kit draft (`docs/PRESS_KIT.md`: fact sheet, short text, assets list; owner fills the contact fields)
 - [x] Owner checklist for posting (`docs/POSTING_CHECKLIST.md`)
 
 ## M10 Launch and live ops
 - [ ] Release candidate builds for web, Android and iOS
-- [ ] Launch-day checklist and first update plan
+- [x] Launch-day checklist and first update plan (`docs/LAUNCH_CHECKLIST.md`, draft)

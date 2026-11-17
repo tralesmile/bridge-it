@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-17 — Run 60
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Docs only: `docs/PRESS_KIT.md` and `docs/LAUNCH_CHECKLIST.md`. Owner task added.
+
+**Verified**
+- `npm run check` green at the start. No game code changed, so e2e was not re-run.
+
+**Lessons**
+- Only owner-gated work and the World 5 mechanic remain on the roadmap. If a run has no code task, a World 5 probe (ice-cream van jump, seesaw, counterweight) is the best next use.
+
 ## 2026-11-17 — Run 59
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

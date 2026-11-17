@@ -33,5 +33,6 @@ Things only you can do. Each scheduled run adds to this list; nothing here block
 ## Marketing (from milestone M2)
 - [ ] Read `docs/PRIVACY_POLICY.md` and `docs/STORE_TEXTS.md`: add your name, contact email and the date, and say if anything is wrong. Then publish the privacy policy on a simple web page (free GitHub Pages is fine); the stores need its link.
 - [ ] `docs/STORE_TEXTS_I18N.md` has the store texts in 7 languages, written by Claude. Please read the Macedonian one; ask friends who speak the other languages to check them before launch.
+- [ ] Fill in the contact fields in `docs/PRESS_KIT.md`; the launch steps are in `docs/LAUNCH_CHECKLIST.md`.
 - [ ] Posting steps are in `docs/POSTING_CHECKLIST.md`.
 - [ ] TikTok, YouTube and Instagram accounts for the game; post the clips Claude prepares.

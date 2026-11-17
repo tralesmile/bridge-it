@@ -18,6 +18,7 @@
     "app:sync": "npm run build:app && cap sync && node scripts/app-check.mjs",
     "app:android": "npm run app:sync && cd android && ./gradlew assembleDebug",
     "shots": "node scripts/store-shots.mjs",
+    "trailer": "node scripts/trailer.mjs",
     "app:icons": "node scripts/app-icons.mjs"
   },
   "license": "ISC",

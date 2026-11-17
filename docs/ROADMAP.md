@@ -151,8 +151,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 
 ## M9 Store and marketing assets
 - [x] Screenshot generator script (`npm run shots` after a build: `scripts/store-shots.mjs` writes 8 shots at 1920x1080 and 2560x1440 to the git-ignored `store-shots/`: menu, worlds, build, test, win, ropes, ocean, drawbridge)
-- [ ] Win panel: the coin icon overlaps the "C" in "+30 Coins" (seen in store-shots win shot)
-- [ ] Trailer capture script (records gameplay clips with Playwright)
+- [x] Win panel: the flying coins started on top of the "+30 Coins" text; they now start just below it
+- [x] Trailer capture script (`npm run trailer` after a build: `scripts/trailer.mjs` records 5 webm clips at 1280x720 into the git-ignored `trailer-clips/`: each builds the stored solution beam by beam, then GO. Owner can cut them into a video)
 - [ ] Store texts, press kit, privacy policy page
 - [ ] Owner checklist for posting
 

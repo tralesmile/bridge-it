@@ -1154,10 +1154,10 @@ export class PlayScene extends Phaser.Scene {
     this.time.delayedCall(3200, () => fx.destroy());
   }
 
-  /** Coins fly from the result text up to the top-right corner. */
+  /** Coins fly from just below the result text up to the top-right corner (they start below it so they never cover its letters). */
   private coinFlyIn(count: number, delay: number): void {
     for (let i = 0; i < count; i++) {
-      const coin = this.add.image(GAME_W / 2, GAME_H / 2 + 88, 'coin').setDepth(12).setScale(0).setAlpha(0);
+      const coin = this.add.image(GAME_W / 2, GAME_H / 2 + 122, 'coin').setDepth(12).setScale(0).setAlpha(0);
       this.tweens.add({
         targets: coin,
         x: GAME_W - 60,

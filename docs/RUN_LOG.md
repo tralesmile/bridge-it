@@ -2,6 +2,20 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-17 — Run 57
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Win panel: flying coins now start just below the "+30 Coins" text, not on top of it.
+- Trailer recorder: `npm run trailer` (`scripts/trailer.mjs`) writes 5 gameplay clips (webm, 1280x720) to `trailer-clips/` (git-ignored).
+
+**Verified**
+- `npm run check` green. `npm run e2e` exit 0, no FAIL. Trailer script ran with exit 0, no page errors, 5 files of 2.4 to 3.6 MB (clips not watched frame by frame).
+
+**Lessons**
+- Wait for e2e with one background `while ! grep -q "^exit" file; do sleep 15; done` command; foreground waits over 10 min get moved to the background.
+- Playwright `recordVideo` works with real Chrome in headless mode; `video.saveAs` after `ctx.close()`.
+- Never force-push, not even to the run's own branch: push the branch normally (it may need a merge of `main` first).
+
 ## 2026-11-17 — Run 56
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

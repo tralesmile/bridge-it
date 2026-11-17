@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-17 — Run 56
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Store screenshot generator: `npm run shots` (`scripts/store-shots.mjs`) renders 8 shots each at 1920x1080 and 2560x1440 into `store-shots/` (git-ignored).
+
+**Verified**
+- `npm run check` green at the start; no game code changed. The script ran with exit 0, no page errors; phone shots viewed (test, drawbridge, win).
+
+**Lessons**
+- Seen in the win shot: the "+30 Coins" line has the coin icon drawn over the "C" (looks like the coin fly-in landing). Check on the next run; add to roadmap.
+- A fresh save shows the achievement banner on the first win; wait about 4 s before the screenshot.
+
 ## 2026-11-17 — Run 55
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

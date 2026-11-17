@@ -150,7 +150,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] A pattern on rope beams (slanted strand ticks along the rope in `strokeBeam`) so wood and rope differ by more than colour and width
 
 ## M9 Store and marketing assets
-- [ ] Screenshot generator script (renders store screenshots from the game)
+- [x] Screenshot generator script (`npm run shots` after a build: `scripts/store-shots.mjs` writes 8 shots at 1920x1080 and 2560x1440 to the git-ignored `store-shots/`: menu, worlds, build, test, win, ropes, ocean, drawbridge)
+- [ ] Win panel: the coin icon overlaps the "C" in "+30 Coins" (seen in store-shots win shot)
 - [ ] Trailer capture script (records gameplay clips with Playwright)
 - [ ] Store texts, press kit, privacy policy page
 - [ ] Owner checklist for posting

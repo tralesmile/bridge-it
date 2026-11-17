@@ -502,9 +502,9 @@ async function run(viewport, name) {
   await click(270, 60);
   check(await active('trophies'), `${name}: Trophies button opens the achievements list`);
   await page.screenshot({ path: `${OUT}/${name}-9t-trophies.png` });
-  const trOne = await page.evaluate(() => !globalThis.__bridgeit.scene.getScene('trophies').nextBtn);
-  check(trOne, `${name}: all achievements fit one page, no page buttons`);
-  // Pages: 12 cards a page to see the buttons (the real page holds 30).
+  const trOne = await page.evaluate(() => !!globalThis.__bridgeit.scene.getScene('trophies').nextBtn);
+  check(trOne, `${name}: big Trophies cards need page buttons`);
+  // Pages: 12 cards a page (the default, with big text).
   await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('trophies').scene.restart({ perPage: 12 }); });
   await sleep(400);
   const trPage = () => page.evaluate(() => { const t = globalThis.__bridgeit.scene.getScene('trophies'); return { page: t.page, text: t.pageText?.text, cards: t.cards.list.filter((o) => o.type === 'Graphics').length }; });

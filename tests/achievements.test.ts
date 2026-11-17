@@ -77,22 +77,22 @@ describe('achievements', () => {
 });
 
 describe('Trophies pages', () => {
-  test('30 cards a page; more cards make more pages', () => {
+  test('12 cards a page; more cards make more pages', () => {
     expect(pageCount(0)).toBe(1);
-    expect(pageCount(30)).toBe(1);
-    expect(pageCount(31)).toBe(2);
+    expect(pageCount(TROPHY_PAGE)).toBe(1);
+    expect(pageCount(TROPHY_PAGE + 1)).toBe(2);
     expect(pageCount(ACHIEVEMENTS.length)).toBe(Math.ceil(ACHIEVEMENTS.length / TROPHY_PAGE));
   });
 
   test('a page holds its own cards and an out-of-range page is clamped', () => {
-    const items = Array.from({ length: 31 }, (_, i) => i);
-    expect(pageItems(items, 0).items).toHaveLength(30);
-    expect(pageItems(items, 1)).toEqual({ page: 1, pages: 2, items: [30] });
+    const items = Array.from({ length: TROPHY_PAGE + 1 }, (_, i) => i);
+    expect(pageItems(items, 0).items).toHaveLength(TROPHY_PAGE);
+    expect(pageItems(items, 1)).toEqual({ page: 1, pages: 2, items: [TROPHY_PAGE] });
     expect(pageItems(items, 9).page).toBe(1);
     expect(pageItems(items, -3).page).toBe(0);
     expect(pageItems(items, Number.NaN).page).toBe(0);
-    const pages = pageItems(items, 0, 12).pages;
+    const pages = pageItems(items, 0, 5).pages;
     expect(pages).toBe(3);
-    expect(Array.from({ length: pages }, (_, p) => pageItems(items, p, 12).items).flat()).toEqual(items);
+    expect(Array.from({ length: pages }, (_, p) => pageItems(items, p, 5).items).flat()).toEqual(items);
   });
 });

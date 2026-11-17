@@ -8,13 +8,13 @@ import { sfx } from '../audio';
 import { C, FONT, GAME_W, hex } from '../theme';
 import { button, label, panel, type Button } from '../ui';
 
-// 6 columns and 5 rows a page; more achievements go on the next page.
-const COLS = 6;
-const CARD_W = 196;
-const CARD_H = 100;
-const GAP = 8;
+// 4 columns and 3 rows a page with big text; more achievements go on the next page.
+const COLS = 4;
+const CARD_W = 296;
+const CARD_H = 150;
+const GAP = 12;
 
-/** Achievements list: earned ones in gold, others grey with progress. Pages of 30. */
+/** Achievements list: earned ones in gold, others grey with progress. Pages of 12. */
 export class TrophyScene extends Phaser.Scene {
   private page = 0;
   /** Cards a page; only e2e passes a smaller number, to see the page buttons. */
@@ -79,34 +79,34 @@ export class TrophyScene extends Phaser.Scene {
     const total = COLS * CARD_W + (COLS - 1) * GAP;
     items.forEach((a, i) => {
       const x = GAME_W / 2 - total / 2 + CARD_W / 2 + (i % COLS) * (CARD_W + GAP);
-      const y = 160 + Math.floor(i / COLS) * (CARD_H + GAP);
+      const y = 190 + Math.floor(i / COLS) * (CARD_H + GAP);
       const done = earned.has(a.id);
       const g = this.add.graphics({ x, y });
       g.fillStyle(hex(done ? C.gold : C.white), 1);
       g.fillRoundedRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 16);
-      const title = label(this, x, y - 32, `${done ? '🏆' : '🔒'} ${achName(a)}`, 19, done ? C.ink : C.greyDark);
+      const title = label(this, x, y - 50, `${done ? '🏆' : '🔒'} ${achName(a)}`, 28, done ? C.ink : C.greyDark);
       // Long names shrink to fit inside the card.
       if (title.width > CARD_W - 16) title.setScale((CARD_W - 16) / title.width);
       const [have, need] = a.progress(input);
       const bar = !done && need > 1;
       // The goal text sits between the title and the progress bar (or the card bottom);
       // long texts (German, Russian) get a smaller font until they fit.
-      const room = bar ? 48 : 64;
+      const room = bar ? 62 : 90;
       const text = this.add
-        .text(x, y + (bar ? 5 : 13), achText(a), { fontFamily: FONT, fontSize: '16px', color: done ? C.ink : C.greyDark, align: 'center', wordWrap: { width: CARD_W - 20 } })
+        .text(x, y + (bar ? 2 : 14), achText(a), { fontFamily: FONT, fontSize: '23px', color: done ? C.ink : C.greyDark, align: 'center', wordWrap: { width: CARD_W - 20 } })
         .setOrigin(0.5);
-      for (let size = 15; text.height > room && size >= 12; size--) text.setFontSize(size);
+      for (let size = 22; text.height > room && size >= 15; size--) text.setFontSize(size);
       layer.add([g, title, text]);
       if (bar) {
         {
           // Progress bar with the count beside it.
-          const w = CARD_W - 100;
+          const w = CARD_W - 110;
           const left = -CARD_W / 2 + 16;
           g.fillStyle(0xe4e0ea, 1);
-          g.fillRoundedRect(left, 32, w, 10, 5);
+          g.fillRoundedRect(left, 50, w, 14, 7);
           g.fillStyle(hex(C.good), 1);
-          if (have > 0) g.fillRoundedRect(left, 32, Math.max(10, (w * have) / need), 10, 5);
-          layer.add(label(this, x + CARD_W / 2 - 44, y + 37, `${have}/${need}`, 15, C.greyDark));
+          if (have > 0) g.fillRoundedRect(left, 50, Math.max(14, (w * have) / need), 14, 7);
+          layer.add(label(this, x + CARD_W / 2 - 48, y + 57, `${have}/${need}`, 22, C.greyDark));
         }
       }
     });

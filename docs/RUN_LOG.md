@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-17 — Run 55
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Trophies screen uses big cards: 4 columns x 3 rows (12 a page, 3 pages for 29), goal text 23 px (shrinks to 15 if long), titles 28 px, bigger progress bar. Always on, so no new Settings row.
+
+**Verified**
+- `npm run check` green (626 tests). `npm run e2e` exit 0, no FAIL (page buttons now always shown). Screenshots checked in en and de: no overflow.
+
+**Lessons**
+- Making a layout bigger for everyone avoids a Settings row and the e2e click shifts that come with it.
+- A commit hook may ask for a commit while e2e runs; wait for e2e, never commit unverified.
+
 ## 2026-11-17 — Run 54
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

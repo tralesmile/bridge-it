@@ -117,8 +117,8 @@ export function newAchievements(i: AchievementInput, already: string[]): string[
   return ACHIEVEMENTS.filter((a) => !already.includes(a.id) && isDone(a, i)).map((a) => a.id);
 }
 
-/** The Trophies screen shows 30 cards a page (6 columns, 5 rows). */
-export const TROPHY_PAGE = 30;
+/** The Trophies screen shows 12 big cards a page (4 columns, 3 rows). */
+export const TROPHY_PAGE = 12;
 
 /** How many pages `count` cards need, at least 1. */
 export const pageCount = (count: number, perPage = TROPHY_PAGE): number => Math.max(1, Math.ceil(count / Math.max(1, perPage)));

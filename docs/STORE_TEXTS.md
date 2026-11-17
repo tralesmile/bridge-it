@@ -48,5 +48,5 @@ Run `npm run build && npm run shots`. The 8 shots (menu, worlds, build, test, wi
 Cartoon physics only. No violence, no gambling, no user chat, no location. Contains ads (mobile). Not made for children (see `NEEDS_FROM_OWNER.md`).
 
 ## To do
-- Translations of this text in the 8 languages (ask a native speaker to check).
+- Translations are in `STORE_TEXTS_I18N.md` (ask native speakers to check).
 - Fix the level and feature counts if they change before launch.

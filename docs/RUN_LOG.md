@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-17 — Run 59
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Docs only: `docs/STORE_TEXTS_I18N.md`, store texts in de, es, pt, fr, tr, ru, mk. Owner task added (native check).
+
+**Verified**
+- `npm run check` green at the start. No game code changed, so e2e was not re-run. A script checked short line (80), subtitle (30) and keywords (100) limits; three short lines were too long and were cut.
+
+**Lessons**
+- Count store text lengths with a script, not by eye: translations run 10 to 15% longer than English.
+- Re-read generated Cyrillic text for stray Latin letters and wrong grammar forms before committing.
+- Still open and mostly owner-gated or hard: World 5 mechanic, press kit, pan for very wide levels, "Bigger text" option.
+
 ## 2026-11-17 — Run 58
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

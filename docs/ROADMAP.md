@@ -136,7 +136,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
   - [x] Daily Bridge names in 8 languages (`src/core/texts/daily.ts`: adjective forms per gender, adjective before or after the place word; `dailyNameParts` gives the word indexes for a day) and the "(copy)" word for copied levels (`COPY_WORD`; a copy of a copy in any language gets one tag)
   - [x] A rounded font with Cyrillic for ru and mk: Nunito (OFL, `@fontsource-variable/nunito`), only its Cyrillic file (21 KB) as "Nunito Cyrillic" in `src/fonts/nunito-cyrillic.css`, second in the `FONT` stack; loaded before the game starts. Licence in `docs/FONT_LICENSE_Nunito_OFL.txt`
   - [ ] Ask the owner (Macedonian speaker) to read the mk text; a native check of the other languages before launch
-  - [ ] Store texts in the 8 languages (M9)
+  - [x] Store texts in the 8 languages (M9, draft in `docs/STORE_TEXTS_I18N.md`)
 - [ ] GameAnalytics events (level start, complete, fail, hint, ad, purchase)
   - [x] Events in the game: `src/core/analytics.ts` turns them into GameAnalytics ids (`Start:w1:2`, `Complete:w1:2` with the cost, `hint:given:w1:4`, `ad:interstitial:shown`, `purchase:remove_ads:bought`) and keeps a capped queue; `track` in `src/game/analytics.ts`. Only scored levels (not sandbox, player levels or stress tests). `commercialBreak` now says if an ad was asked for. Nothing is sent yet
   - [ ] Sender (after the owner's GameAnalytics account): the GameAnalytics REST API or SDK in the app build only, after ad consent; web portals use their own stats (keep the web builds free of extra network requests)
@@ -154,7 +154,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Win panel: the flying coins started on top of the "+30 Coins" text; they now start just below it
 - [x] Trailer capture script (`npm run trailer` after a build: `scripts/trailer.mjs` records 5 webm clips at 1280x720 into the git-ignored `trailer-clips/`: each builds the stored solution beam by beam, then GO. Owner can cut them into a video)
 - [x] Store texts (`docs/STORE_TEXTS.md`, English draft), privacy policy draft (`docs/PRIVACY_POLICY.md`; owner fills name, contact and date)
-- [ ] Press kit (logo, screenshots, fact sheet) and the store texts in 8 languages
+- [x] Store texts in 7 more languages (`docs/STORE_TEXTS_I18N.md`: short line, subtitle, keywords, portal line, full description; lengths checked against the store limits; not checked by native speakers)
+- [ ] Press kit (logo, screenshots, fact sheet)
 - [x] Owner checklist for posting (`docs/POSTING_CHECKLIST.md`)
 
 ## M10 Launch and live ops

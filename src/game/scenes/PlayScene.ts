@@ -784,6 +784,18 @@ export class PlayScene extends Phaser.Scene {
         px = x;
         py = y;
       }
+    } else if (material === 'rope') {
+      // Twisted strands: short slanted ticks along the rope (a pattern, not only a colour).
+      const len = Math.hypot(sb.x - sa.x, sb.y - sa.y);
+      if (len < 1) return;
+      const ux = (sb.x - sa.x) / len;
+      const uy = (sb.y - sa.y) / len;
+      g.lineStyle(2, hex(style.light), 0.9 * alpha);
+      for (let t = 4; t < len - 4; t += 7) {
+        const x = sa.x + ux * t;
+        const y = sa.y + uy * t;
+        g.lineBetween(x - uy * 3 - ux * 2, y + ux * 3 - uy * 2, x + uy * 3 + ux * 2, y - ux * 3 + uy * 2);
+      }
     } else {
       g.lineStyle(2, hex(style.light), 0.7 * alpha);
       g.lineBetween(sa.x, sa.y - 2, sb.x, sb.y - 2);

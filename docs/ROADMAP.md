@@ -146,7 +146,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Accessibility review (`docs/ACCESSIBILITY.md`): white button labels get a dark outline (contrast tested in `tests/a11y.test.ts` for every button colour and paint); number keys pick tools; a new save follows the device's reduce-motion setting; the page `lang` follows the game language
 - [x] Tap-tap beam mode: Settings switch "Tap beams" (`settings.tapBeam`, 8 languages). Tap a joint (a ring marks it, the preview follows the pointer), then tap the end point; the same joint again cancels; changing tool or GO cancels. Dragging still works. Settings rows are 56 px apart now (seven rows)
 - [ ] Bigger trophy goal text (fewer cards per page) and a "Bigger text" option
-- [ ] A pattern on rope beams so wood and rope differ by more than colour and width
+- [x] A pattern on rope beams (slanted strand ticks along the rope in `strokeBeam`) so wood and rope differ by more than colour and width
 
 ## M9 Store and marketing assets
 - [ ] Screenshot generator script (renders store screenshots from the game)

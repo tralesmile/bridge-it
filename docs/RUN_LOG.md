@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-17 — Run 54
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Rope beams now have slanted strand ticks along them (`strokeBeam`), so rope differs from wood by pattern, not only colour and width.
+
+**Verified**
+- `npm run check` green (626 tests). `npm run e2e` exit 0, no FAIL. The e2e screenshots show no built rope beam, so the new pattern was not seen by eye (add a rope beam to a screenshot next time).
+
+**Lessons**
+- Start the e2e once with `run_in_background` and a long timeout (3600000); a foreground `until` wait gets moved to the background and its parent job can be stopped at 30 min, killing the browser run.
+- `sleep` in Bash is blocked; wait with an until-loop in a background command.
+
 ## 2026-11-16 — Run 53
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

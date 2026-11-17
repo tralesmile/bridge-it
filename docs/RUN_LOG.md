@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-17 — Run 61
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`: 1vjdjd, bfkknd, klj5rs show `+` only because hashes differ); skipped.
+- No code task: the open roadmap items are owner-gated, or need a new World 5 mechanic (springs) that earlier probes did not find. Docs-only log entry.
+
+**Verified**
+- `npm ci` and `npm run check` green (dist 1.86 MB). No game code changed, so e2e was not re-run.
+
+**Lessons**
+- The next code run should start a time-boxed World 5 probe in `probe/` (ice-cream van jump, landing-pad spring, seesaw). Do not rush a half-tested mechanic into `WORLDS`.
+
 ## 2026-11-17 — Run 60
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

@@ -153,8 +153,9 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Screenshot generator script (`npm run shots` after a build: `scripts/store-shots.mjs` writes 8 shots at 1920x1080 and 2560x1440 to the git-ignored `store-shots/`: menu, worlds, build, test, win, ropes, ocean, drawbridge)
 - [x] Win panel: the flying coins started on top of the "+30 Coins" text; they now start just below it
 - [x] Trailer capture script (`npm run trailer` after a build: `scripts/trailer.mjs` records 5 webm clips at 1280x720 into the git-ignored `trailer-clips/`: each builds the stored solution beam by beam, then GO. Owner can cut them into a video)
-- [ ] Store texts, press kit, privacy policy page
-- [ ] Owner checklist for posting
+- [x] Store texts (`docs/STORE_TEXTS.md`, English draft), privacy policy draft (`docs/PRIVACY_POLICY.md`; owner fills name, contact and date)
+- [ ] Press kit (logo, screenshots, fact sheet) and the store texts in 8 languages
+- [x] Owner checklist for posting (`docs/POSTING_CHECKLIST.md`)
 
 ## M10 Launch and live ops
 - [ ] Release candidate builds for web, Android and iOS

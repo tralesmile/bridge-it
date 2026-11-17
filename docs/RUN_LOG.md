@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-17 — Run 58
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Docs only: `docs/STORE_TEXTS.md` (titles, keywords, full description, portal texts, age answers), `docs/PRIVACY_POLICY.md` (draft), `docs/POSTING_CHECKLIST.md`. Owner tasks added.
+
+**Verified**
+- `npm run check` green at the start. No game code changed, so e2e was not re-run. Counts in the store text (60 levels, 4 worlds, 24 trophies, 8 languages) taken from the roadmap.
+
+**Lessons**
+- What is left unchecked is mostly owner-gated or needs a new mechanic (World 5). Next: World 5 design probes, press kit, store texts in 8 languages.
+
 ## 2026-11-17 — Run 57
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

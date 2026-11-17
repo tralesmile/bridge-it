@@ -31,4 +31,6 @@ Things only you can do. Each scheduled run adds to this list; nothing here block
 - [ ] Ask a local accountant about registering (sole proprietor or DOO) and VAT on foreign digital sales.
 
 ## Marketing (from milestone M2)
+- [ ] Read `docs/PRIVACY_POLICY.md` and `docs/STORE_TEXTS.md`: add your name, contact email and the date, and say if anything is wrong. Then publish the privacy policy on a simple web page (free GitHub Pages is fine); the stores need its link.
+- [ ] Posting steps are in `docs/POSTING_CHECKLIST.md`.
 - [ ] TikTok, YouTube and Instagram accounts for the game; post the clips Claude prepares.

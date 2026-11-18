@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-18 — Run 63
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5 probe (first code work since run 57): springs as hangers from floating anchors work. On an 8 m gap, road deck + 3 spring hangers wins with the car; rope hangers snap, bare road loses, wood deck + springs loses. Added draft world 5 with w5-1 Gumdrop Hooks (road + spring only) in `DRAFT_WORLDS`.
+
+**Verified**
+- `npm run check` green before and after; all 631 unit tests pass, including the new level's solution test. `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- Vitest only runs `tests/`; a probe goes in `tests/zz_probe*.test.ts` (git-excluded via `.git/info/exclude`) and must write results to a file, because console output is hidden. Delete it before committing.
+- Probe the simple idea (spring as a hanger) before inventing new vehicles.
+
 ## 2026-11-18 — Run 62
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

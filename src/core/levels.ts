@@ -246,6 +246,14 @@ const RIVER: LevelSpec[] = [
   },
 ];
 
+const CANDY: LevelSpec[] = [
+  {
+    name: 'Gumdrop Hooks', gap: 8, materials: ['road', 'spring'], extraAnchors: [{ x: 2, y: -2 }, { x: 4, y: -2 }, { x: 6, y: -2 }],
+    solution: (g) => [...roadDeck(0, g), ...[2, 4, 6].map((x) => beam(`${x},0`, `${x},-2`, 'spring'))], slack: 1.3,
+    tip: 'Hang the road from the gumdrops with springs. Springs never snap.',
+  },
+];
+
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;
 
 export function costOf(beams: Beam[]): number {
@@ -309,7 +317,9 @@ export const ALL_LEVELS: LevelEntry[] = WORLDS.flatMap((w) => w.levels);
  * Worlds still being made: tested like other levels, opened by id, not shown in menus or progress.
  * A world moves into WORLDS when it has 15 levels.
  */
-export const DRAFT_WORLDS: { id: number; name: string; levels: LevelEntry[] }[] = [];
+export const DRAFT_WORLDS: { id: number; name: string; levels: LevelEntry[] }[] = [
+  { id: 5, name: 'Candy Mountain', levels: build(5, CANDY) },
+];
 export const DRAFT_LEVELS: LevelEntry[] = DRAFT_WORLDS.flatMap((w) => w.levels);
 
 export function levelById(id: string): LevelEntry | undefined {

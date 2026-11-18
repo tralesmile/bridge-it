@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-18 — Run 68
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft level w5-6 Sugar Slide (10 m, far cliff 1 m lower, road + 4 spring hangers + a road ramp). Wins with the stored solution on the first try.
+
+**Verified**
+- `npm run check` green before and after (656 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- Springs work with a ramp end as well. The e2e takes over 10 min: a foreground call times out at 600 s, so start it with run_in_background. Next: truck on a ramp, then decide on the World 5 finale (6 of 15 levels exist).
+
 ## 2026-11-18 — Run 67
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

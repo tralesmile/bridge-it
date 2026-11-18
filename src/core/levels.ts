@@ -272,6 +272,11 @@ const CANDY: LevelSpec[] = [
     solution: (g) => [...roadDeck(0, g), ...[2, 4, 6, 8, 10].map((x) => beam(`${x},0`, `${x},-2`, 'spring'))], slack: 1.3,
     tip: 'A wide gap. Hang the road from every gumdrop.',
   },
+  {
+    name: 'Sugar Slide', gap: 10, rightHeight: -1, materials: ['road', 'spring'], extraAnchors: [2, 4, 6, 8].map((x) => ({ x, y: -2 })),
+    solution: () => [...roadDeck(0, 8), beam('8,0', '10,-1', 'road'), ...[2, 4, 6, 8].map((x) => beam(`${x},0`, `${x},-2`, 'spring'))], slack: 1.3,
+    tip: 'The far side is lower. Hang the flat road, then slide down at the end.',
+  },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;

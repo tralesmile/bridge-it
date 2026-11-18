@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-18 — Run 67
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft level w5-5 Wide Caramel (12 m, road + 5 spring hangers at 2 m spacing). Wins with the stored solution on the first try.
+
+**Verified**
+- `npm run check` green before and after (651 tests). `npm run e2e` run exit 0, no FAIL.
+
+**Lessons**
+- Even 2 m hanger spacing scales to 12 m with no retune. Next: mix springs with a ramp or a raised far cliff; then decide if 5 levels are enough to move on to a World 5 finale.
+
 ## 2026-11-18 — Run 66
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-18 — Run 62
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- No code change. The only open code task is the World 5 spring mechanic; no new probe was run this time.
+
+**Verified**
+- `npm ci` and `npm run check` green (dist 1.86 MB). No game code changed, so e2e was not re-run.
+
+**Lessons**
+- Runs 58 to 62 were docs-only. The next run with time should start a World 5 probe in `probe/` (ice-cream van jump, landing-pad spring, seesaw) as its first task, before any docs work.
+
 ## 2026-11-17 — Run 61
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`: 1vjdjd, bfkknd, klj5rs show `+` only because hashes differ); skipped.

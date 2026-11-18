@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-18 — Run 65
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft level w5-3 Heavy Toffee Truck (8 m, truck, road + 3 spring hangers). It wins with the stored solution on the first try.
+
+**Verified**
+- `npm ci`, `npm run check` green before and after (641 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- A truck works with the same spring-hanger layout as the car, so level variety must come from anchor height, gap width and mixing materials. Next: different anchor heights, a ramp mix, wider gaps (check sag).
+
 ## 2026-11-18 — Run 64
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

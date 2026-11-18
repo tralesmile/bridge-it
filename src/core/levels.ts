@@ -252,6 +252,11 @@ const CANDY: LevelSpec[] = [
     solution: (g) => [...roadDeck(0, g), ...[2, 4, 6].map((x) => beam(`${x},0`, `${x},-2`, 'spring'))], slack: 1.3,
     tip: 'Hang the road from the gumdrops with springs. Springs never snap.',
   },
+  {
+    name: 'Long Licorice', gap: 10, materials: ['road', 'spring'], extraAnchors: [{ x: 2, y: -2 }, { x: 4, y: -2 }, { x: 6, y: -2 }, { x: 8, y: -2 }],
+    solution: (g) => [...roadDeck(0, g), ...[2, 4, 6, 8].map((x) => beam(`${x},0`, `${x},-2`, 'spring'))], slack: 1.3,
+    tip: 'A longer gap. Space the hooks out and hang the road again.',
+  },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;

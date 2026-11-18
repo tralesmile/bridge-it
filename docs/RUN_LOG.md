@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-18 — Run 64
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft level w5-2 Long Licorice (10 m, road + 4 spring hangers). A 12 m gap with 3 hangers at 3 m spacing loses; a spring longer than 2 m is "too-long".
+
+**Verified**
+- `npm run check` green (636 tests). `npm run e2e` run (exit 0, no FAIL).
+
+**Lessons**
+- Never use a blind `sed` on `src/core/levels.ts`: it matched the shared `woodTower` helper and broke w3-14. Edit with exact, unique strings (Edit tool or Python assert).
+- Next: w5 levels with a truck, different anchor heights, and mixing springs with a ramp.
+
 ## 2026-11-18 — Run 63
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

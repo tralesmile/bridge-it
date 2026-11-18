@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-18 — Run 66
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft level w5-4 Uneven Hooks (9 m, road + 4 spring hangers at heights 1, 2, 2, 1 m). Uneven spacing (hangers at 2, 4, 5, 7) lost; even 2 m spacing wins.
+
+**Verified**
+- `npm run check` green (646 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- Spring hangers need even spacing; vary the height, not the spacing. Next: mix springs with a ramp, wider gaps (check sag).
+
 ## 2026-11-18 — Run 65
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

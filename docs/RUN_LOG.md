@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-18 — Run 69
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft level w5-7 Truck Slide (10 m, truck, lower far cliff, 4 spring hangers + road ramp). Wins with the stored solution on the first try.
+
+**Verified**
+- `npm run check` green (661 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- The truck works on every spring layout so far. 7 of 15 levels exist; next: decide the finale (long span with mixed anchors) and promote World 5 out of draft.
+
 ## 2026-11-18 — Run 68
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

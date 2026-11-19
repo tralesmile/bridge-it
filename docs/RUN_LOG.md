@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-19 — Run 71
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft level w5-9 Long Taffy (14 m, car, 6 spring hangers at 2 m spacing). Wins with the stored solution on the first try.
+
+**Verified**
+- `npm run check` green (671 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- Spring hangers scale to 14 m with no retune. 9 of 15 levels exist; next: truck on 14 m, then the finale and promoting World 5 out of draft.
+
 ## 2026-11-19 — Run 70
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

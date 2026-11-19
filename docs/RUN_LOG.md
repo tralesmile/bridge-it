@@ -2,6 +2,19 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-19 — Run 70
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft level w5-8 Truck Caramel (12 m, truck, 5 spring hangers). Wins first try.
+- Tried a far cliff 1 m higher (Sweet Climb): only a 4 m ramp beam wins, but beams over about 3 m are not allowed, and shorter ramps (2 m run, 1 m rise) lose. Dropped; noted in the roadmap.
+
+**Verified**
+- `npm run check` green (666 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- `console.log` in vitest tests is hidden here: write probe results to a file with `appendFileSync`. A probe must pass the build rules too (`too-long`), not only the simulation.
+- Next: decide the World 5 finale and promote World 5 out of draft (8 of 15 levels exist).
+
 ## 2026-11-18 — Run 69
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

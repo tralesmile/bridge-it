@@ -282,6 +282,11 @@ const CANDY: LevelSpec[] = [
     solution: () => [...roadDeck(0, 8), beam('8,0', '10,-1', 'road'), ...[2, 4, 6, 8].map((x) => beam(`${x},0`, `${x},-2`, 'spring'))], slack: 1.3,
     tip: 'The same slide, but with a heavy truck. Keep every hook.',
   },
+  {
+    name: 'Truck Caramel', gap: 12, vehicle: 'truck', materials: ['road', 'spring'], extraAnchors: [2, 4, 6, 8, 10].map((x) => ({ x, y: -2 })),
+    solution: (g) => [...roadDeck(0, g), ...[2, 4, 6, 8, 10].map((x) => beam(`${x},0`, `${x},-2`, 'spring'))], slack: 1.3,
+    tip: 'A wide gap and a heavy truck. Hang the road from every gumdrop.',
+  },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;

@@ -11,7 +11,7 @@ import { twoLines } from '../../core/i18n';
 import { t, worldName } from '../i18n';
 
 /** Worlds (ids) that are planned but have no levels yet. Shown as "Coming soon". */
-const COMING_SOON = [5];
+const COMING_SOON: number[] = [];
 
 /** Card colours per world (index = world id - 1). */
 const CARD_COLORS: [string, string][] = [

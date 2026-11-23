@@ -3,9 +3,9 @@ import { TRACKS, degreeToMidi, midiToHz, notesAt, stepSeconds, trackFor } from '
 import { WORLDS } from '../src/core/levels';
 
 describe('music', () => {
-  test('every world has its own loop, plus one for Candy Mountain', () => {
+  test('every world has its own loop', () => {
     for (const w of WORLDS) expect(trackFor(w.id).name).toBe(w.name);
-    expect(TRACKS.length).toBeGreaterThanOrEqual(WORLDS.length + 1);
+    expect(TRACKS.length).toBeGreaterThanOrEqual(WORLDS.length);
     expect(new Set(TRACKS.map((t) => t.name)).size).toBe(TRACKS.length);
     // Out-of-range worlds fall back to a real track.
     expect(trackFor(0)).toBe(TRACKS[0]);

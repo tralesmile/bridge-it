@@ -1,5 +1,5 @@
 /**
- * Achievements: 29 goals checked from the save data. Pure, so it can be unit-tested.
+ * Achievements: 31 goals checked from the save data. Pure, so it can be unit-tested.
  * An achievement stays unlocked once earned (the save keeps the list).
  */
 import { parseSandboxId } from './sandbox';
@@ -75,7 +75,7 @@ function perfectWorld(world: number, name: string): Achievement {
   };
 }
 
-const WORLD_NAMES: [number, string][] = [[1, 'Farm Valley'], [2, 'Canyon Rails'], [3, 'Pirate Bay'], [4, 'River Town']];
+const WORLD_NAMES: [number, string][] = [[1, 'Farm Valley'], [2, 'Canyon Rails'], [3, 'Pirate Bay'], [4, 'River Town'], [5, 'Candy Mountain']];
 const paints = SHOP_ITEMS.filter((s) => s.kind === 'paint' && s.price > 0).map((s) => s.id);
 const heldCount = (i: AchievementInput) => count(i.levels, (l) => (i.held ?? []).includes(l.id));
 const sandboxSetups = (i: AchievementInput) => [...new Set(i.sandboxWins ?? [])].map(parseSandboxId).filter((o) => o !== undefined);

@@ -7,9 +7,9 @@ const empty: AchievementInput = { stars: {}, bestCost: {}, owned: [], stats: { .
 const byId = (id: string) => ACHIEVEMENTS.find((a) => a.id === id)!;
 
 describe('achievements', () => {
-  test('there are 29 with unique ids, and none is done on a new save', () => {
-    expect(ACHIEVEMENTS).toHaveLength(29);
-    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(29);
+  test('there are 31 with unique ids, and none is done on a new save', () => {
+    expect(ACHIEVEMENTS).toHaveLength(31);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(31);
     expect(newAchievements(empty, [])).toEqual([]);
     for (const a of ACHIEVEMENTS) expect(a.text.length).toBeLessThan(50);
   });
@@ -18,7 +18,7 @@ describe('achievements', () => {
     const stars = Object.fromEntries(ALL_LEVELS.map((l) => [l.id, 3]));
     const bestCost = Object.fromEntries(ALL_LEVELS.map((l) => [l.id, 1]));
     const full: AchievementInput = { stars, bestCost, owned: SHOP_ITEMS.filter((s) => s.price > 0).map((s) => s.id), stats: { attempts: 50, fails: 1, broken: 100, hints: 1 }, levels: ALL_LEVELS, held: ALL_LEVELS.slice(0, 10).map((l) => l.id), dailyBest: 7, sandboxWins: ['sandbox-6-car-flat-none', 'sandbox-10-car-flat-none', 'sandbox-16-truck-lower-rocks', 'sandbox-24-truck-flat-both', 'sandbox-24-train-higher-posts'], madeCrossed: 5, friendsCrossed: 1 };
-    expect(newAchievements(full, [])).toHaveLength(29);
+    expect(newAchievements(full, [])).toHaveLength(31);
   });
 
   test('first win, world done and perfect world', () => {

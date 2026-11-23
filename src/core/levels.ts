@@ -379,6 +379,7 @@ export const WORLDS = [
   { id: 2, name: 'Canyon Rails', levels: build(2, CANYON) },
   { id: 3, name: 'Pirate Bay', levels: build(3, PIRATE) },
   { id: 4, name: 'River Town', levels: build(4, RIVER) },
+  { id: 5, name: 'Candy Mountain', levels: build(5, CANDY) },
 ];
 
 export const ALL_LEVELS: LevelEntry[] = WORLDS.flatMap((w) => w.levels);
@@ -387,9 +388,7 @@ export const ALL_LEVELS: LevelEntry[] = WORLDS.flatMap((w) => w.levels);
  * Worlds still being made: tested like other levels, opened by id, not shown in menus or progress.
  * A world moves into WORLDS when it has 15 levels.
  */
-export const DRAFT_WORLDS: { id: number; name: string; levels: LevelEntry[] }[] = [
-  { id: 5, name: 'Candy Mountain', levels: build(5, CANDY) },
-];
+export const DRAFT_WORLDS: { id: number; name: string; levels: LevelEntry[] }[] = [];
 export const DRAFT_LEVELS: LevelEntry[] = DRAFT_WORLDS.flatMap((w) => w.levels);
 
 export function levelById(id: string): LevelEntry | undefined {

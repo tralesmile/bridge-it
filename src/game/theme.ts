@@ -70,4 +70,6 @@ export const WORLD_BACKGROUNDS = [
   { skyTop: '#3fb6e0', skyBottom: '#d6f3ff', hillFar: '#5fa8b8', hillNear: '#e3c88a' },
   // River Town: soft evening sky, blue-grey far hills, green river banks.
   { skyTop: '#7fa8d8', skyBottom: '#f6e2c4', hillFar: '#8a9bb5', hillNear: '#6fae6a' },
+  // Candy Mountain: pink-lilac sky, lilac far hills, bubblegum pink near hills.
+  { skyTop: '#f7b6dc', skyBottom: '#fff0d6', hillFar: '#d9a6e8', hillNear: '#f08cba' },
 ];

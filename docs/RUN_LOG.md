@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-23 — Run 77
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5 Candy Mountain promoted out of draft: now in `WORLDS` (opens after a star on w4-15), pink backdrop, world card (no Coming soon card left), 2 new achievements (31 total), names and tips for all 15 levels in 8 languages.
+
+**Verified**
+- `npm run check` green (716 tests). `npm run e2e` exit 0, no FAIL (two old checks fixed: no Coming soon card, 31 trophies = 7 on the last page).
+
+**Lessons**
+- Level name limit is 22 characters (counted in letters, not bytes: use `[...s].length`). Russian and Macedonian names need short words.
+- Promoting a world touches: `WORLDS`, `WORLD_BACKGROUNDS`, `COMING_SOON`, `WORLD_NAMES` (achievements), `texts/levels.ts`, and the count in `tests/achievements.test.ts` / `tests/i18n.test.ts`.
+
 ## 2026-11-23 — Run 76
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

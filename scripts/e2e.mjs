@@ -371,7 +371,7 @@ async function run(viewport, name) {
   await sleep(400);
   const ruDaily = await sceneTexts('daily');
   if (name === 'desktop') await page.screenshot({ path: `${OUT}/${name}-9l-daily-ru.png` });
-  check(ruWorlds.includes('Выбери мир') && ruWorlds.includes('Ферма в\nдолине') && ruWorlds.includes('Скоро') && ruLevels.includes('Рельсы каньона') && ruLevels.includes('◀ Назад')
+  check(ruWorlds.includes('Выбери мир') && ruWorlds.includes('Ферма в\nдолине') && ruWorlds.some((t) => t.includes('Конфетная')) && ruLevels.includes('Рельсы каньона') && ruLevels.includes('◀ Назад')
     && ruDaily.includes('Календарь') && ruDaily.some((t) => t.startsWith('Сегодня\n')),
     `${name}: world select, level select and calendar are in Russian (${JSON.stringify([ruWorlds.slice(0, 6), ruLevels.slice(0, 2), ruDaily.slice(0, 3)])})`);
   // Russian and Macedonian letters use the bundled Nunito Cyrillic font (Fredoka has none), loaded before the game starts.
@@ -519,7 +519,7 @@ async function run(viewport, name) {
   await click(640 - 120, 670); // previous page
   await sleep(300);
   const tr3 = await trPage();
-  check(tr0.page === 0 && tr0.cards === 12 && tr0.text === 'Page 1 / 3' && tr1.page === 1 && tr2.page === 2 && tr2.cards === 5 && tr3.page === 1,
+  check(tr0.page === 0 && tr0.cards === 12 && tr0.text === 'Page 1 / 3' && tr1.page === 1 && tr2.page === 2 && tr2.cards === 7 && tr3.page === 1,
     `${name}: Trophies pages turn with the buttons and arrow keys and stop at the last page (${JSON.stringify([tr0, tr1, tr2, tr3])})`);
 
   // Stats screen from the menu: the attempts and levels done match the save.

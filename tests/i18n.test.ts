@@ -92,6 +92,6 @@ describe('achievement texts', () => {
     }
   });
   test('world goals know their world', () => {
-    expect(ACHIEVEMENTS.filter((a) => a.world !== undefined).map((a) => a.id)).toEqual(['world-1', 'world-2', 'world-3', 'world-4', 'perfect-1', 'perfect-2', 'perfect-3', 'perfect-4']);
+    expect(ACHIEVEMENTS.filter((a) => a.world !== undefined).map((a) => a.id)).toEqual(['world-1', 'world-2', 'world-3', 'world-4', 'world-5', 'perfect-1', 'perfect-2', 'perfect-3', 'perfect-4', 'perfect-5']);
   });
 });

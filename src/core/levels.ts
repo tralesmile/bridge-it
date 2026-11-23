@@ -297,6 +297,16 @@ const CANDY: LevelSpec[] = [
     solution: (g) => [...roadDeck(0, g), ...[2, 4, 6, 8, 10, 12].map((x) => beam(`${x},0`, `${x},-2`, 'spring'))], slack: 1.3,
     tip: 'Long Taffy again, but a heavy truck drives over. Use every gumdrop.',
   },
+  {
+    name: 'Uneven Freight', gap: 9, vehicle: 'truck', materials: ['road', 'spring'], extraAnchors: [{ x: 2, y: -1 }, { x: 4, y: -2 }, { x: 6, y: -2 }, { x: 8, y: -1 }],
+    solution: (g) => [...roadDeck(0, g), beam('2,0', '2,-1', 'spring'), beam('4,0', '4,-2', 'spring'), beam('6,0', '6,-2', 'spring'), beam('8,0', '8,-1', 'spring')], slack: 1.3,
+    tip: 'Uneven gumdrops again, with a heavy truck. Match each spring to its hook.',
+  },
+  {
+    name: 'Wavy Caramel', gap: 12, materials: ['road', 'spring'], extraAnchors: [{ x: 2, y: -1 }, { x: 4, y: -2 }, { x: 6, y: -1 }, { x: 8, y: -2 }, { x: 10, y: -1 }],
+    solution: (g) => [...roadDeck(0, g), beam('2,0', '2,-1', 'spring'), beam('4,0', '4,-2', 'spring'), beam('6,0', '6,-1', 'spring'), beam('8,0', '8,-2', 'spring'), beam('10,0', '10,-1', 'spring')], slack: 1.3,
+    tip: 'The hooks go up and down like a wave. Long and short springs take turns.',
+  },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;

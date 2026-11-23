@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-23 — Run 73
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft levels w5-11 Uneven Freight (9 m, truck, hangers 1, 2, 2, 1 m) and w5-12 Wavy Caramel (12 m, alternating hanger heights). Both win with the stored solutions on the first try.
+
+**Verified**
+- `npm run check` green (686 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- Alternating hanger heights work with even 2 m spacing. 12 of 15 levels exist; next: w5-13 and w5-14 (a mix with a ramp, a wavy truck), then the finale w5-15, then promote World 5 out of draft.
+
 ## 2026-11-23 — Run 72
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

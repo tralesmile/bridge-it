@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-23 — Run 74
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft level w5-13 Wavy Freight (12 m, truck, hangers 1, 2, 1, 2, 1 m). Wins with the stored solution on the first try.
+
+**Verified**
+- `npm run check` green (691 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- Same-layout truck variants keep working. 13 of 15 levels exist; next: w5-14 (spring hangers mixed with a ramp), finale w5-15, then promote World 5 out of draft.
+
 ## 2026-11-23 — Run 73
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

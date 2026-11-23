@@ -307,6 +307,11 @@ const CANDY: LevelSpec[] = [
     solution: (g) => [...roadDeck(0, g), beam('2,0', '2,-1', 'spring'), beam('4,0', '4,-2', 'spring'), beam('6,0', '6,-1', 'spring'), beam('8,0', '8,-2', 'spring'), beam('10,0', '10,-1', 'spring')], slack: 1.3,
     tip: 'The hooks go up and down like a wave. Long and short springs take turns.',
   },
+  {
+    name: 'Wavy Freight', gap: 12, vehicle: 'truck', materials: ['road', 'spring'], extraAnchors: [{ x: 2, y: -1 }, { x: 4, y: -2 }, { x: 6, y: -1 }, { x: 8, y: -2 }, { x: 10, y: -1 }],
+    solution: (g) => [...roadDeck(0, g), beam('2,0', '2,-1', 'spring'), beam('4,0', '4,-2', 'spring'), beam('6,0', '6,-1', 'spring'), beam('8,0', '8,-2', 'spring'), beam('10,0', '10,-1', 'spring')], slack: 1.3,
+    tip: 'The wavy hooks again, but a heavy truck comes. Use all five springs.',
+  },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;

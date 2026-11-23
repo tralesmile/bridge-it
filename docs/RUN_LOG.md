@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-23 — Run 76
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft finale w5-15 Candy Finale (14 m, truck, lower far cliff, wavy hangers). Wins with the stored solution on the first try. All 15 levels now exist.
+
+**Verified**
+- `npm run check` green (701 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- Combining known layouts (wavy + slide + 14 m + truck) worked without retuning. Next: promote World 5 out of draft (WORLDS, backdrop, world card, achievements, music, level names in 8 languages).
+
 ## 2026-11-23 — Run 75
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

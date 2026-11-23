@@ -312,6 +312,11 @@ const CANDY: LevelSpec[] = [
     solution: (g) => [...roadDeck(0, g), beam('2,0', '2,-1', 'spring'), beam('4,0', '4,-2', 'spring'), beam('6,0', '6,-1', 'spring'), beam('8,0', '8,-2', 'spring'), beam('10,0', '10,-1', 'spring')], slack: 1.3,
     tip: 'The wavy hooks again, but a heavy truck comes. Use all five springs.',
   },
+  {
+    name: 'Long Slide', gap: 12, vehicle: 'truck', rightHeight: -1, materials: ['road', 'spring'], extraAnchors: [2, 4, 6, 8, 10].map((x) => ({ x, y: -2 })),
+    solution: () => [...roadDeck(0, 10), beam('10,0', '12,-1', 'road'), ...[2, 4, 6, 8, 10].map((x) => beam(`${x},0`, `${x},-2`, 'spring'))], slack: 1.3,
+    tip: 'A wide gap, a lower far side and a truck. Hang the road, then slide down.',
+  },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;

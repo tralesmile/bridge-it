@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-23 — Run 75
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft level w5-14 Long Slide (12 m, truck, far cliff 1 m lower: 5 hangers + road slope). Wins with the stored solution on the first try.
+
+**Verified**
+- `npm run check` green (696 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- Slide layouts scale to 12 m with the truck. 14 of 15 levels exist; next: finale w5-15, then promote World 5 out of draft (WORLDS, backdrop, world card, achievements, music).
+
 ## 2026-11-23 — Run 74
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

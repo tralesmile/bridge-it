@@ -3,7 +3,7 @@
  * No real money, no random rewards: every item shows its price and you get exactly that item.
  */
 
-export type ShopKind = 'paint' | 'deck' | 'frame' | 'ride';
+export type ShopKind = 'paint' | 'deck' | 'frame' | 'ride' | 'cargo';
 
 export interface ShopItem {
   id: string;
@@ -14,6 +14,7 @@ export interface ShopItem {
    * paint: body main, light and dark colours. deck: road colour, line colour, edge colour.
    * frame: wood, wood light, steel, steel light (wood stays warm and steel stays cool, so the two always look different).
    * ride: the small car's body shape (car levels only); colours are its trim. Same size and weight, so physics never change.
+   * cargo: what the truck and the train carry (looks only; the vehicles keep their size and weight). No colours.
    */
   colors: string[];
   /** Only for players who bought the Supporter pack (a thank-you; never sold for coins). */
@@ -47,19 +48,27 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'ride-classic', kind: 'ride', name: 'Moo Car', price: 0, colors: ['#bfe8ff', '#fff4b0'] },
   { id: 'ride-camper', kind: 'ride', name: 'Camper', price: 90, colors: ['#fff6e8', '#7fd3ff'] },
   { id: 'ride-icecream', kind: 'ride', name: 'Ice Cream', price: 120, colors: ['#fff6e8', '#ff6fb5'] },
+  // Loads for the truck bed and the train's car. Looks only.
+  { id: 'cargo-classic', kind: 'cargo', name: 'Hay and coal', price: 0, colors: [] },
+  { id: 'cargo-logs', kind: 'cargo', name: 'Logs', price: 70, colors: [] },
+  { id: 'cargo-tank', kind: 'cargo', name: 'Tank', price: 100, colors: [] },
 ];
 
-export const DEFAULT_EQUIPPED: Record<ShopKind, string> = { paint: 'paint-classic', deck: 'deck-classic', frame: 'frame-classic', ride: 'ride-classic' };
+export const DEFAULT_EQUIPPED: Record<ShopKind, string> = { paint: 'paint-classic', deck: 'deck-classic', frame: 'frame-classic', ride: 'ride-classic', cargo: 'cargo-classic' };
+
+/** Texture name part for each load ('' keeps the classic hay and coal). */
+export const CARGO_TEXTURE: Record<string, string> = { 'cargo-classic': '', 'cargo-logs': 'logs', 'cargo-tank': 'tank' };
 
 /** Texture base key for each car body shape. */
 export const RIDE_TEXTURE: Record<string, string> = { 'ride-classic': 'car', 'ride-camper': 'camper', 'ride-icecream': 'icecream' };
 
 /**
  * Texture key for a vehicle with the shop items in use: 'car', 'car-paint-sky', 'icecream-paint-gold', 'truck-paint-mint'.
- * Body shapes only change the small car.
+ * Body shapes only change the small car; the load only changes the truck and the train.
  */
 export function vehicleTextureKey(state: Pick<ShopState, 'equipped' | 'owned'>, vehicle: 'car' | 'truck' | 'train'): string {
-  const base = vehicle === 'car' ? RIDE_TEXTURE[equipped(state, 'ride').id] ?? 'car' : vehicle;
+  const cargo = CARGO_TEXTURE[equipped(state, 'cargo').id] ?? '';
+  const base = vehicle === 'car' ? RIDE_TEXTURE[equipped(state, 'ride').id] ?? 'car' : cargo ? `${vehicle}-${cargo}` : vehicle;
   const paint = equipped(state, 'paint').id;
   return paint === 'paint-classic' ? base : `${base}-${paint}`;
 }

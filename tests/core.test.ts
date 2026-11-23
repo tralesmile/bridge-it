@@ -141,10 +141,10 @@ describe('save data', () => {
   test('keeps only known shop items and falls back for bad equipped ids', () => {
     const fresh = sanitize({});
     expect(fresh.owned).toEqual([]);
-    expect(fresh.equipped).toEqual({ paint: 'paint-classic', deck: 'deck-classic', frame: 'frame-classic', ride: 'ride-classic' });
+    expect(fresh.equipped).toEqual({ paint: 'paint-classic', deck: 'deck-classic', frame: 'frame-classic', ride: 'ride-classic', cargo: 'cargo-classic' });
     const s = sanitize({ owned: ['paint-sky', 'paint-sky', 'lava', 7], equipped: { paint: 'paint-sky', deck: 42 } });
     expect(s.owned).toEqual(['paint-sky']);
-    expect(s.equipped).toEqual({ paint: 'paint-sky', deck: 'deck-classic', frame: 'frame-classic', ride: 'ride-classic' });
+    expect(s.equipped).toEqual({ paint: 'paint-sky', deck: 'deck-classic', frame: 'frame-classic', ride: 'ride-classic', cargo: 'cargo-classic' });
   });
 });
 

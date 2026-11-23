@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { SHOP_ITEMS, itemById } from '../core/shop';
+import { CARGO_TEXTURE, SHOP_ITEMS, itemById } from '../core/shop';
 import { C, WORLD_BACKGROUNDS } from './theme';
 
 /**
@@ -206,21 +206,66 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.stroke();
   };
 
-  const drawTruck = (ctx: Ctx, [main]: readonly string[]) => {
+  // Loads that replace the hay bed and the coal car: logs stacked in rows, or a round tank.
+  const drawLoad = (ctx: Ctx, cargo: string, x: number, y: number, w: number, h: number) => {
+    if (cargo === 'logs') {
+      ctx.fillStyle = '#7d5a3a';
+      roundRect(ctx, x, y + h - 10, w, 10, 4);
+      ctx.fill();
+      const r = 11;
+      for (let row = 0; row < 2; row++) {
+        for (let cx = x + r + (row ? r : 0); cx < x + w - r + 1; cx += r * 2) {
+          const cy = y + h - 10 - r - row * (r * 1.7);
+          ctx.fillStyle = '#9a6a3c';
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#e0b072';
+          ctx.beginPath();
+          ctx.arc(cx, cy, r - 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#9a6a3c';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r - 7, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+    } else {
+      ctx.fillStyle = '#b9c3d6';
+      roundRect(ctx, x, y + 4, w, h - 4, Math.min(22, h / 2));
+      ctx.fill();
+      ctx.fillStyle = '#e4ebf7';
+      roundRect(ctx, x + 8, y + 8, w - 16, 8, 4);
+      ctx.fill();
+      ctx.fillStyle = '#7f8aa3';
+      for (const bx of [x + w * 0.3, x + w * 0.7]) {
+        ctx.fillRect(bx - 2, y + 4, 4, h - 4);
+      }
+      ctx.fillStyle = '#d9483b';
+      roundRect(ctx, x + w / 2 - 9, y - 2, 18, 8, 3);
+      ctx.fill();
+    }
+  };
+
+  const drawTruck = (ctx: Ctx, [main]: readonly string[], cargo = '') => {
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     roundRect(ctx, 10, 72, 240, 36, 16);
     ctx.fill();
-    // Hay bed.
-    ctx.fillStyle = '#e9c45a';
-    roundRect(ctx, 8, 22, 150, 52, 14);
-    ctx.fill();
-    ctx.strokeStyle = '#c9a23d';
-    ctx.lineWidth = 3;
-    for (let x = 22; x < 150; x += 18) {
-      ctx.beginPath();
-      ctx.moveTo(x, 28);
-      ctx.lineTo(x + 8, 68);
-      ctx.stroke();
+    if (cargo) drawLoad(ctx, cargo, 8, 22, 150, 52);
+    else {
+      // Hay bed.
+      ctx.fillStyle = '#e9c45a';
+      roundRect(ctx, 8, 22, 150, 52, 14);
+      ctx.fill();
+      ctx.strokeStyle = '#c9a23d';
+      ctx.lineWidth = 3;
+      for (let x = 22; x < 150; x += 18) {
+        ctx.beginPath();
+        ctx.moveTo(x, 28);
+        ctx.lineTo(x + 8, 68);
+        ctx.stroke();
+      }
     }
     // Body and cab.
     ctx.fillStyle = main;
@@ -233,19 +278,22 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.fill();
   };
 
-  const drawTrain = (ctx: Ctx, [main]: readonly string[]) => {
+  const drawTrain = (ctx: Ctx, [main]: readonly string[], cargo = '') => {
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     roundRect(ctx, 10, 72, 320, 36, 16);
     ctx.fill();
-    // Coal car.
-    ctx.fillStyle = '#4a4560';
-    roundRect(ctx, 8, 30, 150, 44, 10);
-    ctx.fill();
-    ctx.fillStyle = '#2b2140';
-    for (let x = 24; x < 140; x += 26) {
-      ctx.beginPath();
-      ctx.arc(x, 30, 12, Math.PI, 0);
+    if (cargo) drawLoad(ctx, cargo, 8, 30, 150, 44);
+    else {
+      // Coal car.
+      ctx.fillStyle = '#4a4560';
+      roundRect(ctx, 8, 30, 150, 44, 10);
       ctx.fill();
+      ctx.fillStyle = '#2b2140';
+      for (let x = 24; x < 140; x += 26) {
+        ctx.beginPath();
+        ctx.arc(x, 30, 12, Math.PI, 0);
+        ctx.fill();
+      }
     }
     // Body, cab and chimney.
     ctx.fillStyle = main;
@@ -371,6 +419,11 @@ export function makeTextures(scene: Phaser.Scene): void {
     canvas(scene, `icecream${sfx}`, 172, 96, (ctx) => drawIceCream(ctx, paint.colors, itemById('ride-icecream')!.colors));
     canvas(scene, `truck${sfx}`, 260, 120, (ctx) => drawTruck(ctx, classic ? ['#3c8dff'] : paint.colors));
     canvas(scene, `train${sfx}`, 340, 120, (ctx) => drawTrain(ctx, classic ? ['#e8503a'] : paint.colors));
+    // Loads from the shop: 'truck-logs', 'truck-tank-paint-sky', 'train-logs' ...
+    for (const cargo of Object.values(CARGO_TEXTURE).filter(Boolean)) {
+      canvas(scene, `truck-${cargo}${sfx}`, 260, 120, (ctx) => drawTruck(ctx, classic ? ['#3c8dff'] : paint.colors, cargo));
+      canvas(scene, `train-${cargo}${sfx}`, 340, 120, (ctx) => drawTrain(ctx, classic ? ['#e8503a'] : paint.colors, cargo));
+    }
   }
 
   canvas(scene, 'wheel', 64, 64, (ctx) => {

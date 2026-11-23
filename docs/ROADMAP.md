@@ -69,7 +69,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Coin shop, cosmetic only (`src/core/shop.ts`, `ShopScene`): 8 paint jobs for every vehicle and 5 road colours, fixed prices in coins (coins come only from new stars; all items cost 1160 of 1800 possible coins). Shop button and coin count on the menu
 - [x] Shop: wood and steel colours (5 beam skins, `frame` kind; wood stays warm and steel cool, tested). Shop is now 3 rows; all items cost 1550 of 1800 coins
 - [x] Shop: car shapes as a coin use (`ride` kind: Moo Car free, Camper 90, Ice Cream van 120). Looks only: the small car keeps its size and weight, so every level and test stays the same; paint goes on top; truck and train keep their shape. Middle shop row is road colours + car shapes; all items cost 1760 of 1800 coins
-- [ ] Shop: shapes for the truck and train too (needs more coins first: only 40 coins are left unspent; add with World 5)
+- [x] Shop: loads for the truck and train (`cargo` kind: Hay and coal free, Logs 70, Tank 100; looks only, paint goes on top; shown beside the wood and steel colours in the last shop row). Total shop cost is now 1930 of 2250 coins. Own truck and train body shapes could follow later
 - [x] Achievements: 20 (`src/core/achievements.ts`, progress from the save; play counters in `save.stats`), gold banner when one is earned (one banner when more than 2 at once), Trophies screen with progress bars
 - [x] Achievements for the daily bridge (Daily Builder, Week of Bridges: best streak 7) and the stress test (Built Tough, Over-Engineered: 10 levels held); 24 in all, Trophies grid is 5 x 5
 - [x] Achievements for World 5 (Finish and Perfect Candy Mountain; 31 in total)

@@ -452,7 +452,7 @@ async function run(viewport, name) {
   await page.screenshot({ path: `${OUT}/${name}-9s-shop.png` });
   await click(265, 256); // Sky paint, 40 coins
   await click(258, 445); // Brick road, 60 coins
-  await click(490, 634); // Birch beams, 60 coins
+  await click(258, 632); // Birch beams, 60 coins
   await click(406, 445); // Forest road, 80 coins: too expensive now
   const bought = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}'));
   check(bought.coins === 0 && bought.owned?.join() === 'paint-sky,deck-brick,frame-birch' && bought.equipped?.paint === 'paint-sky' && bought.equipped?.deck === 'deck-brick' && bought.equipped?.frame === 'frame-birch',
@@ -480,6 +480,21 @@ async function run(viewport, name) {
   const vanTex = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').chassisSprite.texture.key);
   check(vanTex === 'icecream-paint-sky', `${name}: the car level uses the bought shape with its paint (${vanTex})`);
   await page.screenshot({ path: `${OUT}/${name}-9s-van.png` });
+  // Truck loads: with 70 coins buy Logs (second card of the right group in the last row); the truck level uses it with the paint on.
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); s.coins = 70; localStorage.setItem('bridgeit.save', JSON.stringify(s)); });
+  await page.reload();
+  await page.waitForFunction(() => globalThis.__bridgeit?.scene?.isActive('menu'), null, { timeout: 15000 });
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('menu').scene.start('shop'); });
+  await sleep(500);
+  await click(1022, 632); // Logs, 70 coins
+  const logs = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}'));
+  check(logs.coins === 0 && logs.equipped?.cargo === 'cargo-logs' && logs.owned?.includes('cargo-logs'), `${name}: buying a truck load saves it (${JSON.stringify({ c: logs.coins, e: logs.equipped })})`);
+  await page.screenshot({ path: `${OUT}/${name}-9s-shop-logs.png` });
+  await page.evaluate(() => { globalThis.__bridgeit.scene.getScene('shop').scene.start('play', { levelId: 'w1-7' }); });
+  await sleep(700);
+  const logTex = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('play').chassisSprite.texture.key);
+  check(logTex === 'truck-logs-paint-sky', `${name}: the truck level uses the bought load with its paint (${logTex})`);
+  await page.screenshot({ path: `${OUT}/${name}-9s-truck-logs.png` });
   // Supporter paint: hidden on the web until owned; a save with the Supporter pack shows it as a 9th paint card and can use it.
   await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save') || '{}'); s.purchases = { noAds: true, supporter: true, supporterCoins: true }; localStorage.setItem('bridgeit.save', JSON.stringify(s)); });
   await page.reload();

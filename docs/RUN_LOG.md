@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-23 — Run 78
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Shop: truck and train loads (`cargo` kind: Hay and coal, Logs 70, Tank 100) in 8 languages. Drawn in code, paint on top; old saves keep hay and coal. The last shop row now has two groups (wood and steel colours + loads).
+
+**Verified**
+- `npm run check` green (717 tests). `npm run e2e` exit 0, no FAIL (shop clicks in the last row moved: Birch is now at 258, 632).
+
+**Lessons**
+- Shop item names must be 12 letters or fewer in every language (`tests/i18n.test.ts`); use commas instead of "and".
+- Adding a `ShopKind` touches: `DEFAULT_EQUIPPED`, two save tests in `tests/core.test.ts`, `tests/shop.test.ts`, `texts/screens.ts` (title + item names), `art.ts` textures, ShopScene layout.
+
 ## 2026-11-23 — Run 77
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

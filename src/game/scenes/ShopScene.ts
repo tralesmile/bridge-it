@@ -1,6 +1,6 @@
 import { onBack } from '../back';
 import Phaser from 'phaser';
-import { RIDE_TEXTURE, SHOP_ITEMS, equipped, isOwned, type ShopItem } from '../../core/shop';
+import { CARGO_TEXTURE, RIDE_TEXTURE, SHOP_ITEMS, equipped, isOwned, type ShopItem } from '../../core/shop';
 import { sfx } from '../audio';
 import { addBackground } from '../background';
 import { save } from '../save';
@@ -35,18 +35,19 @@ export class ShopScene extends Phaser.Scene {
     label(this, GAME_W / 2, 118, t('shop.paint'), 24, C.ink);
     // The supporter paint shows only where it can be had (app with a store) or once it is owned.
     this.row(SHOP_ITEMS.filter((i) => i.kind === 'paint' && (!i.supporter || store.available() || isOwned(save.shop, i.id))), 212);
-    // Road colours and car shapes share the middle row, each with its own title.
-    const middle = [SHOP_ITEMS.filter((i) => i.kind === 'deck'), SHOP_ITEMS.filter((i) => i.kind === 'ride')];
-    const groupW = middle.map((g) => g.length * CARD_W + (g.length - 1) * GAP);
-    const totalW = groupW[0] + groupW[1] + GROUP_GAP;
-    let left = GAME_W / 2 - totalW / 2;
-    [t('shop.road'), t('shop.shape')].forEach((title, i) => {
-      label(this, left + groupW[i] / 2, 307, title, 24, C.ink);
-      this.row(middle[i], 401, left + groupW[i] / 2);
-      left += groupW[i] + GROUP_GAP;
-    });
-    label(this, GAME_W / 2, 496, t('shop.frame'), 24, C.ink);
-    this.row(SHOP_ITEMS.filter((i) => i.kind === 'frame'), 590);
+    // Two groups share a row, each with its own title: road colours + car shapes, then wood and steel colours + truck loads.
+    const group = (title: string[], groups: ShopItem[][], titleY: number, y: number) => {
+      const groupW = groups.map((g) => g.length * CARD_W + (g.length - 1) * GAP);
+      let left = GAME_W / 2 - (groupW[0] + groupW[1] + GROUP_GAP) / 2;
+      title.forEach((text, i) => {
+        label(this, left + groupW[i] / 2, titleY, text, 24, C.ink);
+        this.row(groups[i], y, left + groupW[i] / 2);
+        left += groupW[i] + GROUP_GAP;
+      });
+    };
+    const kind = (k: ShopItem['kind']) => SHOP_ITEMS.filter((i) => i.kind === k);
+    group([t('shop.road'), t('shop.shape')], [kind('deck'), kind('ride')], 307, 401);
+    group([t('shop.frame'), t('shop.cargo')], [kind('frame'), kind('cargo')], 496, 590);
     label(this, GAME_W / 2, 684, t('shop.note'), 20, C.greyDark).setWordWrapWidth(1180).setAlign('center');
 
     this.toast = label(this, GAME_W / 2, 400, '', 34, C.white).setStroke(C.ink, 8).setDepth(20).setAlpha(0);
@@ -86,6 +87,14 @@ export class ShopScene extends Phaser.Scene {
       for (const dx of [-47, 47]) this.add.image(x + dx * k, y - 38 + 28 * k, 'wheel').setScale(0.72 * k);
       this.add.image(x, y - 38, key).setScale(k);
       this.add.image(x + 1, y - 46, 'cow-calm').setScale(k);
+    } else if (item.kind === 'cargo') {
+      // The truck with this load, in the paint in use.
+      const part = CARGO_TEXTURE[item.id];
+      const paint = equipped(shop, 'paint').id;
+      const base = part ? `truck-${part}` : 'truck';
+      const k = 0.4;
+      for (const dx of [-70, 70]) this.add.image(x + dx * k, y - 40 + 34 * k, 'wheel').setScale(0.9 * k);
+      this.add.image(x, y - 40, paint === 'paint-classic' ? base : `${base}-${paint}`).setScale(k);
     } else if (item.kind === 'deck') {
       // A short piece of road with its dashed centre line.
       const [road, line] = item.colors;

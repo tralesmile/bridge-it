@@ -49,9 +49,9 @@ describe('shop', () => {
   });
 
   test('equipped falls back to the default for a bad save', () => {
-    expect(equipped({ owned: [], equipped: { paint: 'paint-gold', deck: 'junk', frame: 'junk', ride: 'junk' } }, 'paint').id).toBe('paint-classic');
-    expect(equipped({ owned: [], equipped: { paint: 'deck-brick', deck: 'junk', frame: 'junk', ride: 'junk' } }, 'deck').id).toBe('deck-classic');
-    expect(equipped({ owned: ['paint-gold'], equipped: { paint: 'paint-gold', deck: 'deck-classic', frame: 'frame-classic', ride: 'ride-classic' } }, 'paint').id).toBe('paint-gold');
+    expect(equipped({ owned: [], equipped: { paint: 'paint-gold', deck: 'junk', frame: 'junk', ride: 'junk', cargo: 'junk' } }, 'paint').id).toBe('paint-classic');
+    expect(equipped({ owned: [], equipped: { paint: 'deck-brick', deck: 'junk', frame: 'junk', ride: 'junk', cargo: 'junk' } }, 'deck').id).toBe('deck-classic');
+    expect(equipped({ owned: ['paint-gold'], equipped: { paint: 'paint-gold', deck: 'deck-classic', frame: 'frame-classic', ride: 'ride-classic', cargo: 'cargo-classic' } }, 'paint').id).toBe('paint-gold');
   });
 
   test('beam skins keep wood warm and steel cool, and old saves get the natural skin', () => {
@@ -84,6 +84,21 @@ describe('shop', () => {
     expect(vehicleTextureKey(p.state, 'train')).toBe('train-paint-sky');
     // A body you do not own (edited save) falls back to the Moo Car.
     expect(vehicleTextureKey({ owned: [], equipped: { ...DEFAULT_EQUIPPED, ride: 'ride-camper' } }, 'car')).toBe('car');
+  });
+
+  test('loads change only the truck and the train, with the paint on top; old saves keep hay and coal', () => {
+    const old = { owned: [], equipped: { paint: 'paint-classic', deck: 'deck-classic', frame: 'frame-classic', ride: 'ride-classic' } } as unknown as ShopState;
+    expect(equipped(old, 'cargo').id).toBe('cargo-classic');
+    expect(vehicleTextureKey(old, 'truck')).toBe('truck');
+    const r = buy({ ...start, coins: 200 }, 'cargo-logs');
+    if (!r.ok) throw new Error('buy failed');
+    expect(vehicleTextureKey(r.state, 'truck')).toBe('truck-logs');
+    expect(vehicleTextureKey(r.state, 'train')).toBe('train-logs');
+    expect(vehicleTextureKey(r.state, 'car')).toBe('car');
+    const p = buy(r.state, 'paint-sky');
+    if (!p.ok) throw new Error('buy failed');
+    expect(vehicleTextureKey(p.state, 'truck')).toBe('truck-logs-paint-sky');
+    expect(vehicleTextureKey({ owned: [], equipped: { ...DEFAULT_EQUIPPED, cargo: 'cargo-tank' } }, 'truck')).toBe('truck');
   });
 
   test('supporter paint: not free, not for coins, owned only after the Supporter pack, kept for good', () => {

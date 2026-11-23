@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-23 — Run 72
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- World 5: draft level w5-10 Taffy Freight (14 m, truck, 6 spring hangers). Wins with the stored solution on the first try.
+
+**Verified**
+- `npm run check` green (676 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- The truck scales to 14 m with the same hanger layout. 10 of 15 levels exist; the spring layout is now well understood, so the last 5 should mix ideas (ramp + wide gap, uneven heights) and one finale. Then promote World 5 out of draft.
+
 ## 2026-11-19 — Run 71
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

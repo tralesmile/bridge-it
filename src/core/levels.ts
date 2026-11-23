@@ -292,6 +292,11 @@ const CANDY: LevelSpec[] = [
     solution: (g) => [...roadDeck(0, g), ...[2, 4, 6, 8, 10, 12].map((x) => beam(`${x},0`, `${x},-2`, 'spring'))], slack: 1.3,
     tip: 'The longest gap yet. Six gumdrops hold the road.',
   },
+  {
+    name: 'Taffy Freight', gap: 14, vehicle: 'truck', materials: ['road', 'spring'], extraAnchors: [2, 4, 6, 8, 10, 12].map((x) => ({ x, y: -2 })),
+    solution: (g) => [...roadDeck(0, g), ...[2, 4, 6, 8, 10, 12].map((x) => beam(`${x},0`, `${x},-2`, 'spring'))], slack: 1.3,
+    tip: 'Long Taffy again, but a heavy truck drives over. Use every gumdrop.',
+  },
 ];
 
 const roundUp = (v: number, step: number): number => Math.ceil(v / step) * step;

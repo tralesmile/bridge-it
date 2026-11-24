@@ -149,7 +149,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] "Bigger text" switch in Settings (`settings.bigText`, 8 languages; `textScale()` and `note()` in `ui.ts`): scales and wraps the free text on the win, loss, stress and sandbox panels. Settings rows are 50 px apart now (eight rows)
 - [x] Bigger text for the play toast (wraps, scales; run 81)
 - [x] Bigger text for the shop toast (run 82)
-- [ ] Bigger text for the rest (level select numbers, stats values) and a screenshot check of the win panel with it on (e2e does not open a result panel with it yet)
+- [x] Bigger text for level select names and stats values (run 83)
+- [ ] Screenshot check of the win panel with Bigger text on (e2e does not open a result panel with it yet)
 - [x] A pattern on rope beams (slanted strand ticks along the rope in `strokeBeam`) so wood and rope differ by more than colour and width
 
 ## M9 Store and marketing assets

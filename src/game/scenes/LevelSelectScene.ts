@@ -5,7 +5,7 @@ import { LEVELS_PER_PAGE, isUnlocked, pageCount, pageOfIndex } from '../../core/
 import { addBackground } from '../background';
 import { save } from '../save';
 import { C, GAME_W, hex } from '../theme';
-import { button, label, panel } from '../ui';
+import { button, label, panel, textScale } from '../ui';
 import { levelName, t, worldName } from '../i18n';
 
 export class LevelSelectScene extends Phaser.Scene {
@@ -52,7 +52,8 @@ export class LevelSelectScene extends Phaser.Scene {
         shade: open ? C.primaryDark : C.greyDark,
       });
       b.setEnabled(open);
-      label(this, x, y + 62, levelName(level), 18, C.ink);
+      const nm = label(this, x, y + 62, levelName(level), Math.round(18 * textScale()), C.ink);
+      if (nm.width > 180) nm.setScale(180 / nm.width);
       const stars = save.data.stars[level.id] ?? 0;
       for (let s = 0; s < 3; s++) this.add.image(x - 30 + s * 30, y - 60, s < stars ? 'star' : 'star-empty').setScale(0.4);
       // Passed the stress test: a small badge on the corner of the button.

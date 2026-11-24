@@ -6,7 +6,7 @@ import { statRows } from '../../core/stats';
 import { addBackground } from '../background';
 import { save } from '../save';
 import { C, GAME_W, hex } from '../theme';
-import { button, label, panel } from '../ui';
+import { button, label, panel, textScale } from '../ui';
 import { t } from '../i18n';
 import type { TextKey } from '../../core/i18n';
 
@@ -49,9 +49,9 @@ export class StatsScene extends Phaser.Scene {
       g.fillRoundedRect(-COL_W / 2, -ROW_H / 2 + 4, COL_W, ROW_H - 8, 12);
       const name = label(this, x - COL_W / 2 + 24, y, t(`stats.${r.key}` as TextKey), 24, C.greyDark).setOrigin(0, 0.5);
       // Long labels in some languages shrink to leave room for the value.
-      const room = COL_W - 48 - 130;
+      const val = label(this, x + COL_W / 2 - 24, y, r.value, Math.round(26 * textScale()), C.ink).setOrigin(1, 0.5);
+      const room = COL_W - 48 - val.width - 12;
       if (name.width > room) name.setScale(room / name.width);
-      label(this, x + COL_W / 2 - 24, y, r.value, 26, C.ink).setOrigin(1, 0.5);
     });
   }
 }

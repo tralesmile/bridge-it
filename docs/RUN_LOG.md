@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-24 — Run 83
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Bigger text now also scales level names (level select) and stats values (name shrinks to fit).
+
+**Verified**
+- `npm run check` green (717 tests). `npm run e2e` exit 0, no FAIL. No new screenshot of these two screens with Bigger text.
+
+**Lessons**
+- Use an until-loop with a 590 s timeout to wait for e2e.
+- Still open: win panel screenshot with Bigger text.
+
 ## 2026-11-24 — Run 82
 **Done**
 - Synced: no unmerged work on other branches.

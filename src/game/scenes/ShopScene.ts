@@ -8,7 +8,7 @@ import { C, GAME_W, hex } from '../theme';
 import { store } from '../store';
 import { t } from '../i18n';
 import type { TextKey } from '../../core/i18n';
-import { announceAchievements, button, label, openSupport, panel } from '../ui';
+import { announceAchievements, button, label, openSupport, panel, textScale } from '../ui';
 
 const CARD_W = 136;
 const CARD_H = 150;
@@ -160,7 +160,9 @@ export class ShopScene extends Phaser.Scene {
 
   private say(text: string): void {
     if (!this.toast) return;
-    this.toast.setText(text).setAlpha(1);
+    this.toast.setFontSize(Math.round(34 * textScale())).setWordWrapWidth(GAME_W - 60, true).setAlign('center');
+    this.toast.setScale(1).setText(text).setAlpha(1);
+    if (this.toast.width > GAME_W - 40) this.toast.setScale((GAME_W - 40) / this.toast.width);
     this.tweens.killTweensOf(this.toast);
     this.tweens.add({ targets: this.toast, alpha: 0, delay: 1400, duration: 400 });
   }

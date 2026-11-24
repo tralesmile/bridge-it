@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-24 — Run 82
+**Done**
+- Synced: no unmerged work on other branches.
+- Shop toast follows Bigger text (scaled, wraps, fits the screen).
+
+**Verified**
+- `npm run check` green. `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- A Stop hook asks to commit while e2e runs; wait for e2e first (use an until-loop, not a long sleep).
+- Still open: level select numbers, stats values, win panel screenshot with Bigger text.
+
 ## 2026-11-24 — Run 81
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

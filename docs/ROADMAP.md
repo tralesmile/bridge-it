@@ -146,7 +146,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Accessibility review (`docs/ACCESSIBILITY.md`): white button labels get a dark outline (contrast tested in `tests/a11y.test.ts` for every button colour and paint); number keys pick tools; a new save follows the device's reduce-motion setting; the page `lang` follows the game language
 - [x] Tap-tap beam mode: Settings switch "Tap beams" (`settings.tapBeam`, 8 languages). Tap a joint (a ring marks it, the preview follows the pointer), then tap the end point; the same joint again cancels; changing tool or GO cancels. Dragging still works. Settings rows are 56 px apart now (seven rows)
 - [x] Bigger trophy goal text: 12 cards a page (4x3), goal text 23 px (was 16), titles 28 px
-- [ ] A "Bigger text" option for the other screens (Settings row; shifts e2e clicks)
+- [ ] A "Bigger text" option for the other screens (Settings row; shifts e2e clicks). Scoped in run 79: buttons have fixed widths and shrink long labels (`fit` in `ui.ts`), so a global font multiplier does nothing for them. Do it for free text only (tips, status, result panels, trophy goals, level select numbers) with one `textScale()` helper, then re-lay out those screens and fix e2e click positions in the same run
 - [x] A pattern on rope beams (slanted strand ticks along the rope in `strokeBeam`) so wood and rope differ by more than colour and width
 
 ## M9 Store and marketing assets

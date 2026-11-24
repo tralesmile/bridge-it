@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-24 — Run 79
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Looked at the only task left that needs no owner ("Bigger text"). Not started: it needs a layout pass over several screens plus e2e click fixes. Plan written in `docs/ROADMAP.md`.
+
+**Verified**
+- `npm run check` green. No code changed, so e2e was not re-run.
+
+**Lessons**
+- With all 5 worlds done, the roadmap is mostly owner-blocked. Next run: do "Bigger text" as a full run on its own (budget the 12 minute e2e), or add World 6 ideas to the roadmap first.
+
 ## 2026-11-23 — Run 78
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

@@ -110,6 +110,9 @@ describe('save data', () => {
     expect(s.settings.sound).toBe(false);
     expect(s.settings.reducedMotion).toBe(true);
     expect(s.settings.shake).toBe(false);
+    expect(s.settings.bigText).toBeUndefined();
+    expect(sanitize({ settings: { bigText: true } }).settings.bigText).toBe(true);
+    expect(sanitize({ settings: { bigText: 'yes' } }).settings.bigText).toBeUndefined();
     expect(s.held).toEqual([]);
     expect(sanitize({ held: ['w1-1', 'w1-1', 'nope', 7] }).held).toEqual(['w1-1']);
     expect(s.sandboxWins).toEqual([]);

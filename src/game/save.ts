@@ -62,7 +62,7 @@ export interface SaveData {
   /** Real-money purchases as last seen from the store (the store's answer always wins). */
   purchases: PurchaseState;
   /** `lang` is missing until the player picks one; the browser language is used until then. */
-  settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean; lang?: Lang; /** Set once when the device runs the test slowly (`src/core/perf.ts`): fewer particles. */ lowFx?: boolean; /** The player set Low effects by hand; the automatic check leaves it alone. */ lowFxSet?: boolean; /** Tap-tap beams: tap the start point, then the end point (no dragging). */ tapBeam?: boolean };
+  settings: { sound: boolean; music: boolean; reducedMotion: boolean; shake: boolean; lang?: Lang; /** Set once when the device runs the test slowly (`src/core/perf.ts`): fewer particles. */ lowFx?: boolean; /** The player set Low effects by hand; the automatic check leaves it alone. */ lowFxSet?: boolean; /** Tap-tap beams: tap the start point, then the end point (no dragging). */ tapBeam?: boolean; /** Bigger free text (tips, result lines): `textScale()` in `ui.ts`. */ bigText?: boolean };
 }
 
 /** The device asks for less motion (an OS setting); a new save starts with Reduced motion on then. */
@@ -177,6 +177,7 @@ export function sanitize(raw: unknown): SaveData {
     if (r.settings.lowFx === true) base.settings.lowFx = true;
     if (r.settings.lowFxSet === true) base.settings.lowFxSet = true;
     if (r.settings.tapBeam === true) base.settings.tapBeam = true;
+    if (r.settings.bigText === true) base.settings.bigText = true;
   }
   return base;
 }

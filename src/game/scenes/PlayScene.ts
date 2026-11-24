@@ -25,7 +25,7 @@ import { codeDialogOpen, showCodeDialog } from '../codeDialog';
 import { FrameWatch, fxCount } from '../../core/perf';
 import { copyWord, levelName, levelTip, t, vehicleName } from '../i18n';
 import type { TextKey } from '../../core/i18n';
-import { announceAchievements, button, label, panel, type Button } from '../ui';
+import { announceAchievements, button, label, note, panel, type Button } from '../ui';
 import { track } from '../analytics';
 
 type Tool = MaterialId | 'erase';
@@ -1099,14 +1099,14 @@ export class PlayScene extends Phaser.Scene {
     const next = this.level.starBudgets[stars === 1 ? 0 : 1];
     const streak = daily?.past ? t('play.oldDay') : daily ? t(daily.usedSaver ? 'play.streakSaver' : 'play.streak', { n: daily.streak }) : '';
     const sub = daily ? streak : stars < 3 ? t('play.nextStar', { cost: money(cost), next: money(next) }) : t('play.perfect', { cost: money(cost) });
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 + 28, sub, 24, C.greyDark));
+    layer.add(note(this, GAME_W / 2, GAME_H / 2 + 28, sub, 24, C.greyDark, 560, 48));
     if (!daily) {
       const pct = cheaperThanPercent(this.level, cost);
       this.lastCheaper = pct;
-      layer.add(label(this, GAME_W / 2, GAME_H / 2 + 58, t('play.cheaper', { pct }), 20, C.greyDark));
+      layer.add(note(this, GAME_W / 2, GAME_H / 2 + 58, t('play.cheaper', { pct }), 20, C.greyDark, 560, 42));
     }
     if (coins > 0) {
-      layer.add(label(this, GAME_W / 2, GAME_H / 2 + 88, t('play.coins', { n: coins }), 24, C.primaryDark));
+      layer.add(note(this, GAME_W / 2, GAME_H / 2 + 88, t('play.coins', { n: coins }), 24, C.primaryDark, 560, 48));
       this.coinFlyIn(Math.min(coins, 8), 900 + stars * 220);
     }
     const nxt = daily ? undefined : nextLevel(this.level.id);
@@ -1194,7 +1194,7 @@ export class PlayScene extends Phaser.Scene {
     const best = !before ? '' : stars > before ? ` · ${t('play.newBest')}` : ` · ${t('play.yourBest', { n: before })}`;
     const text = !won ? t('play.tryChange')
       : this.isDraft ? `${t('play.cost', { cost: money(cost) })} · ${t('play.canShare')}` : t('play.cost', { cost: money(cost) }) + best;
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 + (won ? 0 : -60), text, 24, C.greyDark));
+    layer.add(note(this, GAME_W / 2, GAME_H / 2 + (won ? 0 : -60), text, 24, C.greyDark, 560, 90));
     layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 90, won ? t('play.buildMore') : t('play.fixIt'), () => this.stopSim(), { width: 240, height: 70, color: C.primary, shade: C.primaryDark }));
     layer.add(button(this, GAME_W / 2 + 140, GAME_H / 2 + 90, this.isDraft ? t('play.editLevel') : t('menu.editor'), () => this.scene.start('editor'), { width: 240, height: 70, fontSize: 26, color: C.blue, shade: C.blueDark }));
     if (friend) {
@@ -1227,8 +1227,8 @@ export class PlayScene extends Phaser.Scene {
     const vehicle = vehicleName(this.level.vehicle);
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 120, won ? t('play.held') : t('play.broke'), 56, C.ink));
     const text = won ? t('play.heldText', { vehicle }) : t('play.tooHeavy', { vehicle });
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 45, text, 26, C.greyDark));
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 5, t('play.broken', { n: broken }), 22, C.greyDark));
+    layer.add(note(this, GAME_W / 2, GAME_H / 2 - 45, text, 26, C.greyDark, 560, 54));
+    layer.add(note(this, GAME_W / 2, GAME_H / 2 - 5, t('play.broken', { n: broken }), 22, C.greyDark, 560, 42));
     layer.add(button(this, GAME_W / 2 - 140, GAME_H / 2 + 90, t('play.tryAgain'), () => this.stopSim(), { width: 240, height: 70, color: C.blue, shade: C.blueDark }));
     layer.add(
       button(this, GAME_W / 2 + 140, GAME_H / 2 + 90, t('play.backToLevel'), () => this.scene.start('play', { levelId: this.level.id }), {
@@ -1248,7 +1248,7 @@ export class PlayScene extends Phaser.Scene {
       reason === 'fell' || reason === 'collapse' ? 'play.tipBroke' : reason === 'stuck' ? 'play.tipStuck' : reason === 'flipped' ? 'play.tipFlipped' : 'play.tipTime',
     );
     layer.add(label(this, GAME_W / 2, GAME_H / 2 - 110, title, 56, C.ink));
-    layer.add(label(this, GAME_W / 2, GAME_H / 2 - 30, tip, 26, C.greyDark));
+    layer.add(note(this, GAME_W / 2, GAME_H / 2 - 30, tip, 26, C.greyDark, 560, 110));
     layer.add(button(this, GAME_W / 2, GAME_H / 2 + 80, t('play.fixIt'), () => this.stopSim(), { width: 260, height: 76, color: C.primary, shade: C.primaryDark }));
   }
 }

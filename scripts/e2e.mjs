@@ -38,33 +38,42 @@ async function run(viewport, name) {
   // Settings: open, turn "Less motion" on, close, check it is saved.
   await click(1180, 60);
   await page.screenshot({ path: `${OUT}/${name}-1b-settings.png` });
-  await click(830, 292); // Less motion is the third row (y = 360 - 180 + 2 * 56)
+  await click(830, 280); // Less motion is the third row (y = 360 - 180 + 2 * 50)
   const still = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.reducedMotion);
-  await click(830, 292); // switch back
+  await click(830, 280); // switch back
   await click(640, 610);
   check(still === true, `${name}: settings switch saves (reducedMotion ${still})`);
-  // Music is the fourth row (y = 348). Turn it off and on again.
+  // Music is the fourth row (y = 330). Turn it off and on again.
   await click(1180, 60);
-  await click(830, 348);
+  await click(830, 330);
   const music = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.music);
-  await click(830, 348);
+  await click(830, 330);
   await click(640, 610);
   check(music === false, `${name}: music switch saves (music ${music})`);
-  // Low effects is the fifth row (y = 404): on by hand, then off; the hand choice is kept.
+  // Low effects is the fifth row (y = 380): on by hand, then off; the hand choice is kept.
   await click(1180, 60);
-  await click(830, 404);
+  await click(830, 380);
   const fxOn = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings);
-  await click(830, 404);
+  await click(830, 380);
   const fxOff = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings);
   await click(640, 610);
   check(fxOn?.lowFx === true && fxOn?.lowFxSet === true && fxOff?.lowFx === false && fxOff?.lowFxSet === true,
     `${name}: the Low effects switch saves and marks the choice as made by hand (${JSON.stringify([fxOn?.lowFx, fxOff?.lowFx, fxOff?.lowFxSet])})`);
-  // Tap beams is the sixth row (y = 460): it stays on for the rest of this run (dragging still works).
+  // Tap beams is the sixth row (y = 430): it stays on for the rest of this run (dragging still works).
   await click(1180, 60);
-  await click(830, 460);
+  await click(830, 430);
   const tapSet = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.tapBeam);
   await click(640, 610);
   check(tapSet === true, `${name}: the Tap beams switch saves (${tapSet})`);
+  // Bigger text is the seventh row (y = 480): on, saved, then off again.
+  await click(1180, 60);
+  await click(830, 480);
+  const bigOn = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.bigText);
+  await page.screenshot({ path: `${OUT}/${name}-1c-settings-bigtext.png` });
+  await click(830, 480);
+  const bigOff = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save') || '{}').settings?.bigText);
+  await click(640, 610);
+  check(bigOn === true && !bigOff, `${name}: the Bigger text switch saves (${bigOn}, ${bigOff})`);
   // Language: the browser's English first; each tap on the language button picks the next one,
   // the menu restarts in it with Settings open again. 8 taps come back to English.
   const menuTexts = () => page.evaluate(() => {
@@ -77,7 +86,7 @@ async function run(viewport, name) {
   await click(1180, 60);
   const langs = [];
   for (let i = 0; i < 8; i++) {
-    await click(810, 516); // Language is the seventh row (y = 360 - 180 + 6 * 56)
+    await click(810, 530); // Language is the eighth row (y = 360 - 180 + 7 * 50)
     await sleep(250);
     const texts = await menuTexts();
     const lang = await page.evaluate(() => JSON.parse(localStorage.getItem('bridgeit.save')).settings.lang);

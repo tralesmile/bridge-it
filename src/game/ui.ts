@@ -123,6 +123,24 @@ export function label(scene: Phaser.Scene, x: number, y: number, text: string, s
   return scene.add.text(x, y, text, { fontFamily: FONT, fontSize: `${size}px`, fontStyle: 'bold', color }).setOrigin(0.5);
 }
 
+/** 1.25 when the player turned on Bigger text, else 1. Only free text uses it (buttons keep their size). */
+export function textScale(): number {
+  return save.data.settings.bigText ? 1.25 : 1;
+}
+
+/**
+ * Free text (tips, result lines): scaled by `textScale()`, wrapped inside `maxW` pixels,
+ * and shrunk if it is still too wide or too tall (`maxH`). Long words in other languages stay inside the panel.
+ */
+export function note(scene: Phaser.Scene, x: number, y: number, text: string, size: number, color: string = C.ink, maxW = 560, maxH = 70): Phaser.GameObjects.Text {
+  const o = scene.add
+    .text(x, y, text, { fontFamily: FONT, fontSize: `${Math.round(size * textScale())}px`, fontStyle: 'bold', color, align: 'center', wordWrap: { width: maxW } })
+    .setOrigin(0.5);
+  if (o.height > maxH) o.setScale(maxH / o.height);
+  if (o.width * o.scaleX > maxW) o.setScale(Math.min(o.scaleX, maxW / o.width));
+  return o;
+}
+
 /** A soft rounded panel. */
 export function panel(scene: Phaser.Scene, x: number, y: number, w: number, h: number): Phaser.GameObjects.Graphics {
   const g = scene.add.graphics({ x, y });
@@ -144,17 +162,18 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
   const shade = scene.add.rectangle(0, 0, W, H, hex(C.ink), 0.45).setOrigin(0).setInteractive();
   layer.add([shade, panel(scene, W / 2, H / 2, 620, 640)]);
   layer.add(label(scene, W / 2, H / 2 - 255, t('settings.title'), 48, C.ink).setName('settings-title'));
-  const rows: Array<{ key: 'sound' | 'music' | 'reducedMotion' | 'shake' | 'lowFx' | 'tapBeam'; text: TextKey }> = [
+  const rows: Array<{ key: 'sound' | 'music' | 'reducedMotion' | 'shake' | 'lowFx' | 'tapBeam' | 'bigText'; text: TextKey }> = [
     { key: 'sound', text: 'settings.sound' },
     { key: 'shake', text: 'settings.shake' },
     { key: 'reducedMotion', text: 'settings.motion' },
     { key: 'music', text: 'settings.music' },
     { key: 'lowFx', text: 'settings.lowFx' },
     { key: 'tapBeam', text: 'settings.tapBeam' },
+    { key: 'bigText', text: 'settings.bigText' },
   ];
   // In the app with a store, rows move up to make room for the purchases button.
   const shop = store.available();
-  const rowY = (i: number): number => (shop ? H / 2 - 195 + i * 50 : H / 2 - 180 + i * 56);
+  const rowY = (i: number): number => (shop ? H / 2 - 195 + i * 44 : H / 2 - 180 + i * 50);
   // Long words in some languages shrink to fit beside the buttons.
   const rowLabel = (y: number, text: string): Phaser.GameObjects.Text => {
     const l = label(scene, W / 2 - 270, y, text, 30, C.ink).setOrigin(0, 0.5);
@@ -175,7 +194,7 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
       b.setColors(colors().color ?? C.good, colors().shade ?? C.goodDark);
       sfx.unlock();
       onChange();
-    }, { width: 130, height: shop ? 46 : 52, fontSize: 24, ...colors() });
+    }, { width: 130, height: shop ? 40 : 46, fontSize: 24, ...colors() });
     layer.add(b);
   });
   // Language: each tap moves to the next one. Only where the screen can show the new text at once.
@@ -188,7 +207,7 @@ export function openSettings(scene: Phaser.Scene, onChange: () => void = () => u
       sfx.unlock();
       layer.destroy();
       onLang();
-    }, { width: 210, height: shop ? 46 : 52, fontSize: 22, color: C.blue, shade: C.blueDark }).setName('settings-lang'));
+    }, { width: 210, height: shop ? 40 : 46, fontSize: 22, color: C.blue, shade: C.blueDark }).setName('settings-lang'));
   }
   if (shop) {
     layer.add(button(scene, W / 2, H / 2 + 165, t(save.data.purchases.noAds ? 'settings.support' : 'settings.removeAds'), () => openSupport(scene), { width: 330, height: 56, fontSize: 24, color: C.gold, shade: C.primaryDark, textColor: C.ink }));

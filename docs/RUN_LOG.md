@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-24 — Run 80
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- "Bigger text" switch in Settings (8 languages, saved in `settings.bigText`). `note()` in `ui.ts` wraps and fits free text; used on the win, loss, stress and sandbox result panels. Settings rows now 50 px apart (eight rows).
+
+**Verified**
+- `npm run check` green (717 tests). `npm run e2e` exit 0, no FAIL (settings clicks moved: rows at y 180 + 50 * i; new Bigger text check). Looked at `desktop-1c-settings-bigtext.png`: fine.
+
+**Lessons**
+- `note()` shrinks text taller than `maxH`, so `maxH` must allow 1.25 x the line height or the switch does nothing.
+- Still open: toast, level select numbers, stats values, and an e2e screenshot of a win panel with Bigger text on.
+
 ## 2026-11-24 — Run 79
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

@@ -25,7 +25,7 @@ import { codeDialogOpen, showCodeDialog } from '../codeDialog';
 import { FrameWatch, fxCount } from '../../core/perf';
 import { copyWord, levelName, levelTip, t, vehicleName } from '../i18n';
 import type { TextKey } from '../../core/i18n';
-import { announceAchievements, button, label, note, panel, type Button } from '../ui';
+import { announceAchievements, button, label, note, panel, textScale, type Button } from '../ui';
 import { track } from '../analytics';
 
 type Tool = MaterialId | 'erase';
@@ -473,8 +473,10 @@ export class PlayScene extends Phaser.Scene {
 
   private showToast(text: string, ms = 1600): void {
     if (!text) return;
+    // Bigger text makes the toast larger and wraps it inside the screen.
+    this.toast.setFontSize(Math.round(26 * textScale())).setWordWrapWidth(GAME_W - 60);
     this.toast.setScale(1).setText(text).setAlpha(1).setY(100);
-    // Long tips (French, Spanish) shrink to stay on one line inside the screen.
+    // Very long tips (French, Spanish) shrink to stay inside the screen.
     if (this.toast.width > GAME_W - 40) this.toast.setScale((GAME_W - 40) / this.toast.width);
     this.tweens.killTweensOf(this.toast);
     this.tweens.add({ targets: this.toast, alpha: 0, y: 92, delay: ms, duration: 400 });

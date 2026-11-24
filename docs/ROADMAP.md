@@ -147,7 +147,8 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Tap-tap beam mode: Settings switch "Tap beams" (`settings.tapBeam`, 8 languages). Tap a joint (a ring marks it, the preview follows the pointer), then tap the end point; the same joint again cancels; changing tool or GO cancels. Dragging still works. Settings rows are 56 px apart now (seven rows)
 - [x] Bigger trophy goal text: 12 cards a page (4x3), goal text 23 px (was 16), titles 28 px
 - [x] "Bigger text" switch in Settings (`settings.bigText`, 8 languages; `textScale()` and `note()` in `ui.ts`): scales and wraps the free text on the win, loss, stress and sandbox panels. Settings rows are 50 px apart now (eight rows)
-- [ ] Bigger text for the other free text (toast, level select numbers, stats values) and a screenshot check of the win panel with it on (e2e does not open a result panel with it yet)
+- [x] Bigger text for the play toast (wraps, scales; run 81)
+- [ ] Bigger text for the rest (shop toast, level select numbers, stats values) and a screenshot check of the win panel with it on (e2e does not open a result panel with it yet)
 - [x] A pattern on rope beams (slanted strand ticks along the rope in `strokeBeam`) so wood and rope differ by more than colour and width
 
 ## M9 Store and marketing assets

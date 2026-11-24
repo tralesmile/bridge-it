@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-24 — Run 81
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- Play toast follows Bigger text (font scaled, wraps inside the screen).
+
+**Verified**
+- `npm run check` green (717 tests). `npm run e2e` exit 0, no FAIL.
+
+**Lessons**
+- e2e takes over 10 minutes: start it with run_in_background and wait for the notification; do not poll with sleep.
+- Still open: shop toast, level select numbers, stats values, win panel screenshot with Bigger text.
+
 ## 2026-11-24 — Run 80
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

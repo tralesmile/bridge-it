@@ -389,7 +389,7 @@ async function run(viewport, name) {
   // The play scene in German: tool bar, GO, and the win panel of the saved level 1 bridge (the save is put back after).
   const saveBeforeDe = await page.evaluate(() => localStorage.getItem('bridgeit.save'));
   // Low effects on for this part (a slow device would set it): the win and its confetti must still work.
-  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); s.settings.lowFx = true; localStorage.setItem('bridgeit.save', JSON.stringify(s)); });
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bridgeit.save')); s.settings.lowFx = true; s.settings.bigText = true; localStorage.setItem('bridgeit.save', JSON.stringify(s)); });
   await setLang('de');
   const lowFxLoaded = await page.evaluate(() => globalThis.__bridgeit.scene.getScene('menu').registry && JSON.parse(localStorage.getItem('bridgeit.save')).settings.lowFx === true);
   check(lowFxLoaded, `${name}: the low-effects flag stays in the save`);
@@ -401,7 +401,7 @@ async function run(viewport, name) {
   await page.waitForFunction(() => globalThis.__bridgeit.scene.getScene('play').mode === 'result', null, { timeout: 30000 }).catch(() => {});
   await sleep(800);
   const deLoss = await sceneTexts('play');
-  if (name === 'desktop') await page.screenshot({ path: `${OUT}/${name}-9l-win-de.png` });
+  if (name === 'desktop') await page.screenshot({ path: `${OUT}/${name}-9l-win-de-bigtext.png` });
   check(dePlay.includes('LOS!') && dePlay.includes('1. Erste Überfahrt') && dePlay.includes('Zieh von einem roten Anker, um eine Straße zu bauen.') && dePlay.includes('Straße') && dePlay.includes('Löschen') && dePlay.includes('Zurück') && dePlay.includes('Code einfügen')
     && deLoss.includes('Geschafft!') && deLoss.includes('Verbessern') && deLoss.includes('Brücken-Code kopieren'),
     `${name}: the play scene and its win panel are in German (${JSON.stringify([dePlay.slice(0, 12), deLoss.slice(-4)])})`);

@@ -150,7 +150,7 @@ Each scheduled run takes the first unchecked tasks from the top, finishes and ve
 - [x] Bigger text for the play toast (wraps, scales; run 81)
 - [x] Bigger text for the shop toast (run 82)
 - [x] Bigger text for level select names and stats values (run 83)
-- [ ] Screenshot check of the win panel with Bigger text on (e2e does not open a result panel with it yet)
+- [x] Screenshot check of the win panel with Bigger text on (e2e German win panel now runs with Bigger text: `desktop-9l-win-de-bigtext.png`; fits, run 84)
 - [x] A pattern on rope beams (slanted strand ticks along the rope in `strokeBeam`) so wood and rope differ by more than colour and width
 
 ## M9 Store and marketing assets

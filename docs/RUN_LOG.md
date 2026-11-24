@@ -2,6 +2,18 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-24 — Run 84
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped.
+- e2e German win panel now runs with Bigger text on (screenshot `desktop-9l-win-de-bigtext.png`). Panel fits, no overlap.
+
+**Verified**
+- `npm run check` green. `npm run e2e` exit 0, no FAIL. Looked at the screenshot: fine.
+
+**Lessons**
+- Backgrounding a subshell with `&` makes the tool report "completed" at once; the real end is the `exit` line in the log file. Wait with an until-loop on that line.
+- No roadmap task is left that needs no owner, except big ones (pan for very wide levels, more rope/drawbridge level ideas).
+
 ## 2026-11-24 — Run 83
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

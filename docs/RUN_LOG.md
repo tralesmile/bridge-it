@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-24 — Run 85
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped. No code change.
+- Checked the roadmap: every open task needs the owner (portal, store, AdMob, RevenueCat, Codemagic, GameAnalytics accounts, real-phone tests, native language checks) or is a big idea with no level yet (pan for very wide levels, online percentile).
+
+**Verified**
+- `npm ci` and `npm run check` green (tests pass, dist 1.88 MB of 8 MB). e2e skipped: docs-only change.
+
+**Lessons**
+- When only owner tasks remain, do not invent churn. The owner list in `docs/NEEDS_FROM_OWNER.md` is the real blocker: the Macedonian text check and the portal previews come first.
+
 ## 2026-11-24 — Run 84
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped.

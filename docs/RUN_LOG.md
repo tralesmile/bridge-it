@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-25 — Run 86
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped. No code change.
+- Roadmap check: all open tasks still need the owner (accounts, real phones, language checks) or are big ideas with no level yet.
+
+**Verified**
+- `npm ci` and `npm run check` green (dist 1.88 MB of 8 MB). e2e skipped: docs-only change.
+
+**Lessons**
+- Same as run 85: the owner list in `docs/NEEDS_FROM_OWNER.md` is the blocker. No churn.
+
 ## 2026-11-24 — Run 85
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped. No code change.

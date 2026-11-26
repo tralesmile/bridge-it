@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-26 — Run 90
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped. No code change.
+- Roadmap: every open task still needs the owner or is a big idea with no level yet.
+
+**Verified**
+- `npm ci` and `npm run check` green (dist 1.88 MB of 8 MB). e2e skipped: docs-only change.
+
+**Lessons**
+- Same as runs 85 to 89: the owner list is the blocker. No churn.
+
 ## 2026-11-26 — Run 89
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped. No code change.

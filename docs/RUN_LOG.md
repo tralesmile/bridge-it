@@ -2,6 +2,17 @@
 
 Newest first. Every run adds: what was done, how it was verified, and lessons for the next run.
 
+## 2026-11-27 — Run 92
+**Done**
+- Synced: only old font/seam branches unmerged (already in `main`); skipped. No code change.
+- Roadmap: every open task still needs the owner or is a big idea with no level yet.
+
+**Verified**
+- `main` unchanged since Run 91 (green). Docs-only change, so check and e2e skipped.
+
+**Lessons**
+- Same as runs 85 to 91: the owner list is the blocker. No churn.
+
 ## 2026-11-27 — Run 91
 **Done**
 - Synced: only old font/seam branches unmerged (already in `main`); skipped. No code change.
